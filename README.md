@@ -11,7 +11,7 @@ The fullstack developer case for Smash admission process.
 
 # Context
 
-This test aims to assess the candidate's affinity with the main technologies used in the Smash Stack. For this we present a simple case to show a list of countries and their respective cities. Creating a first screen with the list of countries and a second screen with the list of cities, and navigating between them. Follow bellow an Wireframe Sketch.
+This test aims to assess the candidate's affinity with the main technologies used in the Smash Stack. For this we present a simple case to show a list of countries and their respective cities. Creating a first screen with the list of countries and a second screen with the list of cities, and navigating between them. Follow below an Wireframe Sketch.
 
 ![alt UX Diagram](https://github.com/smash-gift/fullstack-dev-test/raw/main/UX_Diagram.jpg?raw=true)
 
