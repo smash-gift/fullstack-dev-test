@@ -44,3 +44,6 @@ This test aims to assess the candidate's affinity with the main technologies use
  - [ ] Create a repository for your project or a fork
  - [ ] Send us your repository link
 
+## Issues and Questions
+
+> feel free to open issues with your questions and suggestions
