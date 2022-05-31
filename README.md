@@ -37,3 +37,10 @@ This test aims to assess the candidate's affinity with the main technologies use
  - [ ] Connect with Firebase Firestore collections built in the previous topics
  - [ ] Display the data and create navigation between them
   
+## Git
+
+> Its time to finish!
+
+ - [ ] Create a repository for your project or a fork
+ - [ ] Send us your repository link
+
