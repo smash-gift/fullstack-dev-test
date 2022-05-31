@@ -1,6 +1,3 @@
-**# fullstack-dev-test
-The fullstack developer test from 2nd phase Smash admission process
-**
 # Smash Fullstack dev case
 The fullstack developer case for Smash admission process. 
 
