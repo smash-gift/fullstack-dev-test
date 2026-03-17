@@ -1,0 +1,24 @@
+# Dentro da pasta backend/
+git rm --cached .env
+git rm --cached .env.example# Environment
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
