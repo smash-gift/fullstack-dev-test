@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'services/suggestion_service.dart';
 import 'screens/main_screen.dart';
 
 void main() {
-  runApp(const GiftMsgApp());
+  runApp(GiftMsgApp(service: SuggestionService()));
 }
 
 class GiftMsgApp extends StatelessWidget {
-  const GiftMsgApp({super.key});
+  const GiftMsgApp({super.key, required this.service});
+
+  final SuggestionService service;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +19,7 @@ class GiftMsgApp extends StatelessWidget {
         primarySwatch: Colors.pink,
         fontFamily: 'Montserrat',
       ),
-      home: const MainScreen(),
+      home: MainScreen(service: service),
       debugShowCheckedModeBanner: false,
     );
   }

@@ -5,7 +5,9 @@ import '../widgets/suggestion_list.dart';
 import '../services/suggestion_service.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  const MainScreen({super.key, required this.service});
+
+  final SuggestionService service;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -25,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
       _suggestions = [];
     });
     try {
-      final suggestions = await SuggestionService.getSuggestions(
+      final suggestions = await widget.service.getSuggestions(
         occasion: _occasion!,
         relationship: _relationship!,
       );
