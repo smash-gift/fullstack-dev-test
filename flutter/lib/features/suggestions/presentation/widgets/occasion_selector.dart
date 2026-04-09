@@ -57,15 +57,15 @@ class OccasionSelector extends StatelessWidget {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFEADDD8)),
+                  borderSide: const BorderSide(color: Color(0xFFE3D4CF), width: 1.2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFEADDD8)),
+                  borderSide: const BorderSide(color: Color(0xFFE3D4CF), width: 1.2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.pink.shade300),
+                  borderSide: BorderSide(color: Colors.pink.shade300, width: 1.4),
               ),
             ),
           ),
@@ -93,6 +93,7 @@ class _SelectorCard extends StatelessWidget {
     final borderColor = selected ? Colors.pink.shade300 : const Color(0xFFF0EBE9);
     final backgroundColor = selected ? const Color(0xFFFCE7EF) : const Color(0xFFF9F6F5);
     final iconColor = selected ? Colors.pink.shade400 : const Color(0xFF8A6F68);
+    final borderWidth = selected ? 1.4 : 1.2;
 
     return InkWell(
       onTap: onTap,
@@ -104,7 +105,7 @@ class _SelectorCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor),
+          border: Border.all(color: borderColor, width: borderWidth),
           boxShadow: const [
             BoxShadow(
               color: Color(0x0A000000),
