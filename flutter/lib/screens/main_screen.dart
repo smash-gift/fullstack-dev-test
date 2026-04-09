@@ -89,7 +89,7 @@ class _MainScreenState extends State<MainScreen> {
                       height: 24,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                     )
-                  : const Text('Gerar Sugestões'),
+                  : const _GenerateSuggestionsLabel(),
             ),
             const SizedBox(height: 32),
             if (_error != null)
@@ -99,6 +99,29 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _GenerateSuggestionsLabel extends StatelessWidget {
+  const _GenerateSuggestionsLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(Icons.auto_fix_high, color: Colors.white, size: 18),
+        SizedBox(width: 10),
+        Text(
+          'Gerar Sugestões',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
