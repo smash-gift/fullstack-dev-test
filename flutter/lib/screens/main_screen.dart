@@ -16,11 +16,24 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   String? _occasion;
   String? _relationship;
+  String _customOccasion = '';
+  String _customRelationship = '';
   bool _loading = false;
   String? _error;
   List<String> _suggestions = [];
 
+  bool get _isOccasionValid =>
+      _occasion != null && (_occasion != 'outro' || _customOccasion.trim().isNotEmpty);
+
+  bool get _isRelationshipValid =>
+      _relationship != null &&
+      (_relationship != 'outro' || _customRelationship.trim().isNotEmpty);
+
   void _getSuggestions() async {
+    final occasion = _occasion == 'outro' ? _customOccasion.trim() : _occasion!;
+    final relationship =
+        _relationship == 'outro' ? _customRelationship.trim() : _relationship!;
+
     setState(() {
       _loading = true;
       _error = null;
@@ -28,8 +41,8 @@ class _MainScreenState extends State<MainScreen> {
     });
     try {
       final suggestions = await widget.service.getSuggestions(
-        occasion: _occasion!,
-        relationship: _relationship!,
+        occasion: occasion,
+        relationship: relationship,
       );
       setState(() {
         _suggestions = suggestions;
@@ -72,16 +85,30 @@ class _MainScreenState extends State<MainScreen> {
             const SizedBox(height: 32),
             OccasionSelector(
               selected: _occasion,
-              onSelect: (val) => setState(() => _occasion = val),
+              customValue: _customOccasion,
+              onCustomChanged: (value) => setState(() => _customOccasion = value),
+              onSelect: (val) => setState(() {
+                _occasion = val;
+                if (val != 'outro') {
+                  _customOccasion = '';
+                }
+              }),
             ),
             const SizedBox(height: 24),
             RelationshipSelector(
               selected: _relationship,
-              onSelect: (val) => setState(() => _relationship = val),
+              customValue: _customRelationship,
+              onCustomChanged: (value) => setState(() => _customRelationship = value),
+              onSelect: (val) => setState(() {
+                _relationship = val;
+                if (val != 'outro') {
+                  _customRelationship = '';
+                }
+              }),
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: (_occasion != null && _relationship != null && !_loading)
+              onPressed: (_isOccasionValid && _isRelationshipValid && !_loading)
                   ? _getSuggestions
                   : null,
               style: ElevatedButton.styleFrom(

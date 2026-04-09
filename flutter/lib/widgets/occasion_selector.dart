@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 
 class OccasionSelector extends StatelessWidget {
   final String? selected;
+  final String customValue;
   final ValueChanged<String> onSelect;
+  final ValueChanged<String> onCustomChanged;
 
-  const OccasionSelector({super.key, required this.selected, required this.onSelect});
+  const OccasionSelector({
+    super.key,
+    required this.selected,
+    required this.customValue,
+    required this.onSelect,
+    required this.onCustomChanged,
+  });
 
   static const occasions = [
     {'label': 'Aniversário', 'value': 'aniversario', 'icon': Icons.cake},
@@ -35,6 +43,33 @@ class OccasionSelector extends StatelessWidget {
             );
           }).toList(),
         ),
+        if (selected == 'outro') ...[
+          const SizedBox(height: 12),
+          TextField(
+            onChanged: onCustomChanged,
+            controller: TextEditingController(text: customValue)
+              ..selection = TextSelection.collapsed(offset: customValue.length),
+            decoration: InputDecoration(
+              hintText: 'Descreva a ocasião...',
+              hintStyle: const TextStyle(color: Color(0xFFA08881)),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFEADDD8)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFEADDD8)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.pink.shade300),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
