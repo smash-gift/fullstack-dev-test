@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:giftmsg/main.dart';
-import 'package:giftmsg/services/suggestion_service.dart';
-import 'package:giftmsg/widgets/occasion_selector.dart';
-import 'package:giftmsg/widgets/relationship_selector.dart';
+import 'package:giftmsg/app/gift_msg_app.dart';
+import 'package:giftmsg/features/suggestions/data/suggestion_service.dart';
+import 'package:giftmsg/features/suggestions/presentation/widgets/occasion_selector.dart';
+import 'package:giftmsg/features/suggestions/presentation/widgets/relationship_selector.dart';
 
 class IdleSuggestionService extends SuggestionService {}
 

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:giftmsg/main.dart';
-import 'package:giftmsg/services/suggestion_service.dart';
+import 'package:giftmsg/app/gift_msg_app.dart';
+import 'package:giftmsg/features/suggestions/data/suggestion_service.dart';
 
 class FakeSuggestionService extends SuggestionService {
   FakeSuggestionService(this._handler);
