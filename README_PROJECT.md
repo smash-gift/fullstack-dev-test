@@ -1,5 +1,8 @@
 # Documentação do Projeto — Gift Card Message Suggester
 
+## Visão Geral
+O GiftMsg é um sistema de sugestão de mensagens para cartões-presente com inteligência artificial. O usuário escolhe a ocasião e o relacionamento com o destinatário, e o sistema retorna 2–3 mensagens personalizadas geradas por IA.
+
 ## Como rodar o projeto
 
 **Pré-requisitos:**
@@ -21,7 +24,28 @@ cd flutter
 flutter pub get
 flutter run
 ```
-No arquivo `lib/services/suggestion_service.dart`, ajuste `baseUrl` se necessário para apontar para o backend.
+
+Configuração atual da URL do backend no Flutter:
+- Web e desktop: `http://localhost:3000`
+- Android emulator: `http://10.0.2.2:3000`
+- Override manual: `flutter run --dart-define=API_BASE_URL=http://SEU_IP:3000`
+
+Observação importante para Android Studio:
+- No Android emulator, `localhost` aponta para o próprio emulador. Por isso o app usa `10.0.2.2` para acessar o backend rodando na máquina local.
+
+**Rodando os testes:**
+
+Backend:
+```bash
+cd backend
+npm test
+```
+
+Flutter:
+```bash
+cd flutter
+flutter test
+```
 
 ---
 
@@ -56,6 +80,8 @@ Resposta (2-3 sugestões)
 
 - **Tratamento de erros/fallback:**  
   Se o LLM falhar (timeout, erro 429/5xx, resposta inesperada), o backend retorna sugestões pré-definidas, nunca um erro bruto. Isso garante experiência consistente ao usuário.
+- **Conectividade local no Android:**  
+  O app Flutter detecta quando está rodando no Android emulator e troca automaticamente a URL base para `10.0.2.2`, evitando falhas de conexão com o backend local.
 - **Limitação de taxa:**  
   Não implementada neste teste para simplicidade, mas recomendada em produção para evitar abuso e custos excessivos.
 - **Cache/custo:**  
@@ -68,3 +94,5 @@ Resposta (2-3 sugestões)
 ## Uso de IA
 
 Utilizei assistente de IA (GitHub Copilot) para acelerar a escrita de código e testes, mas revisei manualmente prompts, fallback e arquitetura. Decisões de fallback, separação de camadas e tratamento de erros foram feitas por mim.
+
+Também utilizei IA para acelerar refinamentos visuais na interface Flutter e cobertura de testes, mantendo revisão manual das alterações aplicadas.
