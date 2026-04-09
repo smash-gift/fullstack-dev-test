@@ -9,6 +9,7 @@
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.6.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.1",
@@ -20,10 +21,10 @@
     "@types/jest": "^29.0.0",
     "@types/node": "^20.8.10",
     "@types/supertest": "^6.0.3",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.2.2",
     "jest": "^29.0.0",
+    "supertest": "^6.0.0",
     "ts-jest": "^29.0.0",
-    "supertest": "^6.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.2.2"
   }
 }

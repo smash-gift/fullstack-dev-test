@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { geminiConfig } from '../config/env';
+import { defaultSuggestionLLMProvider, type SuggestionLLMProvider } from './providers';
 
 const fallbackSuggestions: Record<string, Record<string, string[]>> = {
   aniversario: {
@@ -20,42 +19,69 @@ const fallbackSuggestions: Record<string, Record<string, string[]>> = {
   },
 };
 
-export async function getSuggestions(occasion: string, relationship: string): Promise<string[]> {
-  try {
-    const prompt = `Sugira 2 a 3 mensagens curtas (1 a 2 frases cada) para um cartão-presente de ocasião "${occasion}" para "${relationship}". Seja breve, amigável e não repita frases.`;
-    const response = await axios.post(
-      geminiConfig.url,
-      {
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt }],
-          },
-        ],
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        timeout: 7000,
-      }
-    );
+function getFallbackSuggestions(occasion: string, relationship: string): string[] {
+  const lowerOccasion = occasion.toLowerCase();
+  const lowerRelationship = relationship.toLowerCase();
 
-    const candidates = response.data.candidates;
-    if (!candidates || !candidates[0]?.content?.parts?.[0]?.text) {
-      throw new Error('Resposta inesperada do Gemini');
+  return fallbackSuggestions[lowerOccasion]?.[lowerRelationship] || [
+    'Parabéns! Que este presente traga muita alegria.',
+    'Desejo tudo de melhor para você nesta ocasião especial!',
+  ];
+}
+
+function isIntroductoryLine(line: string): boolean {
+  const normalized = line.trim().toLowerCase();
+
+  return (
+    /^(aqui est[aã]o|segue(m)?|op[cç][oõ]es|sugest[õo]es?|mensagens?)(\b|:)/i.test(normalized) ||
+    (normalized.endsWith(':') && !/[.!?]$/.test(normalized))
+  );
+}
+
+export function extractSuggestions(text: string): string[] {
+  return text
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .flatMap((line) => line.split(/(?=\d+\.\s+|[•*-]\s+)/g))
+    .map((line) => line.trim())
+    .map((line) => line.replace(/^\d+\.\s*/, '').replace(/^[•*-]\s*/, '').trim())
+    .filter((line) => line.length > 5)
+    .filter((line) => !isIntroductoryLine(line))
+    .slice(0, 3);
+}
+
+function buildSuggestionsPrompt(occasion: string, relationship: string): string {
+  return `Sugira 2 a 3 mensagens curtas (1 a 2 frases cada) para um cartão-presente de ocasião "${occasion}" para "${relationship}". Seja breve, amigável e não repita frases. Retorne apenas as mensagens, uma por linha, sem título, sem numeração e sem texto introdutório.`;
+}
+
+export async function getSuggestions(
+  occasion: string,
+  relationship: string,
+  provider: SuggestionLLMProvider = defaultSuggestionLLMProvider,
+): Promise<string[]> {
+  try {
+    const prompt = buildSuggestionsPrompt(occasion, relationship);
+    const text = await provider.generateText(prompt);
+
+    if (!text) {
+      throw new Error('Resposta vazia do Gemini');
     }
 
-    const text = candidates[0].content.parts[0].text as string;
-    const suggestions = text.split(/\n|\d+\.|•|\-/).map((entry) => entry.trim()).filter(Boolean);
+    const suggestions = extractSuggestions(text);
+
+    if (suggestions.length === 0) {
+      throw new Error('Não foi possível extrair sugestões válidas da resposta do Gemini');
+    }
+
     return suggestions.slice(0, 3);
-  } catch (_error: any) {
-    const lowerOccasion = occasion.toLowerCase();
-    const lowerRelationship = relationship.toLowerCase();
-    const fallback = fallbackSuggestions[lowerOccasion]?.[lowerRelationship] || [
-      'Parabéns! Que este presente traga muita alegria.',
-      'Desejo tudo de melhor para você nesta ocasião especial!',
-    ];
+  } catch (caughtError: unknown) {
+    console.error('=> LLM request failed:', {
+      provider: provider.name,
+      message: caughtError instanceof Error ? caughtError.message : String(caughtError),
+      details: caughtError,
+    });
+
+    const fallback = getFallbackSuggestions(occasion, relationship);
 
     const error: any = new Error('LLM unavailable, using fallback');
     error.suggestions = fallback;

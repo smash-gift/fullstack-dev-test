@@ -1,8 +1,11 @@
 export const PORT = process.env.PORT || 3000;
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const API_VERSION = process.env.GEMINI_API_VERSION || 'v1';
 
 export const geminiConfig = {
   apiKey: GEMINI_API_KEY,
-  url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+  model: GEMINI_MODEL,
+  apiVersion: API_VERSION,
 };
