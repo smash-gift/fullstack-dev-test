@@ -1,0 +1,11 @@
+# Node
+node_modules/
+dist/
+.env
+
+# Testes
+coverage/
+
+# Outros
+.DS_Store
+*.log
