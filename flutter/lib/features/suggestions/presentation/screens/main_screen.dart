@@ -124,6 +124,18 @@ class _MainScreenState extends State<MainScreen> {
                     )
                   : const _GenerateSuggestionsLabel(),
             ),
+            if (_loading) ...[
+              const SizedBox(height: 12),
+              const Text(
+                'Aguarde enquanto buscamos sugestões personalizadas para você.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: Color(0xFFA08881),
+                ),
+              ),
+            ],
             const SizedBox(height: 32),
             if (_error != null)
               Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),

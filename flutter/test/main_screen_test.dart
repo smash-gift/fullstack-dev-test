@@ -45,12 +45,20 @@ void main() {
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(
+        find.textContaining('buscamos sugestões personalizadas'),
+        findsOneWidget,
+      );
 
       completer.complete(['Sugestão 1', 'Sugestão 2']);
       await tester.pumpAndSettle();
 
       expect(find.text('Sugestão 1'), findsOneWidget);
       expect(find.text('Sugestão 2'), findsOneWidget);
+      expect(
+        find.textContaining('buscamos sugestões personalizadas'),
+        findsNothing,
+      );
     });
 
     testWidgets('Fluxo de erro exibe mensagem de erro', (WidgetTester tester) async {
