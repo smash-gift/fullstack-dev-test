@@ -1,9 +1,10 @@
 import request from 'supertest';
 import express from 'express';
-import suggestionsRouter from './suggestions';
+import { describe, expect, it, jest } from '@jest/globals';
+import suggestionsRouter from '../src/suggestions';
 
 // Mock do LLM para forçar o fallback
-jest.mock('./llm', () => ({
+jest.mock('../src/llm', () => ({
   getSuggestions: jest.fn(() => {
     const err: any = new Error('LLM unavailable, using fallback');
     err.suggestions = ['Fallback 1', 'Fallback 2'];
