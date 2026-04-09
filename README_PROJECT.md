@@ -8,7 +8,21 @@ O GiftMsg é um sistema de sugestão de mensagens para cartões-presente com int
 **Pré-requisitos:**
 - Node.js v20+
 - Flutter 3.38+
-- Chave de API do Google Gemini (defina em `.env` no backend: `GEMINI_API_KEY=...`)
+- Chave de API do Google Gemini
+
+**Backend (.env):**
+Defina no backend pelo menos:
+
+```env
+GEMINI_API_KEY=sua_chave
+```
+
+Opcionalmente:
+
+```env
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_API_VERSION=v1
+```
 
 **Backend:**
 ```bash
@@ -18,6 +32,14 @@ npm run dev
 ```
 O backend roda por padrão em http://localhost:3000
 
+Para gerar a versão compilada:
+
+```bash
+cd backend
+npm run build
+npm start
+```
+
 **Frontend (Flutter):**
 ```bash
 cd flutter
@@ -26,7 +48,7 @@ flutter run
 ```
 
 Configuração atual da URL do backend no Flutter:
-- Web e desktop: `http://localhost:3000`
+- Web e iOS: `http://localhost:3000`
 - Android emulator: `http://10.0.2.2:3000`
 - Override manual: `flutter run --dart-define=API_BASE_URL=http://SEU_IP:3000`
 
@@ -55,15 +77,28 @@ flutter test
 Usuário
   │
   ▼
-Flutter App (main_screen.dart)
+Flutter App
   │
-  ▼
-SuggestionService (HTTP)
+  ├── app/gift_msg_app.dart
+  └── features/suggestions/
+         ├── data/suggestion_service.dart
+         └── presentation/
+                ├── screens/main_screen.dart
+                └── widgets/
   │
   ▼
 Backend Node.js (Express)
   │
-  ├──> Google Gemini API (LLM)
+  ├── config/env.ts
+  ├── controllers/suggestions.controller.ts
+  ├── routes/suggestions.routes.ts
+  └── services/
+         ├── suggestions.service.ts
+         └── providers/
+                ├── suggestion-llm-provider.ts
+                └── gemini-suggestion-provider.ts
+  │
+  ├──> Google Gemini API via SDK oficial
   │         │
   │         └──> [Se falhar] Fallback local
   │
@@ -71,8 +106,9 @@ Backend Node.js (Express)
 Resposta (2-3 sugestões)
 ```
 
-- UI, serviço de API e estado separados no Flutter.
-- Backend modularizado: rota, lógica de LLM e fallback.
+- Flutter organizado por feature, separando camada de dados e apresentação.
+- Backend organizado em camadas, com provider isolado para o LLM.
+- A integração com o Gemini fica encapsulada em um provider, reduzindo o acoplamento com o restante da regra de negócio.
 
 ---
 
@@ -82,12 +118,16 @@ Resposta (2-3 sugestões)
   Se o LLM falhar (timeout, erro 429/5xx, resposta inesperada), o backend retorna sugestões pré-definidas, nunca um erro bruto. Isso garante experiência consistente ao usuário.
 - **Conectividade local no Android:**  
   O app Flutter detecta quando está rodando no Android emulator e troca automaticamente a URL base para `10.0.2.2`, evitando falhas de conexão com o backend local.
-- **Limitação de taxa:**  
-  Não implementada neste teste para simplicidade, mas recomendada em produção para evitar abuso e custos excessivos.
+- **Integração com IA isolada:**  
+  A camada de provider permite trocar ou adaptar o provedor de IA no futuro sem reescrever controller, rota ou parser principal.
 - **Cache/custo:**  
   Não há cache implementado. Em produção, recomenda-se cache por combinação de ocasião/relacionamento para reduzir custos com LLM.
 - **Prompt do LLM:**  
-  Estruturado para garantir respostas curtas, amigáveis e variadas.
+  Estruturado para pedir mensagens curtas, amigáveis e sem texto introdutório, reduzindo ruído no parser.
+- **Retry automático:**
+  Foi removido para evitar consumo extra da cota gratuita durante o desafio. Cada ação do usuário faz apenas uma tentativa ao LLM.
+- **Limites da API Gemini:**
+  Em caso de indisponibilidade temporária ou quota excedida, o app continua funcional via fallback local.
 
 ---
 
