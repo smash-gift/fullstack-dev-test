@@ -11,7 +11,7 @@ void main() {
   testWidgets('Tela principal renderiza estado inicial', (WidgetTester tester) async {
     await tester.pumpWidget(GiftMsgApp(service: IdleSuggestionService()));
 
-    expect(find.text('Mensagens para Cartões-Presente'), findsOneWidget);
+    expect(find.text('GiftMsg'), findsOneWidget);
     expect(find.text('OCASIÃO'), findsOneWidget);
     expect(find.textContaining('relacionamento'), findsOneWidget);
     expect(find.text('Gerar Sugestões'), findsOneWidget);

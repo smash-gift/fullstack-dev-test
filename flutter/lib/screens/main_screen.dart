@@ -48,15 +48,21 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mensagens para Cartões-Presente'),
-        centerTitle: true,
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(72),
+        child: _MainHeader(),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: 22),
+            const Text(
+              'Mensagens para Cartões-Presente',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 16),
             const Text(
               'Escolha a ocasião e o relacionamento, e nossa IA criará sugestões personalizadas para você.',
@@ -99,6 +105,81 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _MainHeader extends StatelessWidget {
+  const _MainHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      toolbarHeight: 72,
+      elevation: 0,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      shadowColor: const Color(0x14000000),
+      titleSpacing: 0,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEFF4),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.redeem_rounded,
+                color: Color(0xFFE46A95),
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: _HeaderBrand(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderBrand extends StatelessWidget {
+  const _HeaderBrand();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        Text(
+          'GiftMsg',
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF4F3A35),
+          ),
+        ),
+        SizedBox(height: 1),
+        Text(
+          'MENSAGENS COM IA',
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 9,
+            letterSpacing: 0.9,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFFA08881),
+          ),
+        ),
+      ],
     );
   }
 }
