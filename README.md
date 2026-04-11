@@ -2,7 +2,7 @@
 
 This project is a full-stack solution for an **AI-powered gift card message suggester**. It allows users to receive personalized message suggestions based on the occasion and their relationship with the recipient.
 
-The project is structured as a monorepo containing two main submodules:
+The project is structured as a monorepo containing two main submodules. This approach allows each repository to maintain its **independent CI/CD pipeline** while providing a unified entry point for teams to **clone and run the entire system quickly**.
 
 - [**API (Backend)**](api/): Node.js 24 + Firebase Cloud Functions + Google Gemini AI.
 - [**App (Frontend)**](app/): Flutter 3.38+ (Dart 3.x).
@@ -55,36 +55,43 @@ For more details, see:
 
 ### Quick Setup (Recommended)
 
-We provide a script to automate environment configuration and dependency installation.
+> [!NOTE]
+> This repository uses **SSH** URLs for its submodules. Ensure you have your SSH keys properly configured with GitHub before cloning.
+
+We provide scripts to automate environment configuration, dependency installation, and execution, with support for both Linux/macOS (`.sh`) and Windows (`.bat`).
 
 ```bash
 # Clone the repo with submodules
 git clone --recursive git@github.com:lucssilva/message-suggester.git
 cd message-suggester
 
-# Run the setup script (requires your Gemini API Key)
-./local_setup.sh --api-key YOUR_GOOGLE_GEMINI_API_KEY
+# Make Linux/macOS scripts executable
+chmod +x scripts/*.sh scripts/common/*.sh
 ```
 
-### Manual Run
+#### Run All (API & App together)
 
-#### 1. Backend (API)
+The easiest way to start both the Firebase Emulator (API) and the Flutter app is by running our combined script. It will automatically call the setup process first.
 
 ```bash
-cd api
-pnpm install
-# Create .env with LLM_API_KEY=your_key
-pnpm run serve
+# Linux/macOS
+./scripts/run_all.sh --api-key YOUR_GOOGLE_GEMINI_API_KEY
+
+# Windows (Command Prompt)
+scripts\run_all.bat --api-key YOUR_GOOGLE_GEMINI_API_KEY
 ```
+*(Note: `--api-key` is only required on the first run to create the `.env` file. On subsequent runs, you can simply run `./scripts/run_all.sh` or `scripts\run_all.bat`)*
 
-#### 2. Frontend (App)
+#### Setup Only
+
+If you only want to install dependencies and configure the `.env` without immediately starting the application, you can call the local setup script directly:
 
 ```bash
-cd app
-flutter pub get
-flutter run --flavor development \
-  --target lib/main_development.dart \
-  --dart-define=API_BASE_URL=http://localhost:5001/message-suggester/us-central1/api
+# Linux/macOS
+./scripts/local_setup.sh --api-key YOUR_GOOGLE_GEMINI_API_KEY
+
+# Windows
+scripts\local_setup.bat --api-key YOUR_GOOGLE_GEMINI_API_KEY
 ```
 
 ---
@@ -108,12 +115,11 @@ This project was developed through a high-level collaboration with AI assistants
 
 ### Philosophy: Agent-Optimized SDD
 
-Instead of utilizing standard, verbose documentation, we focused on **token-efficient, human-friendly docs**. This approach ensures that AI agents can quickly parse the system's "Source of Truth" without blowing through context windows, maintaining high accuracy in implementation.
+Instead of utilizing standard, verbose documentation or traditional `spec` folders with nested plans, we opted for a **PRD.md / ARCHITECTURE.md / RULES.md** structure at the root of each submodule. This focused on **token-efficient, human-friendly docs**. This approach ensures that AI agents can quickly parse the system's "Source of Truth" without blowing through context windows, maintaining high accuracy in implementation while remaining easily digestible for human developers.
 
-### Multi-Phase Workflow
+### Collaboration Workflow
 
-1. **Phase 1 (Foundation)**: Initial boilerplate and structural components were built using varied, high-speed models (Claude Sonnet, Gemini Flash, GLM). This phase focused on speed and standard patterns.
-2. **Phase 2 (Refinement & Consistency)**: Transitioned to a "Specialized Assistant" mode. The AI was used to predict developer intent, ensure cross-submodule consistency, and identify logical gaps in the Phase 1 boilerplate that missed the developer's first review.
+The project evolved from an initial structural foundation built with varied high-speed models to a more specialized assistance phase. This later focus ensured consistency across submodules, intent prediction, and the identification of logical gaps during implementation.
 
 ### Testing & Verification
 
