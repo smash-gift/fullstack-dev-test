@@ -1,0 +1,6 @@
+[submodule "api"]
+	path = api
+	url = git@github.com:lucssilva/message-suggester-api.git
+[submodule "app"]
+	path = app
+	url = git@github.com:lucssilva/message-suggester-app.git
