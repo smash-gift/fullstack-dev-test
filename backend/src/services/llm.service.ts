@@ -36,6 +36,9 @@ async function callGeminiAPI(prompt: string): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
 
+  console.log(`[LLM] Gemini request started — model: ${model}`);
+  const startTime = Date.now();
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -52,11 +55,19 @@ async function callGeminiAPI(prompt: string): Promise<string> {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
+      console.error(`[LLM] Gemini error — status: ${response.status}, body: ${errorText}`);
       throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = (await response.json()) as GeminiResponse;
-    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    console.log(`[LLM] Gemini response received — ${Date.now() - startTime}ms, ${text.length} chars`);
+    return text;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error(`[LLM] Gemini request timed out after ${LLM_TIMEOUT_MS}ms`);
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
   }
@@ -72,6 +83,9 @@ async function callOpenAI(prompt: string): Promise<string> {
   const url = 'https://api.openai.com/v1/chat/completions';
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
+
+  console.log(`[LLM] OpenAI request started — model: ${model}`);
+  const startTime = Date.now();
 
   try {
     const response = await fetch(url, {
@@ -91,11 +105,19 @@ async function callOpenAI(prompt: string): Promise<string> {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unknown error');
+      console.error(`[LLM] OpenAI error — status: ${response.status}, body: ${errorText}`);
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = (await response.json()) as OpenAIResponse;
-    return data.choices?.[0]?.message?.content ?? '';
+    const text = data.choices?.[0]?.message?.content ?? '';
+    console.log(`[LLM] OpenAI response received — ${Date.now() - startTime}ms, ${text.length} chars`);
+    return text;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error(`[LLM] OpenAI request timed out after ${LLM_TIMEOUT_MS}ms`);
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
   }
@@ -118,8 +140,11 @@ export async function getSuggestions(
 ): Promise<string[]> {
   const provider = process.env.AI_PROVIDER ?? 'gemini';
   const prompt = buildPrompt(occasion, relationship);
+  console.log(`[LLM] getSuggestions — occasion: "${occasion}", relationship: "${relationship}", provider: ${provider}`);
+
   const rawText = await callAI(prompt, provider);
   const messages = parseMessages(rawText);
+  console.log(`[LLM] Parsed ${messages.length} messages from LLM response`);
 
   if (messages.length === 0) {
     throw new Error('LLM returned no parseable messages');

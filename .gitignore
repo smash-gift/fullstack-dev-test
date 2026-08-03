@@ -14,6 +14,7 @@ flutter_app/.packages
 flutter_app/.pub-cache/
 flutter_app/.pub/
 flutter_app/build/
+flutter_app/coverage/
 flutter_app/.flutter-plugins
 flutter_app/.flutter-plugins-dependencies
 flutter_app/.flutter-tools
@@ -21,6 +22,7 @@ flutter_app/.metadata
 flutter_app/pubspec.lock
 flutter_app/ios/Pods/
 flutter_app/ios/.symlinks/
+flutter_app/ios/Flutter/.last_build_id
 flutter_app/ios/Flutter/Generated.xcconfig
 flutter_app/ios/Flutter/ephemeral/
 flutter_app/android/.gradle/
@@ -31,6 +33,8 @@ flutter_app/android/app/profile/
 flutter_app/android/app/release/
 flutter_app/**/*.keystore
 flutter_app/**/*.jks
+flutter_app/**/*.symbols
+flutter_app/**/*.map.json
 
 # ══════════════════════════════════════════════════════════════
 # IDE / Editor
