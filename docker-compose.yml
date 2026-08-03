@@ -1,0 +1,36 @@
+# ---------------------------------------------------------------------------
+# One-command local run of the backend API.
+#
+#   docker compose up --build        # → http://localhost:8080 (fallback mode)
+#
+# The service boots with zero configuration (fallback-only mode). To enable
+# live LLM output, either create backend/.env (see backend/.env.example) — it
+# is picked up automatically via env_file — or export OPENAI_API_KEY before
+# running compose.
+# ---------------------------------------------------------------------------
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: gift-message-suggester-backend
+    container_name: gift-suggester-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      # Container always listens on 8080 internally; the host port is mapped above.
+      PORT: 8080
+      # Passed through from the host shell when set; blank keeps fallback mode.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    env_file:
+      # Optional: fills in the rest of the config if the file exists.
+      - path: ./backend/.env
+        required: false
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
