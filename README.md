@@ -1,106 +1,344 @@
-# Technical Test — Senior Developer
+# AI-Powered Gift Card Message Suggester
 
-**Role:** Senior Full Stack Developer  
-**Estimated time:** 4–6 hours  
-**Stack:** TypeScript/Node.js, Flutter/Dart, Firebase (Firestore, Cloud Functions, Auth)
+Senior Full Stack Developer technical test — an LLM-powered service that suggests personalized gift card messages based on occasion and relationship.
+
+
+## Architecture
+
+```
+fullstack-dev-test/
+├── backend/          # Node.js + TypeScript API (Express)
+├── flutter_app/      # Flutter app (Dart)
+├── assets/
+└── README.md
+```
+
+### Backend Architecture
+
+```
+backend/src/
+├── index.ts                        # Entry point — starts the Express server
+├── app.ts                          # Express app setup (middlewares, routes, error handlers)
+├── routes/
+│   └── suggestions.routes.ts       # POST / — delegates to controller
+├── controllers/
+│   └── suggestions.controller.ts   # Validates input → checks cache → calls LLM → returns fallback on error
+├── services/
+│   ├── llm.service.ts              # Provider router (Gemini/OpenAI) + prompt dispatch + response parsing
+│   └── fallback.service.ts         # Static fallback messages by occasion (8 categories + generic)
+├── middleware/
+│   └── rateLimiter.ts              # express-rate-limit — 10 req/min per IP
+├── schemas/
+│   └── suggestion.schema.ts        # Zod validation for occasion + relationship
+├── utils/
+│   ├── prompt.ts                   # Builds the LLM prompt with occasion + relationship
+│   └── cache.ts                    # In-memory cache with TTL (1h)
+└── types/
+    └── index.ts                    # Shared TypeScript types
+```
+
+### Flutter App Architecture
+
+The Flutter app follows a **layered separation** of UI, API client, and state management:
+
+```
+flutter_app/lib/
+├── main.dart                           # Entry point — MaterialApp + ChangeNotifierProvider
+├── config/
+│   └── app_config.dart                 # BASE_URL via --dart-define (default: localhost:3000)
+├── models/
+│   └── suggestion_result.dart          # SuggestionResult model + SuggestionSource enum
+├── services/
+│   └── suggestion_service.dart         # HTTP client — POST /api/suggestions, error mapping
+├── providers/
+│   └── suggestion_provider.dart        # ChangeNotifier — manages UI state (idle/loading/success/error)
+└── screens/
+    └── home_screen.dart                # Main screen — form inputs, result display, all UI states
+```
+
+**Layer responsibilities:**
+
+| Layer | File | Responsibility |
+|---|---|---|
+| **Config** | `app_config.dart` | Reads `BASE_URL` from `--dart-define`; provides `suggestionsEndpoint` |
+| **Model** | `suggestion_result.dart` | `SuggestionResult` data class with `fromJson`; `SuggestionSource` enum (`llm`, `cache`, `fallback`) |
+| **Service** | `suggestion_service.dart` | HTTP client with injectable `http.Client`; maps HTTP errors to `ApiException` (400, 429, 5xx, network) |
+| **Provider** | `suggestion_provider.dart` | `ChangeNotifier` with `SuggestionState` enum (idle, loading, success, error); exposes `submit()` and `reset()` |
+| **Screen** | `home_screen.dart` | Consumes provider via `context.watch`/`context.read`; renders form, loading indicator, error banner, and suggestion cards |
+
+**State management:** `Provider` package with `ChangeNotifier` — lightweight, built into the Flutter ecosystem, no extra boilerplate. The screen reacts to state changes via `context.watch<SuggestionProvider>()`.
+
+**Configurable base URL:** The backend URL is set via `--dart-define=BASE_URL=...` at compile time, read in `app_config.dart` with `String.fromEnvironment`. This avoids runtime configuration files and keeps the URL out of source code.
+
+
+### Request Flow
+
+```
+Flutter App
+    │
+    ▼
+POST /api/suggestions { occasion, relationship }
+    │
+    ▼
+[Rate Limiter] ─── 429 if exceeded ──→ { error: "Rate limit exceeded" }
+    │
+    ▼
+[Controller] ── validates with Zod ──→ 400 if invalid
+    │
+    ▼
+[Cache lookup] ─── HIT ──→ { suggestions, source: "cache" }
+    │ MISS
+    ▼
+[LLM Service] ── AI_PROVIDER env ──→ Gemini API or OpenAI API
+    │
+    ├─ SUCCESS → parse 3 messages → save to cache → { suggestions, source: "llm" }
+    │
+    └─ FAILURE (timeout, 429, 5xx, invalid response)
+            │
+            ▼
+        [Fallback Service] → static messages by occasion → { suggestions, source: "fallback" }
+```
+
+### LLM Integration
+
+The backend supports **two LLM providers** selectable via the `AI_PROVIDER` environment variable:
+
+| Provider | Model | API | Cost |
+|---|---|---|---|
+| `gemini` | `gemini-2.5-flash` | Google Generative Language API | Free tier with limits |
+| `openai` | `gpt-4o-mini` | OpenAI Chat Completions API | Paid |
 
 ---
 
-## About this test
+## How to Run
 
-This test evaluates your ability to design and implement a small feature that uses an **LLM (Large Language Model)** to suggest personalized gift card messages. We are interested in your architectural choices, error handling, and how you document trade-offs—not only in “making the API call work.” You will build a **backend service** and a **Flutter app** that consumes it.
+### Prerequisites
 
----
+- Node.js v20+
+- An LLM API key (Gemini or OpenAI — you choose)
 
-## Objective
+### Backend
 
-Build an **AI-powered gift card message suggester**:
+1. **Install dependencies:**
 
-1. **Backend (Node.js/TypeScript):** An API that receives **occasion** (e.g. birthday, wedding, thank you) and **relationship** (e.g. friend, colleague, parent) and returns **2–3 short message suggestions** (e.g. 1–2 sentences each) generated by an LLM.
-2. **Frontend (Flutter/Dart):** A simple screen where the user can choose or type occasion and relationship, request suggestions, and see the results (with loading and error states).
+   ```bash
+   cd backend
+   npm install
+   ```
 
-You must also handle **failure of the LLM API** (e.g. timeout, 429, 5xx) with a clear fallback and document your decisions.
+2. **Configure environment variables:**
 
-### Overview
+   ```bash
+   cp .env.example .env
+   ```
 
-The diagram below summarizes the flow: the user enters occasion and relationship in the Flutter app; the app calls your Node.js API; the API calls the LLM and returns 2–3 suggestions. When the LLM fails, the backend should return a safe fallback instead of an error stack.
+   Edit `.env` and set your provider and API key:
 
-![Message suggester flow: Flutter app (occasion, relationship) → Node.js API → LLM; fallback path when LLM fails](assets/message-suggester-flow.png)
+   ```env
+   AI_PROVIDER=gemini              # "gemini" or "openai"
+   GEMINI_API_KEY=your_key_here    # if using Gemini — get at https://aistudio.google.com/app/apikey
+   OPENAI_API_KEY=your_key_here    # if using OpenAI — get at https://platform.openai.com/api-keys
+   PORT=3000
+   ```
 
----
+3. **Run in development mode:**
 
-## Prerequisites
+   ```bash
+   npm run dev
+   ```
 
-- **Node.js** v20+
-- **Flutter** 3.38+ (Dart 3.x)
-- **LLM API access:** OpenAI API key **or** Google AI (Vertex AI / Gemini) API key—you choose one. Use a single model (e.g. GPT-4o-mini, or Gemini Flash) to keep cost and latency reasonable.
-- **Git** and a **GitHub** account
+   Server starts at `http://localhost:3000`.
 
----
+4. **Run tests:**
 
-## Detailed requirements
+   ```bash
+   npm test
+   ```
 
-### 1. Backend (Node.js / TypeScript)
+### Flutter App
 
-- **API contract**
-  - Input: `occasion` and `relationship`. Output: 2–3 short message suggestions suitable for a gift card. You choose the HTTP method, request/response format, and document it.
-- **LLM integration**
-  - Call one LLM provider (OpenAI or Google AI). How you structure the prompt and handle the model output is up to you.
-- **Error handling and fallback**
-  - When the LLM API fails, the backend must not expose raw errors to the client. Document in your README what you consider a failure, how you respond to the client, and why.
-- **Rate limiting (optional)**
-  - If you implement it, document the limit and the behavior when it is exceeded.
-- **Cost and caching**
-  - In your README, describe how you would reduce cost in production and whether you implemented any caching in this test (and why or why not).
+**Prerequisites:** Flutter 3.38+ with Dart 3.x (`flutter --version` to check).
 
-### 2. Frontend (Flutter / Dart)
+1. **Install dependencies:**
 
-- One main screen: inputs for occasion and relationship, a way to request suggestions, and display of the results. At least one flow (e.g. Birthday + Friend) must work end-to-end.
-- Handle loading, success, and error states so the user always has clear feedback.
-- The app must call your backend; the base URL should be configurable. Your README must explain how to run backend and app and which URL to use.
-- Organize the project so that UI, API client, and state are clearly separated. We expect readable, maintainable code.
+   ```bash
+   cd flutter_app
+   flutter pub get
+   ```
 
+2. **Run the app:**
 
-### 3. Documentation (in your fork's README)
+   ```bash
+   # Web, desktop, or iOS simulator (default — uses localhost:3000)
+   flutter run
 
-Your fork's README must include: how to run the project (backend and app), a short description of the architecture (a diagram is encouraged), your decisions and trade-offs (errors, rate limiting, cost/caching), and—if you used an AI assistant—how you used it and what you implemented or decided yourself.
+   # Android emulator (10.0.2.2 maps to host's localhost)
+   flutter run --dart-define=BASE_URL=http://10.0.2.2:3000
+   ```
 
+3. **Run tests:**
 
-### 4. Tests (optional but valued)
-
-- **Backend:** at least one test that covers the fallback path when the LLM fails. More tests (happy path, rate limiting) are a plus.
-- **Flutter:** unit or widget tests for the main screen are a plus.
-
----
-
-## How to run this test
-
-1. **Fork** this repository to your own GitHub account.
-2. **Clone** your fork locally.
-3. **Create a branch** (e.g. `candidate/jane-doe` or `solution/senior-test`).
-4. **Implement** the backend and the Flutter app according to the requirements above. You can place the backend and the Flutter app in two folders at the root of your fork (e.g. `backend/` and `flutter_app/`), or in a structure you prefer—document it in the README.
-5. **Document** everything in your fork’s README as specified in the “Documentation” section.
-6. **Open a Pull Request** from your branch to the **original repository’s `main`** (or `master`) branch. The PR description can be short (e.g. “Senior dev test – AI message suggester”); we will use the PR and the code in your fork for evaluation.
-
-If the original repo does not allow PRs from forks, send the link to your **fork** (with the branch) instead, and we will review the code there.
+   ```bash
+   flutter test
+   ```
 
 ---
 
-## What we evaluate
+## API Documentation
 
-- **Correctness:** Does the flow work end-to-end (inputs → backend → LLM → suggestions → Flutter display)?
-- **Error handling:** Graceful handling of LLM failures and clear, safe responses.
-- **Code quality:** Readable, structured code; sensible naming and separation of concerns.
-- **Documentation:** Clear run instructions, architecture, and explained trade-offs.
-- **Design:** Reasonable API design, prompt design, and user feedback (loading/error/success).
-- **Transparency:** Clear description of how you used AI tools during the test.
+### `POST /api/suggestions`
 
-We do **not** require a deployed URL; local run instructions are enough.
+Generates 2–3 personalized gift card message suggestions.
+
+**Request:**
+
+```json
+{
+  "occasion": "birthday",
+  "relationship": "friend"
+}
+```
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `occasion` | string | yes | 1–50 characters |
+| `relationship` | string | yes | 1–50 characters |
+
+**Response 200:**
+
+```json
+{
+  "suggestions": [
+    "Wishing you a wonderful birthday filled with joy and everything you love!",
+    "Hope your special day is as amazing as you are. Happy birthday!",
+    "Sending warm birthday wishes and lots of love your way today!"
+  ],
+  "source": "llm"
+}
+```
+
+The `source` field indicates where the suggestions came from:
+
+| Source | Meaning |
+|---|---|
+| `"llm"` | Generated by the LLM provider |
+| `"cache"` | Returned from in-memory cache (same occasion + relationship within TTL) |
+| `"fallback"` | Static fallback messages (LLM was unavailable or failed) |
+
+**Response 400 — Invalid input:**
+
+```json
+{
+  "error": "Invalid input",
+  "details": [
+    { "field": "occasion", "message": "occasion is required" }
+  ]
+}
+```
+
+**Response 429 — Rate limit exceeded:**
+
+```json
+{
+  "error": "Rate limit exceeded. Try again later."
+}
+```
+
+### `GET /health`
+
+Health check endpoint.
+
+```json
+{ "status": "ok", "provider": "gemini" }
+```
 
 ---
 
-## Issues and questions
+## Decisions and Trade-offs
 
-If anything is unclear, open an **Issue** in this repository and we will reply as soon as possible. Please do not fork and submit a solution before clarifying critical doubts.
+### Error Handling and Fallback
 
-Good luck.
+**What counts as a failure:**
+- LLM API timeout (10s via `AbortController`)
+- HTTP 429 (rate limit from provider)
+- HTTP 5xx (provider server error)
+- Missing or invalid API key
+- Empty or unparseable LLM response
+
+**How the client is notified:**
+- The client **never** receives raw error details from the LLM provider
+- On any LLM failure, the backend returns HTTP 200 with `source: "fallback"` and static messages
+- The error is logged server-side with `console.error` for debugging
+- The `source` field lets the frontend optionally inform the user that fallback messages were used
+
+
+### Rate Limiting
+
+- **Limit:** 10 requests per minute per IP address
+- **Implementation:** `express-rate-limit` with in-memory store
+- **Behavior when exceeded:** HTTP 429 with JSON error message; the LLM is never called
+- **Test environment:** Rate limiter is automatically skipped when `NODE_ENV=test`
+- **Production note:** In production, use a Redis store instead of in-memory to share state across instances
+
+### Cost and Caching
+
+- **Caching implemented:** Yes — an in-memory `Map` with a 1-hour TTL, keyed by `occasion:relationship` (case-insensitive). When a request matches a cached entry, the LLM is not called and the response is returned immediately with `source: "cache"`. The same occasion + relationship combination produces similar suggestions. Caching avoids redundant LLM calls, reducing both cost and latency. For a gift card suggester, message variety within a 1-hour window is acceptable.
+- **Model selection** — both `gemini-2.5-flash` and `gpt-4o-mini` are chosen for their low cost and fast response
+- **Token limit** — `maxOutputTokens` is set to 512, enough for 3 short messages while keeping per-call cost minimal
+- **Redis:** Redis was not used because the project runs as a single instance and an in-memory `Map` provides the same caching behavior with zero infrastructure overhead. Redis would be necessary only in a multi-instance deployment where cache state needs to be shared across servers.
+
+### Firebase
+
+Firebase was **not used** in this project. The requirements don't demand user authentication or data persistence — the API is stateless and public. Adding Firebase would introduce unnecessary complexity for the current scope.
+
+### Multi-Provider LLM
+
+The backend supports both Gemini and OpenAI via a single `AI_PROVIDER` env variable. This allows switching providers without code changes — useful when one provider has downtime or rate limits. The practical advantage is that if one AI starts returning errors or inconsistent responses, simply changing the environment variable and redeploying the backend fixes the issue, with no code changes required.
+
+
+
+---
+
+## AI Assistant Usage
+
+An AI assistant (Cascade/Windsurf) was used during development:
+
+- **Code generation:** The assistant wrote the initial backend scaffold, services, controllers, tests, Flutter app structure, and configuration files
+- **Design decisions:** Provider selection (dual Gemini + OpenAI), fallback strategy (static messages by occasion), cache strategy (in-memory with TTL), rate limiting parameters, and the decision to skip Firebase were decided independently
+
+---
+
+## Tests
+
+### Backend Tests (19 tests, all passing)
+
+**`tests/suggestions.controller.test.ts`** — 10 tests:
+- Happy path: LLM returns suggestions → `source: "llm"`
+- Fallback path: LLM throws error → `source: "fallback"` with HTTP 200
+- Security: LLM error details are not exposed in the response
+- Fallback for unknown occasion when LLM fails
+- Cache hit: second identical request returns cached result without calling LLM
+- Cache case-insensitivity
+- Input validation: missing occasion, missing relationship, empty strings, empty body
+
+**`tests/llm.service.test.ts`** — 9 tests:
+- Provider routing: unsupported provider throws
+- Missing API keys for both Gemini and OpenAI
+- HTTP 429 and 5xx error handling for both providers
+- Timeout/abort behavior for both providers (10s via `AbortController`)
+
+### Flutter Tests (11 tests, all passing)
+
+**`test/widget_test.dart`** — 5 widget tests:
+- Renders input fields (occasion, relationship) and submit button
+- Shows validation errors when submitting empty fields
+- Shows idle hint on initial state
+- Shows loading indicator when state is loading
+- Shows error message when state is error
+
+**`test/suggestion_service_test.dart`** — 6 unit tests:
+- Returns `SuggestionResult` on 200 response with correct `source` mapping
+- Maps `source: "cache"` and `source: "fallback"` correctly
+- Throws `ApiException` with 429 message on rate limit
+- Throws `ApiException` on 400 with validation detail
+- Throws `ApiException` on 500 server error
