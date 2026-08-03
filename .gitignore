@@ -1,0 +1,10 @@
+node_modules/
+build/
+.DS_Store
+
+# Firebase emulator artifacts
+.firebase/
+*-debug.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
