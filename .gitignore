@@ -1,0 +1,35 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.secret.local
+
+# Node
+node_modules/
+npm-debug.log*
+backend/lib/
+backend/dist/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+firebase-export-*/
+
+# Flutter / Dart
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/ios/Pods/
+flutter_app/android/.gradle/
+flutter_app/android/local.properties
+*.iml
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
