@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "npm run build && node --test lib/tests/",
+    "test": "npm run build && cd lib && node --test",
     "serve": "npm run build && firebase emulators:start"
   },
   "dependencies": {

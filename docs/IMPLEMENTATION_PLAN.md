@@ -156,8 +156,9 @@ Content-Type: application/json
 | `429` | over 30 req/min per uid | `{ "error": { "code": "RATE_LIMITED", "message": "..." } }` + `Retry-After` |
 | `500` | unexpected bug | `{ "error": { "code": "INTERNAL_ERROR", "message": "Something went wrong" } }` |
 
-`OPTIONS` answers the CORS preflight. Input validation: both fields required, string, trimmed,
-1–60 characters, control characters and newlines stripped.
+`OPTIONS` answers the CORS preflight. Input validation: both fields required, string, surrounding
+whitespace trimmed, 1–60 characters, and embedded control characters (newlines included) rejected
+rather than stripped.
 
 ### Resilience
 
@@ -194,15 +195,31 @@ This is expected and harmless: `engines.node` declares 20 because that is the fl
 requires, and the emulator simply runs on whatever Node the host has. Any declared value warns
 unless it matches the host exactly, and lowering the floor would break an evaluator on Node 20.
 
-### Stage 1 — Pure domain `[ ]`
+### Stage 1 — Pure domain `[x]`
 
 `domain/types.ts` (contracts + `LlmClient`, `CacheStore`, `RateLimiter` ports),
-`domain/validateInput.ts`, `fallback/messages.ts` (40 generic safe messages),
+`domain/validateInput.ts`, `domain/cacheKey.ts`, `fallback/messages.ts` (40 generic safe messages),
 `fallback/fallbackProvider.ts` (`pick(3)`, injectable RNG), `domain/suggestionService.ts`
 orchestrating cache → LLM → fallback with test doubles.
 
 - **Verify:** `cd backend && npm test`
 - **Done when:** tests 1, 2, 4 and 6 pass. No Firebase or OpenAI import exists under `domain/`.
+
+**Outcome.** 19 assertions green. Two deviations worth recording:
+
+*Tests 3 and 5 moved into this stage.* Both are decisions the service makes, so a fake `LlmClient`
+and a fake `CacheStore` cover them completely — waiting for the real OpenAI and Firestore adapters
+would have tested the adapters, not the decision. Stages 3 and 4 keep their end-to-end checks.
+
+*Validation rejects control characters instead of stripping them.* The plan originally said
+"stripped", which contradicted test 6. Rejecting is the better rule: silently rewriting what someone
+typed hides the problem, and a newline inside a 60-character field is far more likely to be an
+injection attempt than a real occasion. Surrounding whitespace is still trimmed, so a pasted trailing
+newline stays harmless.
+
+*Test runner invocation.* `node --test <dir>` fails on Node 24 and `node --test <glob>` needs Node 21+,
+while the brief's floor is Node 20. The script therefore runs bare discovery from the build output
+(`cd lib && node --test`), which behaves the same on every version from 18 up.
 
 ### Stage 2 — HTTP handler `[ ]`
 
@@ -294,9 +311,9 @@ Backend runs on `node --test`: no emulator, no network, no API key.
 |---|---|---|
 | 1 | Fallback on timeout — `LlmClient` throws `LlmTimeoutError` → `200`, `source:"fallback"`, 3 messages | 1 |
 | 2 | Fallback on invalid output — model returns a single message → `source:"fallback"` | 1 |
-| 3 | Happy path — `source:"llm"`, result written to cache | 3 |
+| 3 | Happy path — `source:"llm"`, result written to cache | 1 |
 | 4 | Fallback is not cached — after a failure, `CacheStore.set` is never called | 1 |
-| 5 | Cache hit — second call never touches `LlmClient`, `source:"cache"` | 4 |
+| 5 | Cache hit — second call never touches `LlmClient`, `source:"cache"` | 1 |
 | 6 | Validation — empty, 61 chars, embedded newline → `400` | 1 |
 | 7 | Rate limit — 31st call in the window → `429` | 4 |
 | 8 | Auth — missing and malformed token → `401` | 5 |
@@ -313,7 +330,7 @@ Backend runs on `node --test`: no emulator, no network, no API key.
 - `firestore.rules` denies every direct client read and write — only the Admin SDK, which bypasses
   rules, touches the database.
 - 30 requests/minute per `uid`, enforced by a transactional counter.
-- **Prompt injection:** 60-character limit, control characters and newlines stripped, system/user
+- **Prompt injection:** 60-character limit, embedded control characters rejected, system/user
   separation, an explicit instruction to treat input as data, and a constrained JSON output schema.
   This *reduces* the risk rather than eliminating it; production would add output moderation.
 - No stack trace, provider message, or key fragment ever reaches the client. Full errors are logged
