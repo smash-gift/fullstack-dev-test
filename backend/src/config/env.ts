@@ -1,6 +1,13 @@
 export interface AppConfig {
   allowedOrigins: string[];
+  openAiApiKey: string;
+  openAiModel: string;
+  llmTimeoutMs: number;
+  forceLlmFailure: boolean;
 }
+
+const DEFAULT_MODEL = 'gpt-4o-mini';
+const DEFAULT_TIMEOUT_MS = 8000;
 
 /**
  * Reads configuration once, at module load.
@@ -11,6 +18,10 @@ export interface AppConfig {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     allowedOrigins: splitList(env.ALLOWED_ORIGINS, ['*']),
+    openAiApiKey: (env.OPENAI_API_KEY ?? '').trim(),
+    openAiModel: nonEmpty(env.OPENAI_MODEL, DEFAULT_MODEL),
+    llmTimeoutMs: positiveInteger(env.LLM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    forceLlmFailure: isTrue(env.FORCE_LLM_FAILURE),
   };
 }
 
@@ -25,4 +36,18 @@ function splitList(value: string | undefined, fallback: string[]): string[] {
     .filter((item) => item.length > 0);
 
   return items.length > 0 ? items : fallback;
+}
+
+function nonEmpty(value: string | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : fallback;
+}
+
+function positiveInteger(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(value ?? '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function isTrue(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === 'true';
 }
