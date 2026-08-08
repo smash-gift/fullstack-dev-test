@@ -153,8 +153,12 @@ Content-Type: application/json
 | `200` | LLM ok / cache hit / LLM failed | `{ "suggestions": [3 strings], "source": "llm"\|"cache"\|"fallback" }` |
 | `400` | invalid input | `{ "error": { "code": "INVALID_INPUT", "message": "..." } }` |
 | `401` | missing/invalid token | `{ "error": { "code": "UNAUTHORIZED", "message": "..." } }` |
+| `405` | any method other than `POST` | `{ "error": { "code": "METHOD_NOT_ALLOWED", "message": "..." } }` |
 | `429` | over 30 req/min per uid | `{ "error": { "code": "RATE_LIMITED", "message": "..." } }` + `Retry-After` |
 | `500` | unexpected bug | `{ "error": { "code": "INTERNAL_ERROR", "message": "Something went wrong" } }` |
+
+Every response carries an `X-Request-Id`, which is also what the server logs an internal failure
+against — so a user can quote it without the API ever returning a stack trace.
 
 `OPTIONS` answers the CORS preflight. Input validation: both fields required, string, surrounding
 whitespace trimmed, 1–60 characters, and embedded control characters (newlines included) rejected
@@ -221,15 +225,35 @@ newline stays harmless.
 while the brief's floor is Node 20. The script therefore runs bare discovery from the build output
 (`cd lib && node --test`), which behaves the same on every version from 18 up.
 
-### Stage 2 — HTTP handler `[ ]`
+### Stage 2 — HTTP handler `[x]`
 
-`http/cors.ts` (headers + `OPTIONS` preflight), `http/responses.ts` (single error shape),
-`http/handler.ts`, `index.ts` exporting the `suggestions` function. Wired to the fallback provider
-only — no LLM, no Firestore, no auth yet.
+`http/types.ts` (the request/response slice the handler uses), `http/cors.ts`, `http/responses.ts`
+(single error shape), `http/handler.ts`, `config/env.ts`, `logging/functionsLogger.ts`, and
+`index.ts` exporting the `suggestions` function. Wired to the fallback provider only — no LLM, no
+Firestore, no auth yet.
 
 - **Verify:** `curl -X POST http://127.0.0.1:5001/demo-gift-card/us-central1/suggestions -H "Content-Type: application/json" -d '{"occasion":"Birthday","relationship":"Friend"}'`
 - **Done when:** returns `200` with 3 messages and `source: "fallback"`. **The endpoint is usable
   from here on, so the Flutter app is never blocked waiting for OpenAI, Firestore or Auth.**
+
+**Outcome.** 29 assertions green, and the emulator confirms the whole surface: `200` with three
+fallback messages (different sets on consecutive calls), `400` for an empty field, `400` for an
+embedded newline, `405` for `GET`, and an `X-Request-Id` on every response.
+
+*The preflight is answered upstream.* Cloud Functions wraps the handler in Express with a CORS
+middleware that replies to `OPTIONS` before our code runs — it echoes the origin, allows the
+requested headers, and returns `204` (`x-powered-by: Express`, and none of our headers present).
+Flutter Web therefore works, since `authorization` and `content-type` are permitted for any origin.
+Our own preflight branch stays as a safety net if that layer ever changes, and the unit tests
+exercise it directly.
+
+*The origin allowlist still has teeth where it counts.* On the actual `POST`, our header overwrites
+the middleware's: asking for `*` produced `*` rather than the middleware's echo of
+`http://evil.example`. A browser also checks the real response, so an origin outside the allowlist
+gets no `Access-Control-Allow-Origin` and cannot read the body — even though the preflight was
+permissive. Both branches are unit-tested.
+
+*`405` added to the contract*, which the original table did not cover.
 
 ### Stage 3 — OpenAI integration `[ ]`
 
