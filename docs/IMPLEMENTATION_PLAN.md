@@ -176,14 +176,23 @@ Content-Type: application/json
 
 Each stage ends with a commit. `[ ]` becomes `[x]` as work progresses.
 
-### Stage 0 — Repository and scaffold `[ ]`
+### Stage 0 — Repository and scaffold `[x]`
 
 Create `.gitignore` (first file, before anything else), `firebase.json` pointing
 `functions.source` at `backend/`, `.firebaserc` with `demo-gift-card`, `firestore.rules` denying all
 client access, `backend/package.json`, `tsconfig.json`, `.nvmrc`, `.env.example`.
 
-- **Verify:** `firebase emulators:start` boots Functions, Firestore and Auth without errors.
+- **Verify:** `firebase emulators:exec --only functions,firestore,auth "node -e 0"`
 - **Done when:** emulator UI reachable on `:4000`; `git ls-files` does not list `.env`.
+
+**Outcome.** Emulators boot offline (`Detected demo project ID "demo-gift-card"`) and the function
+registers at `http://127.0.0.1:5001/demo-gift-card/us-central1/suggestions`. `firebase-functions`
+loads `backend/.env` on its own, so no dotenv dependency is needed.
+
+The emulator prints `Your requested "node" version "20" doesn't match your global version "24"`.
+This is expected and harmless: `engines.node` declares 20 because that is the floor the brief
+requires, and the emulator simply runs on whatever Node the host has. Any declared value warns
+unless it matches the host exactly, and lowering the floor would break an evaluator on Node 20.
 
 ### Stage 1 — Pure domain `[ ]`
 
