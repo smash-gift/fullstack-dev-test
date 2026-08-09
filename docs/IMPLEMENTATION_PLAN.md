@@ -358,7 +358,7 @@ curl -X POST http://127.0.0.1:5001/demo-gift-card/us-central1/suggestions \
   -d '{"occasion":"Birthday","relationship":"Friend"}'
 ```
 
-### Stage 6 — Flutter app `[ ]`
+### Stage 6 — Flutter app `[x]`
 
 `config/app_config.dart` (`API_BASE_URL` via `--dart-define`, emulator flags),
 `services/auth_service.dart` (anonymous sign-in at boot, token retrieval),
@@ -366,9 +366,32 @@ curl -X POST http://127.0.0.1:5001/demo-gift-card/us-central1/suggestions \
 `controllers/suggestions_controller.dart` (`ChangeNotifier`, injected client),
 `screens/suggestions_screen.dart`, `widgets/`.
 
-- **Verify:** `flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:5001/demo-gift-card/us-central1`
+- **Verify:** `flutter run -d chrome` with the emulators running.
 - **Done when:** Birthday + Friend works end to end; loading, success, error and the fallback notice
   all render; no screen state is ever blank.
+
+**Outcome.** `flutter analyze` clean. Verified in a real browser against the emulators: requests
+arrive in pairs — a ~2ms preflight followed by the POST — and the server log carries no `WARNING`
+or `ERROR` line at all across the whole session. That single absence covers a lot: anonymous
+sign-in worked, the token was accepted, CORS passed, and the model path ran. The timings tell the
+rest of the story: 2930ms and 1473ms for generated answers, then 41ms, 56ms and 50ms for cache hits,
+then 1416ms once the 10-second TTL expired.
+
+*The configuration is one `--dart-define` away from any target.* `EMULATOR_HOST` defaults to
+`127.0.0.1` and takes `10.0.2.2` for the Android emulator; `API_BASE_URL` is empty by default,
+meaning "use the local emulator", and set to point at a deployment.
+
+*The client timeout is 20s against the server's 8s.* The API can spend 8s on the model plus 8s on a
+retry, so a shorter client budget would abandon a request that was about to answer with the
+fallback.
+
+*A fallback response is a notice, not an error.* `source: "fallback"` renders an amber informational
+banner, never the red one — the user did receive usable messages, and colouring that as a failure
+would tell them something untrue.
+
+*`prefer_initializing_formals` is disabled, with the reason in `analysis_options.yaml`.* Its
+suggested fix compiles in isolation but not here: a private named parameter cannot be passed from
+another library, so `main.dart` would stop building.
 
 ### Stage 7 — Flutter tests `[ ]`
 
