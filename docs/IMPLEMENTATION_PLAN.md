@@ -393,13 +393,30 @@ would tell them something untrue.
 suggested fix compiles in isolation but not here: a private named parameter cannot be passed from
 another library, so `main.dart` would stop building.
 
-### Stage 7 — Flutter tests `[ ]`
+### Stage 7 — Flutter tests `[x]`
 
-`test/suggestions_controller_test.dart` and `test/suggestions_screen_test.dart`, both with a fake
-`ApiClient` and a stubbed token provider — no Firebase in tests.
+`test/support/fake_suggestions_api.dart`, `test/suggestions_controller_test.dart` and
+`test/suggestions_screen_test.dart`, all driven by a fake `SuggestionsApi` — no Firebase, no network.
 
 - **Verify:** `cd flutter_app && flutter test`
 - **Done when:** tests 9 and 10 pass.
+
+**Outcome.** 16 tests green in 2s, `flutter analyze` clean.
+
+*The fake holds the future open.* `FakeSuggestionsApi` hands back an uncompleted `Completer`, so the
+test decides when the answer arrives. That is what makes the loading state observable at all —
+assertions run in the window between the tap and the response, which is exactly the window the user
+sees. Without it, `pumpAndSettle` would skip straight past the spinner.
+
+*Four screen states, four tests, plus their negatives.* Idle shows guidance rather than a blank area;
+loading shows the spinner and disables the button; success lists three cards; failure shows the
+message and a working "Try again" that really does re-send. The fallback notice has both a positive
+test (it appears, and no "Try again" appears beside it, because a fallback is not an error) and a
+negative one (it stays away when the answer was personalised).
+
+*Nothing was added to the app to make it testable.* The screen already took its controller, and the
+controller already took its API — both from stage 6. That is the whole return on those two
+interfaces.
 
 ### Stage 8 — Documentation and PR `[ ]`
 
@@ -452,6 +469,9 @@ Backend runs on `node --test`: no emulator, no network, no API key.
 | 8 | Auth — missing and malformed token → `401` | 5 |
 | 9 | Controller — `idle→loading→success` and `idle→loading→error` | 7 |
 | 10 | Widget — spinner while loading, 3 cards on success, banner on error, notice on fallback | 7 |
+
+Final counts: **67 backend assertions** via `npm test`, **16 Flutter tests** via `flutter test`.
+Neither suite needs the emulator, the network, or an API key.
 
 ---
 
