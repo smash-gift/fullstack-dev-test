@@ -9,7 +9,6 @@ export interface HttpRequest {
   method: string;
   headers: Record<string, string | string[] | undefined>;
   body: unknown;
-  ip?: string;
 }
 
 export interface HttpResponse {

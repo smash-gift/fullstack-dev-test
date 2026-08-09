@@ -1,5 +1,6 @@
 import { onRequest } from 'firebase-functions/v2/https';
 
+import { FirebaseTokenVerifier } from './auth/firebaseTokenVerifier';
 import { loadConfig } from './config/env';
 import { SuggestionService } from './domain/suggestionService';
 import type { LlmClient } from './domain/types';
@@ -55,6 +56,7 @@ function buildHandler(): Handler {
       max: config.rateLimitMax,
       windowMs: config.rateLimitWindowMs,
     }),
+    tokenVerifier: new FirebaseTokenVerifier(),
     logger: functionsLogger,
     allowedOrigins: config.allowedOrigins,
   });

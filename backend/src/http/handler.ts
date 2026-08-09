@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { bearerToken, type TokenVerifier } from '../auth/tokenVerifier';
 import type { SuggestionService } from '../domain/suggestionService';
 import type { Logger, RateLimiter } from '../domain/types';
 import { validateInput } from '../domain/validateInput';
@@ -10,6 +11,7 @@ import type { HttpRequest, HttpResponse } from './types';
 export interface HandlerDeps {
   service: SuggestionService;
   rateLimiter: RateLimiter;
+  tokenVerifier: TokenVerifier;
   logger: Logger;
   allowedOrigins: readonly string[];
 }
@@ -39,9 +41,15 @@ export function createHandler(deps: HandlerDeps): Handler {
       return;
     }
 
+    const caller = await authenticate(deps, req, requestId);
+    if (!caller) {
+      sendError(res, 401, ErrorCode.Unauthorized, 'A valid Firebase ID token is required.');
+      return;
+    }
+
     // Ahead of validation on purpose: a client hammering the endpoint with
     // malformed bodies is exactly the traffic a limit is there to stop.
-    const decision = await consumeRateLimit(deps, clientKey(req), requestId);
+    const decision = await consumeRateLimit(deps, caller.uid, requestId);
     if (!decision.allowed) {
       res.set('Retry-After', String(decision.retryAfterSeconds));
       sendError(res, 429, ErrorCode.RateLimited, 'Too many requests. Try again shortly.');
@@ -71,6 +79,38 @@ export function createHandler(deps: HandlerDeps): Handler {
 }
 
 /**
+ * Identifies the caller, failing closed.
+ *
+ * The opposite policy to the rate limiter directly below, and deliberately so:
+ * that one protects cost, so an outage of it should not take the service down,
+ * while this one protects access, so an outage of it must not let everyone in.
+ * A missing token, a malformed header, an expired token and an unreachable Auth
+ * service all produce the same 401 — the difference matters to the log, not to
+ * the client.
+ */
+async function authenticate(
+  deps: HandlerDeps,
+  req: HttpRequest,
+  requestId: string,
+): Promise<{ uid: string } | null> {
+  const token = bearerToken(req.headers.authorization);
+  if (!token) {
+    deps.logger.warn('auth_token_missing', { requestId });
+    return null;
+  }
+
+  try {
+    return await deps.tokenVerifier.verify(token);
+  } catch (error) {
+    deps.logger.warn('auth_token_rejected', {
+      requestId,
+      reason: error instanceof Error ? error.message : 'unknown',
+    });
+    return null;
+  }
+}
+
+/**
  * Consults the limiter, failing open.
  *
  * If the counter store is unreachable, the choice is between refusing everyone
@@ -93,24 +133,6 @@ async function consumeRateLimit(
     });
     return { allowed: true, retryAfterSeconds: 0 };
   }
-}
-
-/**
- * Who the limit is counted against.
- *
- * The client address for now; stage 5 replaces it with the authenticated user
- * id, which is fairer — one office behind a single address is many people, and
- * one person can change address freely.
- */
-function clientKey(req: HttpRequest): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  const first = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim();
-  return sanitizeKey(req.ip ?? first ?? 'unknown');
-}
-
-/** Firestore document ids cannot contain a slash. */
-function sanitizeKey(value: string): string {
-  return value.replace(/\//g, '_');
 }
 
 /**

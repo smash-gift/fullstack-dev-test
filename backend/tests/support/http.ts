@@ -26,11 +26,18 @@ export class FakeResponse implements HttpResponse {
   }
 }
 
+/**
+ * A valid request by default. Header overrides are merged rather than replacing
+ * the set, so a test that cares about Origin does not silently drop the
+ * Authorization header and end up asserting against a 401.
+ */
 export function request(overrides: Partial<HttpRequest> = {}): HttpRequest {
+  const { headers, ...rest } = overrides;
+
   return {
     method: 'POST',
-    headers: {},
     body: { occasion: 'Birthday', relationship: 'Friend' },
-    ...overrides,
+    ...rest,
+    headers: { authorization: 'Bearer valid-token', ...headers },
   };
 }

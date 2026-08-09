@@ -4,7 +4,13 @@ import { describe, it } from 'node:test';
 import { SuggestionService } from '../src/domain/suggestionService';
 import { FallbackProvider } from '../src/fallback/fallbackProvider';
 import { createHandler } from '../src/http/handler';
-import { FakeCache, FakeLlm, FakeLogger, FakeRateLimiter } from './support/doubles';
+import {
+  FakeCache,
+  FakeLlm,
+  FakeLogger,
+  FakeRateLimiter,
+  FakeTokenVerifier,
+} from './support/doubles';
 import { FakeResponse, request } from './support/http';
 
 const VALID_OUTPUT = [
@@ -16,6 +22,7 @@ const VALID_OUTPUT = [
 function build(llm: FakeLlm = FakeLlm.failingWith(new Error('provider down'))) {
   const logger = new FakeLogger();
   const rateLimiter = new FakeRateLimiter();
+  const tokenVerifier = new FakeTokenVerifier();
   const service = new SuggestionService({
     llm,
     cache: new FakeCache(),
@@ -24,8 +31,15 @@ function build(llm: FakeLlm = FakeLlm.failingWith(new Error('provider down'))) {
   });
 
   return {
-    handler: createHandler({ service, rateLimiter, logger, allowedOrigins: ['*'] }),
+    handler: createHandler({
+      service,
+      rateLimiter,
+      tokenVerifier,
+      logger,
+      allowedOrigins: ['*'],
+    }),
     rateLimiter,
+    tokenVerifier,
     logger,
   };
 }
@@ -75,6 +89,7 @@ describe('suggestions handler', () => {
     const handler = createHandler({
       service,
       rateLimiter: new FakeRateLimiter(),
+      tokenVerifier: new FakeTokenVerifier(),
       logger,
       allowedOrigins: ['http://localhost:8080'],
     });
@@ -97,6 +112,7 @@ describe('suggestions handler', () => {
     const handler = createHandler({
       service,
       rateLimiter: new FakeRateLimiter(),
+      tokenVerifier: new FakeTokenVerifier(),
       logger,
       allowedOrigins: ['http://localhost:8080'],
     });
@@ -153,6 +169,7 @@ describe('suggestions handler', () => {
     const handler = createHandler({
       service: brokenService,
       rateLimiter: new FakeRateLimiter(),
+      tokenVerifier: new FakeTokenVerifier(),
       logger,
       allowedOrigins: ['*'],
     });
@@ -195,12 +212,79 @@ describe('suggestions handler', () => {
     assert.equal(res.statusCode, 429, 'not 400');
   });
 
-  it('counts against the caller address', async () => {
-    const { handler, rateLimiter } = build();
+  it('counts the limit against the authenticated user, not the address', async () => {
+    const { handler, rateLimiter, tokenVerifier } = build();
+    tokenVerifier.uid = 'user-abc';
 
-    await handler(request({ ip: '203.0.113.7' }), new FakeResponse());
+    await handler(request(), new FakeResponse());
 
-    assert.deepEqual(rateLimiter.keys, ['203.0.113.7']);
+    assert.deepEqual(rateLimiter.keys, ['user-abc']);
+  });
+
+  // Test 8 — authentication.
+  it('answers 401 when no token is sent', async () => {
+    const { handler, logger } = build();
+    const res = new FakeResponse();
+
+    await handler(request({ headers: { authorization: undefined } }), res);
+
+    assert.equal(res.statusCode, 401);
+    assert.deepEqual(res.body, {
+      error: { code: 'UNAUTHORIZED', message: 'A valid Firebase ID token is required.' },
+    });
+    assert.ok(logger.has('auth_token_missing'));
+  });
+
+  it('answers 401 for a malformed authorization header', async () => {
+    const { handler } = build();
+    const res = new FakeResponse();
+
+    await handler(request({ headers: { authorization: 'Token abc' } }), res);
+
+    assert.equal(res.statusCode, 401);
+  });
+
+  it('answers 401 for a token the verifier rejects', async () => {
+    const { handler, tokenVerifier, logger } = build();
+    tokenVerifier.failWith = new Error('Firebase ID token has expired');
+    const res = new FakeResponse();
+
+    await handler(request(), res);
+
+    assert.equal(res.statusCode, 401);
+    assert.ok(logger.has('auth_token_rejected'));
+    // The provider's wording stays in the log, not in the response.
+    assert.ok(!JSON.stringify(res.body).includes('expired'));
+  });
+
+  it('fails closed when the verifier itself is unavailable', async () => {
+    const { handler, tokenVerifier } = build(FakeLlm.respondingWith(VALID_OUTPUT));
+    tokenVerifier.failWith = new Error('auth service unreachable');
+    const res = new FakeResponse();
+
+    await handler(request(), res);
+
+    // The opposite of the rate limiter on purpose: an outage of a cost control
+    // must not stop the service, an outage of an access control must not open it.
+    assert.equal(res.statusCode, 401);
+  });
+
+  it('never consults the model for an unauthenticated request', async () => {
+    const llm = FakeLlm.respondingWith(VALID_OUTPUT);
+    const { handler } = build(llm);
+
+    await handler(request({ headers: { authorization: undefined } }), new FakeResponse());
+
+    assert.equal(llm.calls, 0);
+  });
+
+  it('does not require a token for the CORS preflight', async () => {
+    const { handler } = build();
+    const res = new FakeResponse();
+
+    await handler(request({ method: 'OPTIONS', headers: { authorization: undefined } }), res);
+
+    assert.equal(res.statusCode, 204, 'browsers never send credentials on a preflight');
   });
 
   it('keeps serving when the limiter itself is unavailable', async () => {

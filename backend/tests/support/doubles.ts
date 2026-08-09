@@ -1,3 +1,4 @@
+import type { TokenVerifier, VerifiedCaller } from '../../src/auth/tokenVerifier';
 import type {
   CacheStore,
   LlmClient,
@@ -57,6 +58,20 @@ export class FakeLlm implements LlmClient {
   async generate(_input: SuggestionRequest): Promise<string[]> {
     this.calls += 1;
     return this.behaviour();
+  }
+}
+
+export class FakeTokenVerifier implements TokenVerifier {
+  readonly tokens: string[] = [];
+  uid = 'user-1';
+  failWith: Error | undefined;
+
+  async verify(token: string): Promise<VerifiedCaller> {
+    this.tokens.push(token);
+    if (this.failWith) {
+      throw this.failWith;
+    }
+    return { uid: this.uid };
   }
 }
 

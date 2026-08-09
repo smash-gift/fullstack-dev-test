@@ -321,13 +321,32 @@ in the README rather than left implicit.
 *Rejections write nothing.* A blocked caller cannot push its own window forward by continuing to
 hammer the endpoint, which a naive "always increment" counter would allow.
 
-### Stage 5 — Authentication `[ ]`
+### Stage 5 — Authentication `[x]`
 
-`auth/verifyToken.ts` using the Admin SDK; the handler rejects requests without a valid token and
-keys the rate limiter by `uid`.
+`auth/tokenVerifier.ts` (the contract and header parsing, importing nothing),
+`auth/firebaseTokenVerifier.ts` (the Admin SDK implementation), `firebase/adminApp.ts` (shared lazy
+init). The handler rejects requests without a valid token and keys the rate limiter by `uid`.
 
-- **Verify:** `curl` without a token, then with a token minted from the Auth emulator.
+- **Verify:** call without a token, then with a token minted from the Auth emulator.
 - **Done when:** test 8 passes; no token → `401`; valid token → `200`.
+
+**Outcome.** 67 assertions green. Live: no token → `401`, junk token → `401`, valid token → `200`
+with `source: "llm"`. User A was blocked on request 31; user B, from the same address with a
+different `uid`, was served immediately — the limit follows the person, not the network.
+
+*Authentication fails closed, the rate limiter fails open.* The asymmetry is the point: an outage of
+a cost control must not stop the service, and an outage of an access control must not open it. A
+missing token, a malformed header, an expired token and an unreachable Auth service all return the
+same `401`; which one it was matters to the log, not to the caller. The Admin SDK's wording — *"Decoding
+Firebase ID token failed…"* — stays server-side.
+
+*The contract lives apart from the implementation.* Putting `TokenVerifier` and `bearerToken` in a
+file that imports nothing, with `FirebaseTokenVerifier` beside it, keeps the Admin SDK out of the
+request path's import graph. It was not only tidiness: while both lived together the test suite went
+from 250ms to 5s, because loading the handler loaded `firebase-admin`.
+
+*The preflight needs no token*, since browsers never send credentials on one — covered by a test, as
+getting this wrong breaks Flutter Web in a way that looks like a CORS problem.
 
 ```bash
 TOKEN=$(curl -s -X POST "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-key" \
@@ -417,7 +436,10 @@ Backend runs on `node --test`: no emulator, no network, no API key.
 
 - The OpenAI key lives only inside the function; the Flutter app never sees it.
 - `.gitignore` covers `.env` from the first commit; `.env.example` is committed without real values.
-- Anonymous auth is mandatory; ID tokens are verified with the Admin SDK.
+- Anonymous auth is mandatory; ID tokens are verified with the Admin SDK. It **fails closed** —
+  including when the Auth service itself is unreachable. The mirror image of the rate limiter, and
+  deliberately so: a cost control that breaks must not stop the service, an access control that
+  breaks must not open it.
 - `firestore.rules` denies every direct client read and write — only the Admin SDK, which bypasses
   rules, touches the database.
 - 30 requests/minute per `uid`, enforced by a transactional counter. It **fails open**: if the
