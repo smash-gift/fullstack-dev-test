@@ -1,0 +1,24 @@
+{
+  "name": "gift-card-suggester-backend",
+  "version": "1.0.0",
+  "description": "Cloud Function that suggests gift card messages, with a safe fallback when the LLM fails.",
+  "private": true,
+  "main": "lib/src/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "npm run build && cd lib && node --test",
+    "serve": "npm run build && firebase emulators:start"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.2.0",
+    "firebase-functions": "^7.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2"
+  }
+}

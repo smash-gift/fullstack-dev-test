@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug builds only.
+
+  Android has refused cleartext HTTP by default since Android 9, and the local
+  Firebase emulator speaks plain HTTP on 10.0.2.2 — the alias through which an
+  Android emulator reaches the host machine's loopback. Without this the app
+  fails with "CLEARTEXT communication to 10.0.2.2 not permitted".
+
+  The exception is scoped to the emulator hosts rather than switching cleartext
+  on globally, and it lives in the debug source set, so a release build keeps
+  the strict default and cannot talk to anything over plain HTTP.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- The host machine, as seen from inside the Android emulator. -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>
