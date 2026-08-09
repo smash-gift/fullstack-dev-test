@@ -14,16 +14,20 @@ const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_RATE_LIMIT_MAX = 30;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60_000;
 /**
- * Deliberately minutes, not hours.
+ * Seconds, deliberately.
  *
- * What caching actually protects against is the same person repeating the same
- * request within a session — a double tap, a page reload, a retry. That happens
- * in minutes. Holding an entry for a day would save barely more while handing
- * everyone who asks for the same occasion and relationship the identical three
- * messages, which is the opposite of what the product is for.
+ * At this length the cache is a de-duplication window rather than a cost
+ * optimisation: it absorbs a double tap and a quick reload, and nothing more.
+ * That is the trade chosen on purpose — suggestions are the product, and a
+ * longer window would hand everyone asking for the same occasion and
+ * relationship the identical three messages.
+ *
+ * It still pays for itself, since a Firestore read costs orders of magnitude
+ * less than a model call, but the real cost lever in production would be a
+ * longer window on a shared cache, bought with variety.
  */
-const DEFAULT_CACHE_TTL_MINUTES = 10;
-const MS_PER_MINUTE = 60_000;
+const DEFAULT_CACHE_TTL_SECONDS = 10;
+const MS_PER_SECOND = 1000;
 
 /**
  * Reads configuration once, at module load.
@@ -41,7 +45,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     rateLimitMax: positiveInteger(env.RATE_LIMIT_MAX, DEFAULT_RATE_LIMIT_MAX),
     rateLimitWindowMs: positiveInteger(env.RATE_LIMIT_WINDOW_MS, DEFAULT_RATE_LIMIT_WINDOW_MS),
     cacheTtlMs:
-      positiveInteger(env.CACHE_TTL_MINUTES, DEFAULT_CACHE_TTL_MINUTES) * MS_PER_MINUTE,
+      positiveInteger(env.CACHE_TTL_SECONDS, DEFAULT_CACHE_TTL_SECONDS) * MS_PER_SECOND,
   };
 }
 
