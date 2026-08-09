@@ -9,6 +9,7 @@ import {
   LlmRateLimitError,
   LlmServerError,
   LlmTimeoutError,
+  LlmUnsafeContentError,
 } from '../src/llm/errors';
 import { OpenAiClient } from '../src/llm/openAiClient';
 import { FakeLogger } from './support/doubles';
@@ -175,6 +176,23 @@ describe('OpenAiClient', () => {
 
     await assert.rejects(() => client.generate(INPUT), LlmInvalidResponseError);
     assert.equal(calls.length, 1);
+  });
+
+  it('rejects a well-formed but insulting answer, without retrying', async () => {
+    const { calls, fetchImpl } = recording([
+      () =>
+        completion({
+          suggestions: [
+            'Wishing you all the best, you lovable fool.',
+            'Try not to screw it up along the way.',
+            'Congratulations anyway, you idiot.',
+          ],
+        }),
+    ]);
+    const { client } = build(fetchImpl);
+
+    await assert.rejects(() => client.generate(INPUT), LlmUnsafeContentError);
+    assert.equal(calls.length, 1, 'the same input would steer the model again');
   });
 
   it('treats a refusal as an invalid answer', async () => {

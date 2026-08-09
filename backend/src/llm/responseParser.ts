@@ -1,4 +1,5 @@
-import { LlmInvalidResponseError } from './errors';
+import { findBlockedWord } from './contentGuard';
+import { LlmInvalidResponseError, LlmUnsafeContentError } from './errors';
 import { MAX_MESSAGE_CHARACTERS, SUGGESTIONS_PER_CALL } from './promptBuilder';
 
 /**
@@ -41,6 +42,14 @@ export function parseCompletion(payload: unknown): string[] {
     throw new LlmInvalidResponseError(
       `Expected ${SUGGESTIONS_PER_CALL} usable suggestions, got ${cleaned.length}`,
     );
+  }
+
+  // Last line of defence. The prompt tells the model to refuse instructions
+  // hidden in the input fields, but a prompt is a request, not a guarantee —
+  // this check does not depend on the model having cooperated.
+  const blocked = findBlockedWord(cleaned);
+  if (blocked) {
+    throw new LlmUnsafeContentError(`Generated message contained a blocked word: ${blocked}`);
   }
 
   return cleaned;

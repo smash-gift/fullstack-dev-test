@@ -48,6 +48,16 @@ export class LlmInvalidResponseError extends LlmError {
   readonly retryable = false;
 }
 
+/**
+ * The answer was well-formed but not fit to print on a gift card.
+ *
+ * Not retryable: the same input steered the model once and would steer it
+ * again. The curated fallback is the right answer here.
+ */
+export class LlmUnsafeContentError extends LlmError {
+  readonly retryable = false;
+}
+
 /** Raised by the client used when FORCE_LLM_FAILURE is on. */
 export class LlmForcedFailureError extends LlmError {
   readonly retryable = false;
