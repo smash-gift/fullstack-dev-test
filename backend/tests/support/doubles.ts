@@ -2,6 +2,8 @@ import type {
   CacheStore,
   LlmClient,
   Logger,
+  RateLimitDecision,
+  RateLimiter,
   SuggestionRequest,
 } from '../../src/domain/types';
 
@@ -55,6 +57,21 @@ export class FakeLlm implements LlmClient {
   async generate(_input: SuggestionRequest): Promise<string[]> {
     this.calls += 1;
     return this.behaviour();
+  }
+}
+
+export class FakeRateLimiter implements RateLimiter {
+  readonly keys: string[] = [];
+  allowed = true;
+  retryAfterSeconds = 0;
+  failWith: Error | undefined;
+
+  async consume(key: string): Promise<RateLimitDecision> {
+    this.keys.push(key);
+    if (this.failWith) {
+      throw this.failWith;
+    }
+    return { allowed: this.allowed, retryAfterSeconds: this.retryAfterSeconds };
   }
 }
 

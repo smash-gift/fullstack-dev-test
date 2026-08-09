@@ -4,10 +4,17 @@ export interface AppConfig {
   openAiModel: string;
   llmTimeoutMs: number;
   forceLlmFailure: boolean;
+  rateLimitMax: number;
+  rateLimitWindowMs: number;
+  cacheTtlMs: number;
 }
 
 const DEFAULT_MODEL = 'gpt-4o-mini';
 const DEFAULT_TIMEOUT_MS = 8000;
+const DEFAULT_RATE_LIMIT_MAX = 30;
+const DEFAULT_RATE_LIMIT_WINDOW_MS = 60_000;
+const DEFAULT_CACHE_TTL_HOURS = 24;
+const MS_PER_HOUR = 3_600_000;
 
 /**
  * Reads configuration once, at module load.
@@ -22,6 +29,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     openAiModel: nonEmpty(env.OPENAI_MODEL, DEFAULT_MODEL),
     llmTimeoutMs: positiveInteger(env.LLM_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
     forceLlmFailure: isTrue(env.FORCE_LLM_FAILURE),
+    rateLimitMax: positiveInteger(env.RATE_LIMIT_MAX, DEFAULT_RATE_LIMIT_MAX),
+    rateLimitWindowMs: positiveInteger(env.RATE_LIMIT_WINDOW_MS, DEFAULT_RATE_LIMIT_WINDOW_MS),
+    cacheTtlMs:
+      positiveInteger(env.CACHE_TTL_HOURS, DEFAULT_CACHE_TTL_HOURS) * MS_PER_HOUR,
   };
 }
 

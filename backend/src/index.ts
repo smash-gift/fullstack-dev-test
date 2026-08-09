@@ -2,8 +2,10 @@ import { onRequest } from 'firebase-functions/v2/https';
 
 import { loadConfig } from './config/env';
 import { SuggestionService } from './domain/suggestionService';
-import type { CacheStore, LlmClient } from './domain/types';
+import type { LlmClient } from './domain/types';
 import { FallbackProvider } from './fallback/fallbackProvider';
+import { FirestoreCacheStore } from './firestore/cacheStore';
+import { FirestoreRateLimiter } from './firestore/rateLimiter';
 import { createHandler, type Handler } from './http/handler';
 import { FailingLlmClient } from './llm/failingLlmClient';
 import { OpenAiClient } from './llm/openAiClient';
@@ -40,25 +42,19 @@ function createLlmClient(config: ReturnType<typeof loadConfig>): LlmClient {
 function buildHandler(): Handler {
   const config = loadConfig();
 
-  // Stage 4 replaces this with the Firestore-backed store.
-  const cache: CacheStore = {
-    async get() {
-      return null;
-    },
-    async set() {
-      // no-op
-    },
-  };
-
   const service = new SuggestionService({
     llm: createLlmClient(config),
-    cache,
+    cache: new FirestoreCacheStore({ ttlMs: config.cacheTtlMs }),
     fallback: new FallbackProvider(),
     logger: functionsLogger,
   });
 
   return createHandler({
     service,
+    rateLimiter: new FirestoreRateLimiter({
+      max: config.rateLimitMax,
+      windowMs: config.rateLimitWindowMs,
+    }),
     logger: functionsLogger,
     allowedOrigins: config.allowedOrigins,
   });

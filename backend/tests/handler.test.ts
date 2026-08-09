@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import { SuggestionService } from '../src/domain/suggestionService';
 import { FallbackProvider } from '../src/fallback/fallbackProvider';
 import { createHandler } from '../src/http/handler';
-import { FakeCache, FakeLlm, FakeLogger } from './support/doubles';
+import { FakeCache, FakeLlm, FakeLogger, FakeRateLimiter } from './support/doubles';
 import { FakeResponse, request } from './support/http';
 
 const VALID_OUTPUT = [
@@ -15,6 +15,7 @@ const VALID_OUTPUT = [
 
 function build(llm: FakeLlm = FakeLlm.failingWith(new Error('provider down'))) {
   const logger = new FakeLogger();
+  const rateLimiter = new FakeRateLimiter();
   const service = new SuggestionService({
     llm,
     cache: new FakeCache(),
@@ -23,7 +24,8 @@ function build(llm: FakeLlm = FakeLlm.failingWith(new Error('provider down'))) {
   });
 
   return {
-    handler: createHandler({ service, logger, allowedOrigins: ['*'] }),
+    handler: createHandler({ service, rateLimiter, logger, allowedOrigins: ['*'] }),
+    rateLimiter,
     logger,
   };
 }
@@ -72,6 +74,7 @@ describe('suggestions handler', () => {
     });
     const handler = createHandler({
       service,
+      rateLimiter: new FakeRateLimiter(),
       logger,
       allowedOrigins: ['http://localhost:8080'],
     });
@@ -93,6 +96,7 @@ describe('suggestions handler', () => {
     });
     const handler = createHandler({
       service,
+      rateLimiter: new FakeRateLimiter(),
       logger,
       allowedOrigins: ['http://localhost:8080'],
     });
@@ -146,7 +150,12 @@ describe('suggestions handler', () => {
         throw new Error('secret detail: sk-should-never-surface');
       },
     } as unknown as SuggestionService;
-    const handler = createHandler({ service: brokenService, logger, allowedOrigins: ['*'] });
+    const handler = createHandler({
+      service: brokenService,
+      rateLimiter: new FakeRateLimiter(),
+      logger,
+      allowedOrigins: ['*'],
+    });
     const res = new FakeResponse();
 
     await handler(request(), res);
@@ -157,6 +166,52 @@ describe('suggestions handler', () => {
     });
     assert.ok(!JSON.stringify(res.body).includes('sk-'));
     assert.ok(logger.has('unhandled_request_failure'));
+  });
+
+  // Test 7 — the limit, as the client experiences it.
+  it('answers 429 with Retry-After once the limit is reached', async () => {
+    const { handler, rateLimiter } = build();
+    rateLimiter.allowed = false;
+    rateLimiter.retryAfterSeconds = 42;
+    const res = new FakeResponse();
+
+    await handler(request(), res);
+
+    assert.equal(res.statusCode, 429);
+    assert.equal(res.headers['Retry-After'], '42');
+    assert.deepEqual(res.body, {
+      error: { code: 'RATE_LIMITED', message: 'Too many requests. Try again shortly.' },
+    });
+  });
+
+  it('checks the limit before validating, so malformed floods still count', async () => {
+    const { handler, rateLimiter } = build();
+    rateLimiter.allowed = false;
+    rateLimiter.retryAfterSeconds = 5;
+    const res = new FakeResponse();
+
+    await handler(request({ body: { occasion: '', relationship: '' } }), res);
+
+    assert.equal(res.statusCode, 429, 'not 400');
+  });
+
+  it('counts against the caller address', async () => {
+    const { handler, rateLimiter } = build();
+
+    await handler(request({ ip: '203.0.113.7' }), new FakeResponse());
+
+    assert.deepEqual(rateLimiter.keys, ['203.0.113.7']);
+  });
+
+  it('keeps serving when the limiter itself is unavailable', async () => {
+    const { handler, rateLimiter, logger } = build(FakeLlm.respondingWith(VALID_OUTPUT));
+    rateLimiter.failWith = new Error('firestore unreachable');
+    const res = new FakeResponse();
+
+    await handler(request(), res);
+
+    assert.equal(res.statusCode, 200, 'a broken counter must not take the service down');
+    assert.ok(logger.has('rate_limit_unavailable'));
   });
 
   it('returns a request id the client can quote when reporting a problem', async () => {

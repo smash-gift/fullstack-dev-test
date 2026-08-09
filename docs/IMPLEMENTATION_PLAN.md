@@ -288,15 +288,38 @@ A missing key does not stop the service from starting. It logs an error and wire
 client, so a reviewer without credit still gets a working API whose `source` field says exactly
 which path ran — better than a server that refuses to boot.
 
-### Stage 4 — Firestore rate limit and cache `[ ]`
+### Stage 4 — Firestore rate limit and cache `[x]`
 
+`domain/rateLimitWindow.ts` (the pure arithmetic), `firestore/db.ts` (lazy Admin SDK handle),
 `firestore/rateLimiter.ts` (transactional counter), `firestore/cacheStore.ts` (get/set with TTL),
-both injected into the handler.
+all injected into the handler.
 
-- **Verify:** `npm test`, then repeat the same `curl` twice.
+- **Verify:** `npm test`, then repeat the same call twice and then flood it.
 - **Done when:** tests 5 and 7 pass; the second identical call returns `source: "cache"`;
   the 31st call in a minute returns `429` with `Retry-After`; a fallback response writes nothing to
   the cache.
+
+**Outcome.** 57 assertions green. Against the emulator: first call `source: "llm"` in 4907ms
+(cold start plus the model), second identical call `source: "cache"` in 46ms with the same three
+messages — roughly a hundredfold faster and free. The flood was refused on request 31 exactly, with
+`Retry-After: 57`.
+
+*The window arithmetic is a pure function.* `evaluateWindow` takes the stored state, a clock and the
+policy, and returns the decision plus what to persist. The Firestore class only reads, calls it, and
+writes. That is what allows the off-by-one at the limit, the reset, and the never-zero `Retry-After`
+to be tested with an explicit clock and no emulator.
+
+*Rate limiting runs before validation*, which reverses the order in the diagram above. A client
+sending a thousand malformed bodies a minute is exactly the traffic a limit exists to stop, and
+validation costs us nothing to skip.
+
+*The limiter fails open.* If Firestore is unreachable the request is allowed and the incident is
+logged. Refusing everyone because the counter is down would turn a cost-control outage into a
+service outage. The trade-off — someone who can break Firestore also removes the limit — is stated
+in the README rather than left implicit.
+
+*Rejections write nothing.* A blocked caller cannot push its own window forward by continuing to
+hammer the endpoint, which a naive "always increment" counter would allow.
 
 ### Stage 5 — Authentication `[ ]`
 
@@ -376,7 +399,10 @@ Backend runs on `node --test`: no emulator, no network, no API key.
 - Anonymous auth is mandatory; ID tokens are verified with the Admin SDK.
 - `firestore.rules` denies every direct client read and write — only the Admin SDK, which bypasses
   rules, touches the database.
-- 30 requests/minute per `uid`, enforced by a transactional counter.
+- 30 requests/minute per `uid`, enforced by a transactional counter. It **fails open**: if the
+  counter store is unreachable the request proceeds and the incident is logged, because a
+  cost-control outage should not become a service outage. Someone able to break Firestore therefore
+  also removes the limit — accepted, and stated in the README.
 - **Prompt injection — what is guaranteed and what is not.** Both input fields are free text, so
   they are an injection surface. Four measures apply: a 60-character limit with control characters
   rejected; the user's text sent as a JSON value rather than interpolated into a sentence, so no
