@@ -71,8 +71,8 @@ no network, no API key.
 | No Express / zod / helmet / test framework / OpenAI SDK | Only what the brief names. Native `fetch` and `node --test` cover everything |
 | `http` package in Flutter (only exception) | `dart:io HttpClient` does not exist on Flutter Web, and Web is a supported target |
 | Rate limit in Firestore, not in memory | Serverless scales horizontally — an in-process counter is wrong by construction |
-| Suggestion cache in Firestore, 24h TTL | Real cost reduction on repeated inputs; makes the cost/caching discussion factual |
-| Fallback is **never** cached | Caching degraded output would turn a momentary outage into 24h of poor answers |
+| Suggestion cache in Firestore, 10-minute TTL | Absorbs the repeated request within a session, which is where the cost is, without handing everyone the same three messages all day |
+| Fallback is **never** cached | Caching degraded output would keep serving generic answers long after the provider recovered |
 | Fallback lives in code, not Firestore | The contingency path must not perform I/O, or it has its own failure mode |
 | Anonymous auth required | Per-`uid` rate limiting is fairer than per-IP (corporate NAT); sign-in is automatic and invisible |
 | LLM failure → `200` + `source` | The request was served with usable content; the app warns without treating it as an error |
@@ -368,6 +368,24 @@ Open the PR to `smash-gift/fullstack-dev-test:main`.
 
 - **Done when:** a reader who never saw this repo can run both sides from the README alone.
 
+**Points that must appear, decided along the way:**
+
+1. *Firestore is not where a cache or a counter belongs.* It was chosen to exercise the stack the
+   brief names, and it works, but the natural home for both is a shared cache — Redis or
+   Memorystore, where a counter is `INCR` plus `EXPIRE` instead of a transaction, and eviction is
+   the store's job rather than a check on every read. The distinction that matters: **shared** cache.
+   An in-process one would be wrong here by construction, since Cloud Functions scales horizontally
+   and each instance would keep its own tally. Worth stating honestly that on Firebase specifically,
+   Redis means Memorystore plus a VPC connector, so Firestore is also the pragmatic choice on this
+   platform, not only a demonstration.
+2. *The residual prompt-injection gap*, as recorded in the security section: what is guaranteed
+   (the output guard), what is only requested (the prompt), what was verified live, and the two-call
+   design that was costed and left out.
+3. *The rate limiter fails open*, and why that is the right default for a cost control.
+4. *Caching makes a repeated request return identical suggestions* — visible in the app as a
+   "Get suggestions" press that appears to do nothing. The 10-minute TTL bounds it; a `refresh`
+   flag that bypasses the cache is the cheap fix if the UX warrants it.
+
 **Estimated total: ~9h15.** Stages 0–6 are the evaluated core. Stage 7 is cuttable under time
 pressure; stage 8 is not — documentation is an explicit evaluation criterion.
 
@@ -436,7 +454,7 @@ Backend runs on `node --test`: no emulator, no network, no API key.
 | Evaluator lacks firebase-tools or a JDK | Prerequisites called out at the top of the README, with the versions actually tested |
 | Emulator normally needs a Firebase project | `demo-` project id prefix → fully offline, no account |
 | Flutter Web blocked by CORS | Preflight handled explicitly in the function and verified in Chrome |
-| Caching reduces suggestion variety | 24h TTL, normalized key, `source:"cache"` visible; documented trade-off |
+| Caching reduces suggestion variety | 10-minute TTL, normalized key, `source:"cache"` visible; documented trade-off |
 | Evaluator without OpenAI credit sees only fallback | `source` in the payload plus `FORCE_LLM_FAILURE` make the behaviour explicit |
 | Time overrun | Stages 0–6 are the core; stage 7 is cuttable, stage 8 is not |
 

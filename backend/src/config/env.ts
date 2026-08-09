@@ -13,8 +13,17 @@ const DEFAULT_MODEL = 'gpt-4o-mini';
 const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_RATE_LIMIT_MAX = 30;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60_000;
-const DEFAULT_CACHE_TTL_HOURS = 24;
-const MS_PER_HOUR = 3_600_000;
+/**
+ * Deliberately minutes, not hours.
+ *
+ * What caching actually protects against is the same person repeating the same
+ * request within a session — a double tap, a page reload, a retry. That happens
+ * in minutes. Holding an entry for a day would save barely more while handing
+ * everyone who asks for the same occasion and relationship the identical three
+ * messages, which is the opposite of what the product is for.
+ */
+const DEFAULT_CACHE_TTL_MINUTES = 10;
+const MS_PER_MINUTE = 60_000;
 
 /**
  * Reads configuration once, at module load.
@@ -32,7 +41,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     rateLimitMax: positiveInteger(env.RATE_LIMIT_MAX, DEFAULT_RATE_LIMIT_MAX),
     rateLimitWindowMs: positiveInteger(env.RATE_LIMIT_WINDOW_MS, DEFAULT_RATE_LIMIT_WINDOW_MS),
     cacheTtlMs:
-      positiveInteger(env.CACHE_TTL_HOURS, DEFAULT_CACHE_TTL_HOURS) * MS_PER_HOUR,
+      positiveInteger(env.CACHE_TTL_MINUTES, DEFAULT_CACHE_TTL_MINUTES) * MS_PER_MINUTE,
   };
 }
 
