@@ -451,9 +451,6 @@ porque "usei IA" sozinho não diz nada.
 passamos por várias rodadas de perguntas e opções. As escolhas que fiz, contra alternativas que foram
 defendidas dos dois lados:
 
-- **Cortar RAG, LangChain e LangGraph.** Eu tinha pedido os três no início; com o enunciado na mesa
-  ficou claro que eram desproporcionais para um problema cuja entrada são duas strings, e eu os
-  descartei.
 - **Incluir o Firebase** (Functions, Firestore, Auth), já que o enunciado o lista na stack mesmo sem
   nenhum requisito detalhado o mencionar.
 - **Recusar o Express** e qualquer biblioteca que o enunciado não cite. Foi isso que levou ao

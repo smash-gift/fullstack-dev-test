@@ -444,9 +444,6 @@ labour, because "I used AI" on its own says nothing.
 several rounds of questions and options. The calls I made, against alternatives that were argued
 either way:
 
-- **Cutting RAG, LangChain and LangGraph.** I had asked for them initially; once the brief was on the
-  table it was clear they were disproportionate for a problem whose input is two strings, so I
-  dropped them.
 - **Including Firebase** (Functions, Firestore, Auth), since the brief lists it in the stack even
   though no detailed requirement mentions it.
 - **Rejecting Express** and every other library the brief does not name. That is what led to the
