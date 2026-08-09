@@ -418,7 +418,7 @@ negative one (it stays away when the answer was personalised).
 controller already took its API — both from stage 6. That is the whole return on those two
 interfaces.
 
-### Stage 8 — Documentation and PR `[ ]`
+### Stage 8 — Documentation and PR `[x] README · [ ] PR`
 
 Rewrite the fork's `README.md`: prerequisites (Node 20+, Flutter 3.38+, firebase-tools, JDK),
 how to run backend and app, architecture diagram, API contract, what counts as a failure and why the
@@ -426,6 +426,16 @@ API answers `200`, rate limiting, cost/caching, and how AI assistance was used.
 Open the PR to `smash-gift/fullstack-dev-test:main`.
 
 - **Done when:** a reader who never saw this repo can run both sides from the README alone.
+
+**Outcome.** `README.md` in English and `README.pt-BR.md` in Portuguese, cross-linked at the top. The
+original brief is preserved at `docs/ORIGINAL_BRIEF.md` rather than overwritten. Both cover
+prerequisites (including the two that bite silently — a JDK for the Firestore emulator, and credit on
+the OpenAI account), how to run backend and app on Chrome and Android, a mermaid architecture diagram,
+the full API contract, the failure policy and why it answers `200`, rate limiting, cost and caching,
+security, the trade-offs, and how AI was used. Every internal link was checked and both test counts
+re-verified against a live run.
+
+The PR remains to be opened, and is the author's call to make.
 
 **Points that must appear, decided along the way:**
 
