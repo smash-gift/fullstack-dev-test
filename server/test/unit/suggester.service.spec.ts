@@ -32,7 +32,11 @@ describe('SuggesterService', () => {
   });
 
   it('should return cached suggestions on Cache HIT', async () => {
-    const cachedData = ['Happy Birthday!', 'All the best!'];
+    const cachedData = {
+      suggestions: ['Happy Birthday!', 'All the best!'],
+      cached: false,
+      provider: 'gemini-1.5-flash',
+    };
     cacheService.get.mockResolvedValue(cachedData);
 
     const result = await service.getSuggestions({
@@ -43,7 +47,7 @@ describe('SuggesterService', () => {
 
     expect(result.status).toBe('success');
     expect(result.data.cached).toBe(true);
-    expect(result.data.suggestions).toEqual(cachedData);
+    expect(result.data.suggestions).toEqual(cachedData.suggestions);
     expect(llmService.generateMessage).not.toHaveBeenCalled();
   });
 
@@ -53,7 +57,10 @@ describe('SuggesterService', () => {
       'Parabéns pelo aniversário!',
       'Felicidades sempre!',
     ];
-    llmService.generateMessage.mockResolvedValue(llmSuggestions);
+    llmService.generateMessage.mockResolvedValue({
+      suggestions: llmSuggestions,
+      providerName: 'claude-3-opus-20240229',
+    });
 
     const result = await service.getSuggestions({
       occasion: 'birthday',
@@ -63,6 +70,7 @@ describe('SuggesterService', () => {
 
     expect(result.status).toBe('success');
     expect(result.data.cached).toBe(false);
+    expect(result.data.provider).toBe('claude-3-opus-20240229');
     expect(result.data.suggestions).toEqual(llmSuggestions);
     expect(llmService.generateMessage).toHaveBeenCalledWith(
       'birthday',

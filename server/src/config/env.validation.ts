@@ -3,7 +3,7 @@ import {
   IsEnum,
   IsNumber,
   IsString,
-  IsNotEmpty,
+  IsOptional,
   validateSync,
 } from 'class-validator';
 
@@ -20,9 +20,17 @@ export class EnvironmentVariables {
   @IsNumber()
   PORT: number = 3000;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'GEMINI_API_KEY is required and cannot be empty.' })
-  GEMINI_API_KEY: string;
+  GEMINI_API_KEY?: string;
+
+  @IsOptional()
+  @IsString()
+  CLAUDE_API_KEY?: string;
+
+  @IsOptional()
+  @IsString()
+  OPENAI_API_KEY?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

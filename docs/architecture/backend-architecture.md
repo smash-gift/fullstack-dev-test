@@ -66,7 +66,10 @@ sequenceDiagram
     participant Controller as SuggesterController
     participant Service as SuggesterService
     participant Cache as CacheService (LRU)
-    participant LLM as LlmService (Gemini)
+    participant LLM as LlmService (Fallback Chain)
+    participant Gemini as GeminiLlmProvider (3s)
+    participant Claude as ClaudeLlmProvider (3s)
+    participant OpenAI as OpenAiLlmProvider (3s)
 
     Client->>Middleware: POST /api/v1/suggestions (Header: X-Guest-ID, Body DTO)
     Middleware-->>Controller: Validate headers & Rate Limit (10 req/min)
@@ -79,13 +82,24 @@ sequenceDiagram
         Controller-->>Client: 200 OK (suggestions, cached: true)
     else Cache Miss
         Service->>LLM: generateMessage(occasion, relationship, language)
-        alt LLM Success (Latency <= 7000ms)
-            LLM-->>Service: Suggestions Array
+        alt Try 1: Gemini Success (<= 3000ms)
+            LLM->>Gemini: generateSuggestions()
+            Gemini-->>LLM: Suggestions Array
+        else Gemini Failure (Timeout/Quota/Error) -> Try 2: Claude Opus
+            LLM->>Claude: generateSuggestions()
+            Claude-->>LLM: Suggestions Array
+        else Claude Failure -> Try 3: OpenAI
+            LLM->>OpenAI: generateSuggestions()
+            OpenAI-->>LLM: Suggestions Array
+        end
+
+        alt Any LLM Provider Succeeded
+            LLM-->>Service: { suggestions, providerName }
             Service->>Cache: set(cacheKey, suggestions, TTL: 24h)
             Service-->>Controller: Response Payload (cached: false)
-            Controller-->>Client: 200 OK (suggestions, provider: "gemini-2.5-flash")
-        else LLM Failure (Timeout > 7000ms, HTTP 429/5xx, Network Error)
-            LLM-->>Service: LlmException / TimeoutError
+            Controller-->>Client: 200 OK (suggestions, provider: providerName)
+        else All LLM Providers Failed
+            LLM-->>Service: ServiceUnavailableException
             Service-->>Controller: Propagates ServiceUnavailableException
             Controller-->>Client: 503 Service Unavailable (code: "LLM_SERVICE_UNAVAILABLE")
         end

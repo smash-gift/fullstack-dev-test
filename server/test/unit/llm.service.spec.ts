@@ -1,52 +1,98 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceUnavailableException } from '@nestjs/common';
 import { LlmService } from '../../src/modules/llm/llm.service';
-import { ILlmProviderToken } from '../../src/modules/llm/interfaces/llm-provider.interface';
+import {
+  ILlmProviderToken,
+  ILlmProvider,
+} from '../../src/modules/llm/interfaces/llm-provider.interface';
 
-describe('LlmService', () => {
+describe('LlmService Fallback Chain', () => {
   let service: LlmService;
-  let mockProvider: { generateSuggestions: jest.Mock };
+  let mockGemini: jest.Mocked<ILlmProvider>;
+  let mockClaude: jest.Mocked<ILlmProvider>;
+  let mockOpenAI: jest.Mocked<ILlmProvider>;
 
   beforeEach(async () => {
-    mockProvider = {
+    mockGemini = {
+      name: 'gemini-1.5-flash',
+      isConfigured: jest.fn().mockReturnValue(true),
+      generateSuggestions: jest.fn(),
+    };
+    mockClaude = {
+      name: 'claude-3-opus-20240229',
+      isConfigured: jest.fn().mockReturnValue(true),
+      generateSuggestions: jest.fn(),
+    };
+    mockOpenAI = {
+      name: 'gpt-4o-mini',
+      isConfigured: jest.fn().mockReturnValue(true),
       generateSuggestions: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LlmService,
-        { provide: ILlmProviderToken, useValue: mockProvider },
+        {
+          provide: ILlmProviderToken,
+          useValue: [mockGemini, mockClaude, mockOpenAI],
+        },
       ],
     }).compile();
 
     service = module.get<LlmService>(LlmService);
   });
 
-  it('should return suggestions when provider resolves within timeout', async () => {
-    const mockOutput = ['Message 1', 'Message 2'];
-    mockProvider.generateSuggestions.mockResolvedValue(mockOutput);
+  it('should return Gemini response if Gemini succeeds (Priority 1)', async () => {
+    const expected = {
+      suggestions: ['Msg 1', 'Msg 2'],
+      providerName: 'gemini-1.5-flash',
+    };
+    mockGemini.generateSuggestions.mockResolvedValue(expected);
 
     const result = await service.generateMessage('birthday', 'friend', 'pt-BR');
-    expect(result).toEqual(mockOutput);
+
+    expect(result).toEqual(expected);
+    expect(mockClaude.generateSuggestions).not.toHaveBeenCalled();
+    expect(mockOpenAI.generateSuggestions).not.toHaveBeenCalled();
   });
 
-  it('should throw ServiceUnavailableException (503) when provider fails', async () => {
-    mockProvider.generateSuggestions.mockRejectedValue(
-      new Error('API quota exceeded'),
+  it('should fallback to Claude Opus (Priority 2) if Gemini fails', async () => {
+    mockGemini.generateSuggestions.mockRejectedValue(new Error('Quota limit'));
+    const expected = {
+      suggestions: ['Claude Msg 1', 'Claude Msg 2'],
+      providerName: 'claude-3-opus-20240229',
+    };
+    mockClaude.generateSuggestions.mockResolvedValue(expected);
+
+    const result = await service.generateMessage('birthday', 'friend', 'pt-BR');
+
+    expect(result).toEqual(expected);
+    expect(mockOpenAI.generateSuggestions).not.toHaveBeenCalled();
+  });
+
+  it('should fallback to OpenAI (Priority 3) if Gemini and Claude fail', async () => {
+    mockGemini.generateSuggestions.mockRejectedValue(new Error('Quota limit'));
+    mockClaude.generateSuggestions.mockRejectedValue(
+      new Error('Claude timeout'),
     );
+    const expected = {
+      suggestions: ['OpenAI Msg 1', 'OpenAI Msg 2'],
+      providerName: 'gpt-4o-mini',
+    };
+    mockOpenAI.generateSuggestions.mockResolvedValue(expected);
+
+    const result = await service.generateMessage('birthday', 'friend', 'pt-BR');
+
+    expect(result).toEqual(expected);
+  });
+
+  it('should throw ServiceUnavailableException (503) if ALL providers fail', async () => {
+    mockGemini.generateSuggestions.mockRejectedValue(new Error('Gemini Fail'));
+    mockClaude.generateSuggestions.mockRejectedValue(new Error('Claude Fail'));
+    mockOpenAI.generateSuggestions.mockRejectedValue(new Error('OpenAI Fail'));
 
     await expect(
       service.generateMessage('birthday', 'friend', 'pt-BR'),
     ).rejects.toThrow(ServiceUnavailableException);
   });
-
-  it('should throw ServiceUnavailableException (503) when provider times out (> 7000ms)', async () => {
-    mockProvider.generateSuggestions.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 8000)),
-    );
-
-    await expect(
-      service.generateMessage('birthday', 'friend', 'pt-BR'),
-    ).rejects.toThrow(ServiceUnavailableException);
-  }, 10000);
 });

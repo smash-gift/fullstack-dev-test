@@ -22,7 +22,10 @@ The application is a high-performance RESTful API designed with resilience and l
 ## 🛠️ Stack and Architecture
 
 - **Framework**: NestJS (TypeScript)
-- **LLM Provider**: `@google/genai` (Google Gemini 2.5 Flash)
+- **LLM Multi-Provider Fallback Chain (RN05)**:
+  1. Priority 1: Google Gemini (`gemini-1.5-flash`)
+  2. Priority 2: Anthropic Claude (`claude-3-opus-20240229`)
+  3. Priority 3: OpenAI (`gpt-4o-mini`)
 - **Data Validation**: `class-validator` and `class-transformer`
 - **Resilience and Cache**: In-Memory LRU Cache (`@nestjs/cache-manager`)
 - **Rate Limiting**: `@nestjs/throttler`

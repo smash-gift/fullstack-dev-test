@@ -4,13 +4,15 @@ import { CreateSuggestionDto } from './dto/create-suggestion.dto';
 import { LlmService } from '../llm/llm.service';
 import { CacheService } from '../cache/cache.service';
 
+export interface SuggestionResponseData {
+  suggestions: string[];
+  cached: boolean;
+  provider: string;
+}
+
 export interface SuggestionResponse {
   status: 'success';
-  data: {
-    suggestions: string[];
-    cached: boolean;
-    provider: string;
-  };
+  data: SuggestionResponseData;
 }
 
 @Injectable()
@@ -30,37 +32,41 @@ export class SuggesterService {
       language,
     );
 
-    const cachedSuggestions = await this.cacheService.get<string[]>(cacheKey);
+    const cachedData =
+      await this.cacheService.get<SuggestionResponseData>(cacheKey);
 
-    if (cachedSuggestions && cachedSuggestions.length > 0) {
+    if (cachedData && cachedData.suggestions?.length > 0) {
       this.logger.log(`Cache HIT for key: ${cacheKey}`);
       return {
         status: 'success',
         data: {
-          suggestions: cachedSuggestions,
+          ...cachedData,
           cached: true,
-          provider: 'gemini-2.5-flash',
         },
       };
     }
 
-    this.logger.log(`Cache MISS for key: ${cacheKey}. Invoking LLM...`);
+    this.logger.log(
+      `Cache MISS for key: ${cacheKey}. Invoking LLM fallback chain...`,
+    );
 
-    const suggestions = await this.llmService.generateMessage(
+    const llmResult = await this.llmService.generateMessage(
       dto.occasion,
       dto.relationship,
       language,
     );
 
-    await this.cacheService.set(cacheKey, suggestions, 86400000); // 24 hours
+    const responseData: SuggestionResponseData = {
+      suggestions: llmResult.suggestions,
+      cached: false,
+      provider: llmResult.providerName,
+    };
+
+    await this.cacheService.set(cacheKey, responseData, 86400000); // 24 hours
 
     return {
       status: 'success',
-      data: {
-        suggestions,
-        cached: false,
-        provider: 'gemini-2.5-flash',
-      },
+      data: responseData,
     };
   }
 

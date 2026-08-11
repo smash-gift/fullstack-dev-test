@@ -4,4 +4,10 @@ export default () => ({
   gemini: {
     apiKey: process.env.GEMINI_API_KEY,
   },
+  claude: {
+    apiKey: process.env.CLAUDE_API_KEY,
+  },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY,
+  },
 });

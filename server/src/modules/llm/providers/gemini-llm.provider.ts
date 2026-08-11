@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ILlmProvider } from '../interfaces/llm-provider.interface';
+import { ILlmProvider, LlmResult } from '../interfaces/llm-provider.interface';
 
 @Injectable()
 export class GeminiLlmProvider implements ILlmProvider {
+  readonly name = 'gemini-1.5-flash';
   private readonly logger = new Logger(GeminiLlmProvider.name);
-  private genAI: GoogleGenerativeAI;
+  private genAI: GoogleGenerativeAI | null = null;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
@@ -15,20 +16,26 @@ export class GeminiLlmProvider implements ILlmProvider {
     }
   }
 
+  isConfigured(): boolean {
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    return Boolean(apiKey && apiKey !== 'your_gemini_api_key_here');
+  }
+
   async generateSuggestions(
     occasion: string,
     relationship: string,
     language: string,
-  ): Promise<string[]> {
+  ): Promise<LlmResult> {
+    if (!this.isConfigured()) {
+      throw new Error('GEMINI_API_KEY is missing or invalid.');
+    }
+
     if (!this.genAI) {
       const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-      if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-        throw new Error('GEMINI_API_KEY is missing or invalid.');
-      }
       this.genAI = new GoogleGenerativeAI(apiKey);
     }
 
-    const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = this.genAI.getGenerativeModel({ model: this.name });
     const promptLanguage =
       language === 'en-US' ? 'English' : 'Portuguese (pt-BR)';
 
@@ -39,7 +46,12 @@ Language: ${promptLanguage}.`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text()?.trim() || '';
-    return this.parseResponse(text);
+    const suggestions = this.parseResponse(text);
+
+    return {
+      suggestions,
+      providerName: this.name,
+    };
   }
 
   private parseResponse(text: string): string[] {
