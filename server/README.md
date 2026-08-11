@@ -58,7 +58,10 @@ server/
 
 ---
 
-## 📡 API Contract
+## 📡 API Contract & Swagger Documentation
+
+Interactive OpenAPI / Swagger UI is available at:
+👉 **`http://localhost:3000/api/docs`**
 
 ### `POST /api/v1/suggestions`
 

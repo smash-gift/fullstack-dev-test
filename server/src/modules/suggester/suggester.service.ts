@@ -22,9 +22,7 @@ export class SuggesterService {
     private readonly cacheService: CacheService,
   ) {}
 
-  async getSuggestions(
-    dto: CreateSuggestionDto,
-  ): Promise<SuggestionResponse> {
+  async getSuggestions(dto: CreateSuggestionDto): Promise<SuggestionResponse> {
     const language = dto.language || 'pt-BR';
     const cacheKey = this.generateCacheKey(
       dto.occasion,
@@ -32,8 +30,7 @@ export class SuggesterService {
       language,
     );
 
-    const cachedSuggestions =
-      await this.cacheService.get<string[]>(cacheKey);
+    const cachedSuggestions = await this.cacheService.get<string[]>(cacheKey);
 
     if (cachedSuggestions && cachedSuggestions.length > 0) {
       this.logger.log(`Cache HIT for key: ${cacheKey}`);

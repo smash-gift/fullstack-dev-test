@@ -49,7 +49,10 @@ describe('SuggesterService', () => {
 
   it('should call LLM service on Cache MISS and set cache', async () => {
     cacheService.get.mockResolvedValue(null);
-    const llmSuggestions = ['Parabéns pelo aniversário!', 'Felicidades sempre!'];
+    const llmSuggestions = [
+      'Parabéns pelo aniversário!',
+      'Felicidades sempre!',
+    ];
     llmService.generateMessage.mockResolvedValue(llmSuggestions);
 
     const result = await service.getSuggestions({
