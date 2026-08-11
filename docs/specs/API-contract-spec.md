@@ -49,19 +49,14 @@ Rigorously define the technical specification for the gift card message suggeste
 }
 ```
 
-#### **200 OK — Graceful Degradation (Fallback)**
-When the LLM API fails (timeout > 4s, 429 rate limit, 5xx external errors):
+#### **503 Service Unavailable — LLM Provider Failure (RN04)**
+When the LLM API fails (timeout > 4s, 429 rate limit, 5xx external errors, or network error):
 ```json
 {
-  "status": "fallback",
-  "data": {
-    "suggestions": [
-      "Wishing you a wonderful day filled with joy!",
-      "May this special day be celebrated with love and happiness!"
-    ],
-    "cached": false,
-    "provider": "fallback-engine"
-  }
+  "statusCode": 503,
+  "error": "Service Unavailable",
+  "message": "O serviço de sugestões de IA está temporariamente indisponível. Tente novamente em instantes.",
+  "code": "LLM_SERVICE_UNAVAILABLE"
 }
 ```
 
@@ -82,3 +77,4 @@ When the LLM API fails (timeout > 4s, 429 rate limit, 5xx external errors):
   "message": "Rate limit exceeded. Please wait 1 minute before requesting more suggestions."
 }
 ```
+

@@ -22,25 +22,35 @@ The application is a high-performance RESTful API designed with resilience and l
 ## 🛠️ Stack and Architecture
 
 - **Framework**: NestJS (TypeScript)
-- **LLM Provider**: `@google/genai` or `openai`
+- **LLM Provider**: `@google/genai` (Google Gemini 2.5 Flash)
 - **Data Validation**: `class-validator` and `class-transformer`
 - **Resilience and Cache**: In-Memory LRU Cache (`@nestjs/cache-manager`)
 - **Rate Limiting**: `@nestjs/throttler`
 - **Containerization**: Docker / Docker Compose
+- **Architecture Spec**: Detailed documentation available at [`../docs/architecture/backend-architecture.md`](../docs/architecture/backend-architecture.md)
 
 ```
 server/
 ├── src/
+│   ├── config/
+│   │   ├── env.validation.ts       # Environment variable validation schema
+│   │   └── configuration.ts        # Typed configuration factory
+│   ├── common/
+│   │   ├── filters/
+│   │   │   └── http-exception.filter.ts  # Standardized HTTP error response filter
+│   │   ├── guards/
+│   │   │   └── rate-limit.guard.guard.ts # Custom rate limiter guard (Guest-ID/IP)
+│   │   ├── interceptors/
+│   │   │   └── logging.interceptor.ts    # Request/Response logging interceptor
+│   │   └── middleware/
+│   │       └── guest-id.middleware.ts    # X-Guest-ID header validation middleware
 │   ├── modules/
 │   │   ├── suggester/        # Controller, Service, and DTOs for message generation
-│   │   ├── llm/              # Adaptable provider (Gemini / OpenAI)
-│   │   └── cache/            # Cache module for LLM cost savings
-│   ├── common/
-│   │   ├── filters/          # Exception Filters for graceful degradation
-│   │   └── middleware/       # Middlewares (rate limiting, logging, guest tracking)
+│   │   ├── llm/              # Decoupled provider strategy (Gemini integration)
+│   │   └── cache/            # LRU Cache module (24h TTL)
 │   ├── app.module.ts
 │   └── main.ts
-├── test/                     # Unit and e2e tests (fallback path, dto validation)
+├── test/                     # Unit and e2e integration tests
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
@@ -53,6 +63,11 @@ server/
 ### `POST /api/v1/suggestions`
 
 Requests message suggestions based on occasion and relationship.
+
+#### **Request Headers**
+- `Content-Type`: `application/json`
+- `X-Guest-ID`: `<uuid-v4>` (required, per [`RN02`](../docs/specs/RN02-guest-user.md))
+- `Accept-Language`: `pt-BR` | `en-US` (optional, per [`RN01`](../docs/specs/RN01-internationalization.md))
 
 #### **Request Body**
 ```json
@@ -82,37 +97,32 @@ Requests message suggestions based on occasion and relationship.
 }
 ```
 
-#### **Response (200 OK — Fallback Mode / Graceful Degradation)**
-In case of LLM provider API unavailability (timeout, 429 rate limit, 5xx errors), the API does not expose raw errors and returns pre-validated fallback suggestions:
+#### **Response (503 Service Unavailable — LLM Failure Policy, per RN04)**
+In case of LLM provider API failure (timeout > 4s, 429 rate limit, 5xx errors, or network failure), the endpoint returns a deterministic 503 error response:
 ```json
 {
-  "status": "fallback",
-  "data": {
-    "suggestions": [
-      "Wishing you a wonderful day filled with joy!",
-      "May this special day be celebrated with love and happiness!"
-    ],
-    "cached": false,
-    "provider": "fallback-engine"
-  }
+  "statusCode": 503,
+  "error": "Service Unavailable",
+  "message": "O serviço de sugestões de IA está temporariamente indisponível. Tente novamente em instantes.",
+  "code": "LLM_SERVICE_UNAVAILABLE"
 }
 ```
 
 ---
 
-## 🛡️ Error Handling and Fallbacks
+## 🛡️ Error Handling Policy (RN04)
 
 ### What is considered an LLM failure?
 1. **Timeout**: Requests to the LLM provider exceeding 4000ms.
 2. **Provider Rate Limit (HTTP 429)**: Exceeding request quotas per minute on the provider API.
-3. **External Server Errors (HTTP 5xx)**: Failures on OpenAI/Google servers.
+3. **External Server Errors (HTTP 5xx)**: Failures on Google Gemini servers.
 4. **Malformed Output**: Model returning invalid or empty responses.
 
-### Fallback Behavior
+### Error Response Behavior
 When a failure occurs:
-- The internal error is logged for monitoring using NestJS `Logger`.
+- The internal error details are logged via NestJS `Logger`.
 - The client **never** receives an HTTP 500 status or exposed stack trace.
-- A repository of static, high-quality fallback messages filtered by occasion is returned immediately to the user.
+- An **HTTP 503 Service Unavailable** response is returned so the frontend can display a clear error state with a retry option (see [`../docs/specs/RN04-llm-failure-handling.md`](../docs/specs/RN04-llm-failure-handling.md)).
 
 ---
 
