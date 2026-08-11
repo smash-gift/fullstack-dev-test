@@ -22,7 +22,7 @@ The application is a high-performance RESTful API designed with resilience and l
 
 - **Framework**: NestJS (TypeScript)
 - **LLM Multi-Provider Fallback Chain (RN05)**:
-  1. Priority 1: Google Gemini (`gemini-1.5-flash`)
+  1. Priority 1: Google Gemini (`gemini-1.5-flash-lite`)
   2. Priority 2: Anthropic Claude (`claude-3-opus-20240229`)
   3. Priority 3: OpenAI (`gpt-4o-mini`)
 - **Data Validation**: `class-validator` and `class-transformer`

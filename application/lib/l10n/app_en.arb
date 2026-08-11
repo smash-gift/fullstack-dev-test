@@ -40,6 +40,15 @@
   "toneShort": "Short & Sweet",
   "tonePoetic": "Poetic & Inspiring",
 
+  "optionOther": "Other...",
+  "labelCustomOccasion": "Custom Occasion",
+  "hintCustomOccasion": "Type desired occasion (e.g. Baby Shower, Baptism...)",
+  "labelCustomRelationship": "Custom Relationship",
+  "hintCustomRelationship": "Type custom relationship (e.g. Godchild, Neighbor...)",
+  "labelCustomTone": "Custom Tone",
+  "hintCustomTone": "Type desired tone (e.g. Nostalgic, Motivational...)",
+  "errorEmptyCustomField": "Please fill in the custom field before generating.",
+
   "btnGenerateMessages": "Generate AI Messages",
   "btnRegenerate": "Generate More Options",
   "btnBack": "Back",

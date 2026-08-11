@@ -112,6 +112,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tonePoetic => 'Poetic & Inspiring';
 
   @override
+  String get optionOther => 'Other...';
+
+  @override
+  String get labelCustomOccasion => 'Custom Occasion';
+
+  @override
+  String get hintCustomOccasion =>
+      'Type desired occasion (e.g. Baby Shower, Baptism...)';
+
+  @override
+  String get labelCustomRelationship => 'Custom Relationship';
+
+  @override
+  String get hintCustomRelationship =>
+      'Type custom relationship (e.g. Godchild, Neighbor...)';
+
+  @override
+  String get labelCustomTone => 'Custom Tone';
+
+  @override
+  String get hintCustomTone =>
+      'Type desired tone (e.g. Nostalgic, Motivational...)';
+
+  @override
+  String get errorEmptyCustomField =>
+      'Please fill in the custom field before generating.';
+
+  @override
   String get btnGenerateMessages => 'Generate AI Messages';
 
   @override

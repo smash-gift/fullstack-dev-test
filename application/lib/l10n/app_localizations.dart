@@ -155,13 +155,13 @@ abstract class AppLocalizations {
   /// No description provided for @labelOccasion.
   ///
   /// In pt, this message translates to:
-  /// **'Ocasião Especial'**
+  /// **'Ocasião'**
   String get labelOccasion;
 
   /// No description provided for @labelRelationship.
   ///
   /// In pt, this message translates to:
-  /// **'Relacionamento com o Destinatário'**
+  /// **'Relacionamento'**
   String get labelRelationship;
 
   /// No description provided for @labelTone.
@@ -301,6 +301,54 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Poético & Inspirador'**
   String get tonePoetic;
+
+  /// No description provided for @optionOther.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outro...'**
+  String get optionOther;
+
+  /// No description provided for @labelCustomOccasion.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ocasião Personalizada'**
+  String get labelCustomOccasion;
+
+  /// No description provided for @hintCustomOccasion.
+  ///
+  /// In pt, this message translates to:
+  /// **'Digite a ocasião desejada (ex: Batizado, Chá de Bebê...)'**
+  String get hintCustomOccasion;
+
+  /// No description provided for @labelCustomRelationship.
+  ///
+  /// In pt, this message translates to:
+  /// **'Relacionamento Personalizado'**
+  String get labelCustomRelationship;
+
+  /// No description provided for @hintCustomRelationship.
+  ///
+  /// In pt, this message translates to:
+  /// **'Digite o relacionamento (ex: Afilhado, Vizinho...)'**
+  String get hintCustomRelationship;
+
+  /// No description provided for @labelCustomTone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tom de Voz Personalizado'**
+  String get labelCustomTone;
+
+  /// No description provided for @hintCustomTone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Digite o tom desejado (ex: Nostálgico, Motivacional...)'**
+  String get hintCustomTone;
+
+  /// No description provided for @errorEmptyCustomField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Por favor, preencha o campo personalizado antes de gerar.'**
+  String get errorEmptyCustomField;
 
   /// No description provided for @btnGenerateMessages.
   ///

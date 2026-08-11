@@ -21,7 +21,7 @@ Requests to generate gift card message suggestions follow a strict priority sequ
 [Request] 
    │
    ▼
-1. Primary Provider: Google Gemini (gemini-1.5-flash)
+1. Primary Provider: Google Gemini (gemini-1.5-flash-lite)
    │ (Timeout > 3000ms / Quota 429 / Error)
    ▼
 2. First Fallback: Anthropic Claude (claude-3-opus-20240229 / claude-3-5-sonnet)
@@ -44,7 +44,7 @@ Requests to generate gift card message suggestions follow a strict priority sequ
    - `OPENAI_API_KEY` (OpenAI)
    - If an API key is missing or unconfigured in `.env`, the backend silently skips that provider in the chain.
 3. **Dynamic Response Identification**:
-   - The 200 OK HTTP response payload includes a `provider` string identifying the specific LLM model that generated the suggestions (e.g., `"gemini-1.5-flash"`, `"claude-3-opus"`, `"gpt-4o-mini"`).
+   - The 200 OK HTTP response payload includes a `provider` string identifying the specific LLM model that generated the suggestions (e.g., `"gemini-1.5-flash-lite"`, `"claude-3-opus"`, `"gpt-4o-mini"`).
 
 ---
 

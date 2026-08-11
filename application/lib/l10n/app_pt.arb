@@ -11,8 +11,8 @@
 
   "occasionTitle": "Para qual ocasião é a mensagem?",
   "occasionSubtitle": "Preencha os detalhes para a IA gerar opções personalizadas.",
-  "labelOccasion": "Ocasião Especial",
-  "labelRelationship": "Relacionamento com o Destinatário",
+  "labelOccasion": "Ocasião",
+  "labelRelationship": "Relacionamento",
   "labelTone": "Tom de Voz Desejado",
   "labelMemories": "Memórias ou Detalhes Especiais (Opcional)",
   "labelRecipient": "Nome do Destinatário (Para)",
@@ -39,6 +39,15 @@
   "toneElegant": "Elegante & Formal",
   "toneShort": "Curto & Direto",
   "tonePoetic": "Poético & Inspirador",
+
+  "optionOther": "Outro...",
+  "labelCustomOccasion": "Ocasião Personalizada",
+  "hintCustomOccasion": "Digite a ocasião desejada (ex: Batizado, Chá de Bebê...)",
+  "labelCustomRelationship": "Relacionamento Personalizado",
+  "hintCustomRelationship": "Digite o relacionamento (ex: Afilhado, Vizinho...)",
+  "labelCustomTone": "Tom de Voz Personalizado",
+  "hintCustomTone": "Digite o tom desejado (ex: Nostálgico, Motivacional...)",
+  "errorEmptyCustomField": "Por favor, preencha o campo personalizado antes de gerar.",
 
   "btnGenerateMessages": "Gerar Mensagens com IA",
   "btnRegenerate": "Gerar Mais Opções",

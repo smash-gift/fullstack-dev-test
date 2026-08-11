@@ -5,7 +5,7 @@ import { ILlmProvider, LlmResult } from '../interfaces/llm-provider.interface';
 
 @Injectable()
 export class GeminiLlmProvider implements ILlmProvider {
-  readonly name = 'gemini-1.5-flash';
+  readonly name = 'gemini-1.5-flash-lite';
   private readonly logger = new Logger(GeminiLlmProvider.name);
   private genAI: GoogleGenerativeAI | null = null;
 

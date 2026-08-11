@@ -37,10 +37,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Preencha os detalhes para a IA gerar opções personalizadas.';
 
   @override
-  String get labelOccasion => 'Ocasião Especial';
+  String get labelOccasion => 'Ocasião';
 
   @override
-  String get labelRelationship => 'Relacionamento com o Destinatário';
+  String get labelRelationship => 'Relacionamento';
 
   @override
   String get labelTone => 'Tom de Voz Desejado';
@@ -110,6 +110,34 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get tonePoetic => 'Poético & Inspirador';
+
+  @override
+  String get optionOther => 'Outro...';
+
+  @override
+  String get labelCustomOccasion => 'Ocasião Personalizada';
+
+  @override
+  String get hintCustomOccasion =>
+      'Digite a ocasião desejada (ex: Batizado, Chá de Bebê...)';
+
+  @override
+  String get labelCustomRelationship => 'Relacionamento Personalizado';
+
+  @override
+  String get hintCustomRelationship =>
+      'Digite o relacionamento (ex: Afilhado, Vizinho...)';
+
+  @override
+  String get labelCustomTone => 'Tom de Voz Personalizado';
+
+  @override
+  String get hintCustomTone =>
+      'Digite o tom desejado (ex: Nostálgico, Motivacional...)';
+
+  @override
+  String get errorEmptyCustomField =>
+      'Por favor, preencha o campo personalizado antes de gerar.';
 
   @override
   String get btnGenerateMessages => 'Gerar Mensagens com IA';
