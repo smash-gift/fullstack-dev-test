@@ -49,8 +49,6 @@ server/
 ├── test/
 │   ├── unit/                             # Service & Controller Unit Tests
 │   └── e2e/                              # End-to-End API Integration Tests
-├── Dockerfile
-├── docker-compose.yml
 └── package.json
 ```
 

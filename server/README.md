@@ -14,7 +14,6 @@ The application is a high-performance RESTful API designed with resilience and l
 
 - **Node.js** `v20.x` or higher
 - **npm** `v10.x` or **pnpm** / **yarn**
-- **Docker** and **Docker Compose**
 - **LLM API Key**: OpenAI API Key (`OPENAI_API_KEY`) **or** Google Gemini API Key (`GEMINI_API_KEY`).
 
 ---
@@ -29,7 +28,6 @@ The application is a high-performance RESTful API designed with resilience and l
 - **Data Validation**: `class-validator` and `class-transformer`
 - **Resilience and Cache**: In-Memory LRU Cache (`@nestjs/cache-manager`)
 - **Rate Limiting**: `@nestjs/throttler`
-- **Containerization**: Docker / Docker Compose
 - **Architecture Spec**: Detailed documentation available at [`../docs/architecture/backend-architecture.md`](../docs/architecture/backend-architecture.md)
 
 ```
@@ -54,8 +52,6 @@ server/
 │   ├── app.module.ts
 │   └── main.ts
 ├── test/                     # Unit and e2e integration tests
-├── Dockerfile
-├── docker-compose.yml
 └── README.md
 ```
 
@@ -145,25 +141,30 @@ When a failure occurs:
 
 ---
 
-## 🐳 Running with Docker
+## 💻 Execution & Testing
 
 ### 1. Configure Environment Variables
 Create a `.env` file in the `server/` folder:
 ```env
 PORT=3000
-NODE_ENV=production
+NODE_ENV=development
 LLM_PROVIDER=gemini # or openai
 GEMINI_API_KEY=your_gemini_key_here
 OPENAI_API_KEY=your_openai_key_here
 ```
 
-### 2. Run via Docker Compose
+### 2. Install Dependencies
 ```bash
-docker-compose up --build -d
+npm install
+```
+
+### 3. Run Development Server
+```bash
+npm run start:dev
 ```
 The API will be available at `http://localhost:3000`.
 
-### 3. Run Container Tests
+### 4. Run Tests
 ```bash
-docker exec -it gift_card_backend npm run test
+npm run test
 ```
