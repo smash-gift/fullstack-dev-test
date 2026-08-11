@@ -1,28 +1,34 @@
 import '../../domain/models/suggestion.dart';
 
 /// Data Transfer Object representing suggestion payload returned by NestJS API.
-class SuggestionDto {
+class SuggestionModel {
   final String id;
   final String text;
   final String occasion;
   final String relationship;
   final String language;
+  final String tone;
+  final bool isFallback;
 
-  const SuggestionDto({
+  const SuggestionModel({
     required this.id,
     required this.text,
     required this.occasion,
     required this.relationship,
     required this.language,
+    this.tone = 'Warm',
+    this.isFallback = false,
   });
 
-  factory SuggestionDto.fromJson(Map<String, dynamic> json) {
-    return SuggestionDto(
+  factory SuggestionModel.fromJson(Map<String, dynamic> json) {
+    return SuggestionModel(
       id: json['id'] as String? ?? '',
       text: json['text'] as String? ?? '',
       occasion: json['occasion'] as String? ?? '',
       relationship: json['relationship'] as String? ?? '',
       language: json['language'] as String? ?? 'pt-BR',
+      tone: json['tone'] as String? ?? 'Warm',
+      isFallback: json['isFallback'] as bool? ?? false,
     );
   }
 
@@ -33,6 +39,8 @@ class SuggestionDto {
       'occasion': occasion,
       'relationship': relationship,
       'language': language,
+      'tone': tone,
+      'isFallback': isFallback,
     };
   }
 
@@ -44,6 +52,8 @@ class SuggestionDto {
       occasion: occasion,
       relationship: relationship,
       language: language,
+      tone: tone,
+      isFallback: isFallback,
     );
   }
 }

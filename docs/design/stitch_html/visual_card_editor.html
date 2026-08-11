@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Visual Gift Card Canvas Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Grotesk:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;family=Caveat:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#ff8a00",
+                        "surface-container-highest": "#353438",
+                        "surface-container-lowest": "#0e0e11",
+                        "secondary-fixed": "#ffdcc4",
+                        "on-tertiary-container": "#002c50",
+                        "tertiary-container": "#0095fb",
+                        "tertiary": "#a0c9ff",
+                        "on-surface": "#e4e1e6",
+                        "surface": "#131316",
+                        "inverse-surface": "#e4e1e6",
+                        "on-background": "#e4e1e6",
+                        "on-error-container": "#ffdad6",
+                        "on-surface-variant": "#e4bfb2",
+                        "on-tertiary-fixed": "#001c37",
+                        "bg-light": "#F8F9FA",
+                        "on-tertiary": "#003259",
+                        "surface-light": "#FFFFFF",
+                        "inverse-primary": "#a83900",
+                        "on-secondary-fixed-variant": "#6f3900",
+                        "outline-variant": "#5b4137",
+                        "secondary": "#ffb77f",
+                        "tertiary-fixed-dim": "#a0c9ff",
+                        "surface-variant": "#353438",
+                        "on-secondary-fixed": "#2f1500",
+                        "outline": "#ab897e",
+                        "on-primary-container": "#501700",
+                        "on-tertiary-fixed-variant": "#00497f",
+                        "primary": "#ffb59a",
+                        "border-accent": "rgba(252, 92, 8, 0.2)",
+                        "error": "#ffb4ab",
+                        "inverse-on-surface": "#303033",
+                        "surface-container-high": "#2a2a2d",
+                        "primary-fixed": "#ffdbce",
+                        "background": "#131316",
+                        "tertiary-fixed": "#d2e4ff",
+                        "surface-bright": "#39393c",
+                        "secondary-fixed-dim": "#ffb77f",
+                        "on-error": "#690005",
+                        "surface-container-low": "#1b1b1e",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#613100",
+                        "primary-container": "#fc5c08",
+                        "brand-gradient": "linear-gradient(135deg, #FC5C08 0%, #FF8A00 100%)",
+                        "on-primary-fixed": "#380d00",
+                        "shadow-accent": "rgba(252, 92, 8, 0.08)",
+                        "surface-container": "#1f1f22",
+                        "surface-dim": "#131316",
+                        "on-primary": "#5b1b00",
+                        "surface-tint": "#ffb59a",
+                        "surface-dark": "#18181C",
+                        "on-secondary": "#4e2600",
+                        "primary-fixed-dim": "#ffb59a",
+                        "on-primary-fixed-variant": "#802a00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "20px",
+                        "container-max": "1280px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "button-text": ["Inter", "sans-serif"],
+                        "headline-md": ["Clash Grotesk", "sans-serif"],
+                        "headline-lg-mobile": ["Clash Grotesk", "sans-serif"],
+                        "label-bold": ["Inter", "sans-serif"],
+                        "headline-lg": ["Clash Grotesk", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "display-xl": ["Clash Grotesk", "sans-serif"],
+                        "body-sm": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "serif-text": ["Playfair Display", "serif"],
+                        "handwritten-text": ["Caveat", "cursive"]
+                    },
+                    "fontSize": {
+                        "button-text": ["16px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "38px", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-xl": ["64px", { "lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .glass-card {
+            background-color: theme('colors.surface-dark');
+            border: 1px solid theme('colors.border-accent');
+        }
+        .bg-brand-gradient { background: theme('colors.brand-gradient'); }
+        .text-brand-gradient {
+            background: theme('colors.brand-gradient');
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md bg-background antialiased selection:bg-primary-container selection:text-white">
+<!-- Top Navigation -->
+<header class="flex justify-between items-center px-margin-mobile h-16 w-full z-50 bg-surface-dark border-b border-border-accent fixed top-0 left-0 right-0">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+<span class="hidden md:inline font-button-text text-button-text">Back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary truncate mx-4">Visual Card Editor</h1>
+<button class="bg-primary-container text-white px-4 py-2 rounded-full font-button-text text-button-text hover:brightness-110 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-shadow-accent">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">download</span>
+<span class="hidden sm:inline">Export</span>
+</button>
+</header>
+<!-- Main Workspace -->
+<main class="flex-grow pt-20 pb-[100px] md:pb-24 px-margin-mobile md:px-margin-desktop flex flex-col lg:flex-row gap-gutter container-max mx-auto h-screen overflow-hidden">
+<!-- Canvas Area -->
+<section class="flex-grow flex items-center justify-center h-full relative z-10 w-full lg:w-2/3 max-h-[calc(100vh-180px)] lg:max-h-none">
+<div class="relative w-full max-w-[400px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl shadow-shadow-accent transition-all duration-300 transform scale-95 md:scale-100 bg-surface-container-lowest" id="gift-card-canvas">
+<!-- Background Image (Dynamic based on theme) -->
+<div class="absolute inset-0 bg-cover bg-center transition-all duration-500 ease-in-out" data-alt="A festive, abstract birthday celebration background in a high-tech style. Vivid orange and warm gold particles float against a deep black cosmic canvas. Glowing ribbons of light weave through the composition. The lighting is dramatic and contrast-heavy, creating a premium, modern celebratory mood." id="canvas-bg" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwzMujBnihFjRoXOyYsVQ5p44X3J4ASMTDtL0cSJLWYP9Z-98Bbi5fQ-_AhKX5814w0qfAfU4Qe4MU6aDBSEaaY35bvJ1mC8WS9lxid7v-MFr05FmGbCKNBI_kBdmv1ACL5YvjTvL7ntRE_f8X3znwGgZka84LWDcAoR3E9gBJo5ZHtmb-F8hLx40E7hhA1ApRDmwQa60yl7_u5KIiJ99nKY3rMuzmSJjAAvuE9Dc924lrxOwvzGUskQ')">
+<div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+</div>
+<!-- Dedication Overlay -->
+<div class="absolute inset-0 p-8 flex flex-col justify-between z-10">
+<div class="text-left">
+<h2 class="font-[Inter] text-2xl font-semibold text-white mb-4 tracking-wide" id="preview-to">To: Ana</h2>
+</div>
+<div class="flex-grow flex items-center justify-center">
+<p class="font-serif-text text-xl md:text-2xl text-center text-white/90 leading-relaxed italic" id="preview-message">
+                            Wishing you a phenomenal birthday filled with joy and futuristic surprises. May this year be your best yet!
+                        </p>
+</div>
+<div class="text-right mt-6">
+<p class="font-[Inter] text-lg text-primary-fixed font-medium" id="preview-from">From: Lucas</p>
+<p class="font-[Inter] text-sm text-white/70 mt-1 uppercase tracking-widest" id="preview-signoff">With love</p>
+</div>
+</div>
+<!-- DQR Branding subtly in corner -->
+<div class="absolute bottom-4 left-4 z-10 opacity-50">
+<span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+</div>
+</div>
+</section>
+<!-- Tools Sidebar / Bottom Panel -->
+<aside class="w-full lg:w-1/3 glass-card rounded-xl lg:rounded-2xl p-4 md:p-6 flex flex-col h-[442px] lg:h-auto overflow-y-auto z-20 sticky lg:relative bottom-0 lg:bottom-auto">
+<div class="flex border-b border-border-accent mb-6">
+<button class="flex-1 pb-3 text-primary border-b-2 border-primary font-button-text text-button-text transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">palette</span> Themes
+                </button>
+<button class="flex-1 pb-3 text-on-surface-variant hover:text-white border-b-2 border-transparent font-button-text text-button-text transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">edit_note</span> Text
+                </button>
+<button class="flex-1 pb-3 text-on-surface-variant hover:text-white border-b-2 border-transparent font-button-text text-button-text transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">font_download</span> Font
+                </button>
+</div>
+<!-- Tab 1: Themes (Active) -->
+<div class="space-y-4">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase">Select Theme</h3>
+<div class="grid grid-cols-2 gap-3">
+<button class="relative aspect-video rounded-lg overflow-hidden border-2 border-primary ring-2 ring-primary/20 transition-all hover:scale-[1.02]">
+<img class="w-full h-full object-cover" data-alt="Abstract festive birthday theme, glowing orange ribbons and confetti against dark space background, modern 3d render style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMwi8SMxkkjBJ1GVNss-eY2RR4eAAlrTnh353lIM5fKnU9zU0bvAl1ogvm68E9GhizDXFn2cN8nRCgI_JUJpuSCNsINBJ25i3RVtHi2OxRN73bU7QRdo1Pti4TbM7Bmg5Arq3D0J4hWRxZITXZK09m-QcSPdIH7mx1nmfO65dkL0OCd3vS5-NvA9GL5kfYAuJvi8qOZhVDjbZAt2DTJWbmLLUBp6cQejMpQgWenC5YOfU_XlyHDD42Qg"/>
+<div class="absolute inset-0 bg-black/30 flex items-end p-2">
+<span class="text-white text-xs font-semibold drop-shadow-md">Festive Birthday</span>
+</div>
+</button>
+<button class="relative aspect-video rounded-lg overflow-hidden border-2 border-transparent hover:border-border-accent transition-all hover:scale-[1.02]">
+<img class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300" data-alt="Elegant minimalist design, smooth dark matte surface with a subtle, sweeping geometric curve of warm gold lighting, premium luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZK93w-a09fi9CsdtOMol89V-HloEJDZwI-Yqpi0cYxKLTt0zhykfT2gxaOHFRJIWulK9vjda9hcSSs84mvFBjOp7YbcciY6uaD-pf8W8kLE1s5UuUctCkbSyZCRupoqUIBaJE1L_ZgIP_Jl3HLWAR45kDSi-aSu0GlcTO1y2HkZAj5LThn2ihZ7aovDUp4pcFVjPNTFbYYLWh8_zTkOR_W-gjFz6WBVqMo7bIcHGywDn7yWSMXPEs7A"/>
+<div class="absolute inset-0 bg-black/40 flex items-end p-2">
+<span class="text-white text-xs font-semibold drop-shadow-md">Elegant Minimalist</span>
+</div>
+</button>
+<button class="relative aspect-video rounded-lg overflow-hidden border-2 border-transparent hover:border-border-accent transition-all hover:scale-[1.02]">
+<img class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300" data-alt="Romantic floral composition in high contrast. Deep black background with stylized, glowing bioluminescent flowers in vibrant orange and peach tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnnX_BnqEBsKjLgDhNoaCCxbT3H3UQPMUYNaO12Ly7EJWEp0ewR9NYL049BQExKNf7vQtTAfI7Z_BzS0I3Rv4xBJicQ57Ub1Bt8im9P-c18tGWt4ECNztGKy34J3NY_CYiqyMByccpi520FM9fxN-Q6TIamZ1Kk7yqHRhCeNU7XoiBR9V6v6BuR7o0IwSpBZLIDsblYTVJj9Y3Jee6Dnq-6R0rF_FFaAzv0fasCeM7J2Fmtcze1UduVA"/>
+<div class="absolute inset-0 bg-black/40 flex items-end p-2">
+<span class="text-white text-xs font-semibold drop-shadow-md">Romantic Floral</span>
+</div>
+</button>
+<button class="relative aspect-video rounded-lg overflow-hidden border-2 border-transparent hover:border-border-accent transition-all hover:scale-[1.02]">
+<img class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300" data-alt="High-tech futuristic circuit board pattern rendered in glowing amber and deep charcoal. Cyberpunk chic style, clean geometric lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEJ5-Xd-cH0WtVYmb-VJBocBw4x56JF-tCYMKaR52mpB5cUZREXbttUnXOoHH2aNj5wnRRzgp_NXXh7_8BlarhFiOASv3FQ9aqDdqAA11Ea6QTsQtejIM4njKdWV2xM4PDMjWHRaPXdxr5LvQbVS2Hv6bgPE3LnXblbHj9mNaW_jHBRRZtb4i0srvzGZO-GW8voZ3Otlc3bFJgOgQ1nY_Rx94kakpOXCxiebU33ExKy0tiv-vZ5g4h6w"/>
+<div class="absolute inset-0 bg-black/40 flex items-end p-2">
+<span class="text-white text-xs font-semibold drop-shadow-md">DQR Tech Gold</span>
+</div>
+</button>
+</div>
+</div>
+</aside>
+</main>
+<!-- Bottom Nav Shell (Following Semantic Shell Mandate - rendering as requested but usually an editor might suppress this. Will include as requested in JSON anchor but visually subdued to prioritize canvas) -->
+<nav class="fixed bottom-0 w-full z-40 flex justify-around items-center h-20 px-margin-mobile bg-surface-dark border-t border-border-accent md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-bold text-label-bold">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-bold text-label-bold">Editor</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">auto_awesome_motion</span>
+<span class="font-label-bold text-label-bold">Gallery</span>
+</a>
+</nav>
+<!-- Export Modal (Hidden by default, shown for completeness based on prompt) -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity" id="export-modal">
+<div class="glass-card rounded-2xl w-full max-w-sm p-6 transform scale-95 transition-transform">
+<h3 class="font-headline-md text-headline-md text-white mb-2">Export Card</h3>
+<p class="text-on-surface-variant text-sm mb-6">Choose your preferred format for downloading or sharing.</p>
+<div class="space-y-3">
+<button class="w-full flex items-center justify-between p-4 rounded-xl border border-border-accent bg-surface hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">image</span>
+<div class="text-left">
+<div class="text-white font-medium">PNG Image</div>
+<div class="text-xs text-on-surface-variant">High-definition for digital sharing</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 rounded-xl border border-border-accent bg-surface hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+<div class="text-left">
+<div class="text-white font-medium">Printable PDF</div>
+<div class="text-xs text-on-surface-variant">CMYK color profile for printing</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+</div>
+<button class="w-full mt-6 py-3 text-on-surface-variant hover:text-white transition-colors text-sm font-semibold uppercase tracking-wider" onclick="document.getElementById('export-modal').classList.add('hidden')">Cancel</button>
+</div>
+</div>
+</body></html>

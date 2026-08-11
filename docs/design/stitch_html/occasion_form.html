@@ -1,0 +1,290 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GiftCard AI by DQR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=clash-grotesk@200,300,400,500,600,700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#ff8a00",
+                      "surface-container-highest": "#353438",
+                      "surface-container-lowest": "#0e0e11",
+                      "secondary-fixed": "#ffdcc4",
+                      "on-tertiary-container": "#002c50",
+                      "tertiary-container": "#0095fb",
+                      "tertiary": "#a0c9ff",
+                      "on-surface": "#e4e1e6",
+                      "surface": "#131316",
+                      "inverse-surface": "#e4e1e6",
+                      "on-background": "#e4e1e6",
+                      "on-error-container": "#ffdad6",
+                      "on-surface-variant": "#e4bfb2",
+                      "on-tertiary-fixed": "#001c37",
+                      "bg-light": "#F8F9FA",
+                      "on-tertiary": "#003259",
+                      "surface-light": "#FFFFFF",
+                      "inverse-primary": "#a83900",
+                      "on-secondary-fixed-variant": "#6f3900",
+                      "outline-variant": "#5b4137",
+                      "secondary": "#ffb77f",
+                      "tertiary-fixed-dim": "#a0c9ff",
+                      "surface-variant": "#353438",
+                      "on-secondary-fixed": "#2f1500",
+                      "outline": "#ab897e",
+                      "on-primary-container": "#501700",
+                      "on-tertiary-fixed-variant": "#00497f",
+                      "primary": "#ffb59a",
+                      "border-accent": "rgba(252, 92, 8, 0.2)",
+                      "error": "#ffb4ab",
+                      "inverse-on-surface": "#303033",
+                      "surface-container-high": "#2a2a2d",
+                      "primary-fixed": "#ffdbce",
+                      "background": "#131316",
+                      "tertiary-fixed": "#d2e4ff",
+                      "surface-bright": "#39393c",
+                      "secondary-fixed-dim": "#ffb77f",
+                      "on-error": "#690005",
+                      "surface-container-low": "#1b1b1e",
+                      "error-container": "#93000a",
+                      "on-secondary-container": "#613100",
+                      "primary-container": "#fc5c08",
+                      "brand-gradient": "linear-gradient(135deg, #FC5C08 0%, #FF8A00 100%)",
+                      "on-primary-fixed": "#380d00",
+                      "shadow-accent": "rgba(252, 92, 8, 0.08)",
+                      "surface-container": "#1f1f22",
+                      "surface-dim": "#131316",
+                      "on-primary": "#5b1b00",
+                      "surface-tint": "#ffb59a",
+                      "surface-dark": "#18181C",
+                      "on-secondary": "#4e2600",
+                      "primary-fixed-dim": "#ffb59a",
+                      "on-primary-fixed-variant": "#802a00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "margin-desktop": "48px",
+                      "margin-mobile": "20px",
+                      "container-max": "1280px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "button-text": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Clash Grotesk"
+                      ],
+                      "headline-lg-mobile": [
+                              "Clash Grotesk"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Clash Grotesk"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-xl": [
+                              "Clash Grotesk"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "button-text": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-xl": [
+                              "64px",
+                              {
+                                      "lineHeight": "72px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .text-brand-gradient {
+            background: theme('colors.brand-gradient');
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-brand-gradient {
+            background: theme('colors.brand-gradient');
+        }
+        .border-glow {
+            border: 1px solid theme('colors.border-accent');
+        }
+        .chip {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .chip:hover {
+            border-color: theme('colors.primary');
+            background-color: rgba(255, 181, 154, 0.1);
+        }
+        .chip.active {
+            border-color: theme('colors.primary-container');
+            background-color: rgba(252, 92, 8, 0.2);
+            color: theme('colors.primary-fixed-dim');
+        }
+    </style>
+</head>
+<body class="min-h-screen md:pb-0 font-body-md text-body-md flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile h-16 w-full z-50 bg-surface-dark border-b border-border-accent fixed top-0 left-0 right-0">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary">redeem</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary">Gift Card QDR</span>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<nav class="flex gap-6">
+<a class="font-body-md text-body-md text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform" href="#">Home</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform" href="#">Editor</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform" href="#">Gallery</a>
+</nav>
+</div>
+<button class="font-label-bold text-label-bold text-on-surface-variant hover:text-primary transition-colors">EN</button>
+</header>
+<!-- Main Content -->
+<main class="flex-grow mx-auto w-full flex-col mt-16">
+
+<div class="bg-surface-dark p-6 md:p-10 mx-auto shadow-2xl relative overflow-hidden flex-grow h-full">
+<!-- Subtle glowing orb effect in the background of the card -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary-container opacity-5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+<form class="flex flex-col h-full">
+<!-- Section 1 -->
+<div class="mb-10 relative z-10">
+<label class="block font-headline-md text-headline-md text-inverse-surface mb-4 font-bold">1. Choose the Occasion</label>
+<div class="flex flex-wrap gap-3">
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface active font-bold">🎂 Birthday</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">💍 Wedding</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">🎓 Graduation</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">❤️ Love/Dating</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">🎄 Christmas</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">🙏 Thank You</div>
+</div>
+<div class="mt-4">
+<input class="w-full bg-surface border border-surface-container-highest rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Or type a custom occasion..." type="text">
+</div>
+</div>
+<!-- Section 2 -->
+<div class="mb-10 relative z-10 flex-grow">
+<label class="block font-headline-md text-headline-md text-inverse-surface mb-4 font-bold">2. Who is this card for?</label>
+<div class="flex flex-wrap gap-3">
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">Best Friend</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">Mother</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">Father</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">Partner</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface font-bold">Co-worker</div>
+<div class="chip border border-surface-container-highest rounded-full px-4 py-2 font-body-md text-body-md text-on-surface active font-bold">Sibling</div>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full bg-brand-gradient text-surface-light font-button-text text-button-text rounded-full py-4 px-6 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity active:scale-[0.98] font-bold" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    Generate Message Suggestions
+                </button>
+</form>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-40 flex justify-around items-center h-20 px-margin-mobile bg-surface-dark border-t border-border-accent"><a class="flex flex-col items-center justify-center text-primary font-bold active:scale-90 transition-transform duration-200" href="#"><span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span><span class="font-label-bold text-label-bold">Home</span></a><a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-200" href="#"><span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">edit_square</span><span class="font-label-bold text-label-bold">Editor</span></a><a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary-fixed-dim transition-colors active:scale-90 duration-200" href="#"><span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">auto_awesome_motion</span><span class="font-label-bold text-label-bold">Gallery</span></a></nav>
+<script>
+        // Simple script to handle chip selection for demo purposes
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                // Find parent container
+                const container = this.closest('.flex-wrap');
+                // Remove active class from all chips in this container
+                container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                // Add active class to clicked chip
+                this.classList.add('active');
+            });
+        });
+    </script>
+
+
+<button class="fixed bottom-24 right-6 z-50 bg-brand-gradient text-white flex items-center gap-2 px-6 py-4 rounded-full shadow-2xl shadow-shadow-accent active:scale-95 transition-all hover:brightness-110 md:hidden font-bold"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span><span class="font-button-text text-button-text">Generate</span></button></body></html>

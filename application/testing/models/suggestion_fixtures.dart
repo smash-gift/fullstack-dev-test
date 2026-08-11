@@ -1,4 +1,4 @@
-import '../../lib/domain/models/suggestion.dart';
+import 'package:gift_card_app/domain/models/suggestion.dart';
 
 class SuggestionFixtures {
   static Suggestion sampleSuggestion({

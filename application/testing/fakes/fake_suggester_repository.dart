@@ -1,6 +1,6 @@
-import '../../lib/data/repositories/suggester_repository.dart';
-import '../../lib/domain/models/suggestion.dart';
-import '../../lib/utils/result.dart';
+import 'package:gift_card_app/data/repositories/suggester_repository.dart';
+import 'package:gift_card_app/domain/models/suggestion.dart';
+import 'package:gift_card_app/utils/result.dart';
 
 class FakeSuggesterRepository implements SuggesterRepository {
   List<Suggestion> mockSuggestions = [

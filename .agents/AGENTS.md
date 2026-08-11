@@ -43,6 +43,9 @@ This document establishes the technical standards, architectural rules, and deve
   - Check the validity of the 7-day local session cache at every application startup before making network calls.
 - **User Feedback**:
   - Ensure all screens have explicit states for: `Loading` (progress indicator), `Success` (suggestion list), and `Error/Fallback` (user-friendly message with retry option).
+- **Reusable UI & Internationalization**:
+  - Reusable components must be created in `lib/core/ui/` (`shared_widgets.dart` or submodules). Components must NOT hardcode business data or strings.
+  - All user-facing text strings must be externalized in `.arb` files in `lib/l10n/` using `AppLocalizations`.
 
 ---
 

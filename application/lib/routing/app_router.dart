@@ -7,10 +7,13 @@ import '../features/suggester/widgets/suggester_screen.dart';
 
 /// Central application route declaration.
 class AppRouter {
-  static Widget buildHomeScreen(AppConfig config) {
+  static SuggesterViewModel createViewModel(AppConfig config) {
     final apiService = ApiService(config: config);
     final repository = SuggesterRepositoryImpl(apiService: apiService);
-    final viewModel = SuggesterViewModel(repository: repository);
+    return SuggesterViewModel(repository: repository);
+  }
+
+  static Widget buildHomeScreen(SuggesterViewModel viewModel) {
     return SuggesterScreen(viewModel: viewModel);
   }
 }

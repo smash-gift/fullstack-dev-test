@@ -30,7 +30,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('AI Gift Card Message Suggester API')
     .setDescription(
-      'RESTful API for generating personalized gift card message suggestions powered by Google Gemini 1.5 Flash.',
+      'RESTful API for generating personalized gift card message suggestions powered by Google Gemini',
     )
     .setVersion('1.0.0')
     .addTag('Suggestions', 'Gift card message suggestion generation endpoints')

@@ -5,6 +5,8 @@ class Suggestion {
   final String occasion;
   final String relationship;
   final String language;
+  final String tone;
+  final bool isFallback;
 
   const Suggestion({
     required this.id,
@@ -12,5 +14,7 @@ class Suggestion {
     required this.occasion,
     required this.relationship,
     required this.language,
+    this.tone = 'Warm',
+    this.isFallback = false,
   });
 }

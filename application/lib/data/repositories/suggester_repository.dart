@@ -1,45 +1,12 @@
 import '../../domain/models/suggestion.dart';
 import '../../utils/result.dart';
-import '../services/api_service.dart';
+import 'suggestion_request_params.dart';
 
-class SuggestionRequestParams {
-  final String occasion;
-  final String relationship;
-  final String language;
-  final String guestId;
+export 'suggester_repository_impl.dart';
+export 'suggestion_request_params.dart';
 
-  const SuggestionRequestParams({
-    required this.occasion,
-    required this.relationship,
-    required this.language,
-    required this.guestId,
-  });
-}
-
+/// Abstract repository contract for fetching gift card message suggestions.
 abstract class SuggesterRepository {
-  Future<Result<List<Suggestion>>> getSuggestions(SuggestionRequestParams params);
-}
-
-class SuggesterRepositoryImpl implements SuggesterRepository {
-  final ApiService _apiService;
-
-  SuggesterRepositoryImpl({required ApiService apiService}) : _apiService = apiService;
-
-  @override
-  Future<Result<List<Suggestion>>> getSuggestions(SuggestionRequestParams params) async {
-    try {
-      final dtos = await _apiService.fetchSuggestions(
-        occasion: params.occasion,
-        relationship: params.relationship,
-        language: params.language,
-        guestId: params.guestId,
-      );
-      final domainModels = dtos.map((dto) => dto.toDomain()).toList();
-      return Result.ok(domainModels);
-    } on Exception catch (e) {
-      return Result.error(e);
-    } catch (e) {
-      return Result.error(Exception(e.toString()));
-    }
-  }
+  Future<Result<List<Suggestion>>> getSuggestions(
+      SuggestionRequestParams params);
 }
