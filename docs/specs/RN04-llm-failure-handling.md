@@ -17,7 +17,7 @@ The gift card message suggester service depends directly on Large Language Model
 
 The backend considers an LLM call failed when any of the following conditions occur:
 
-1. **Execution Timeout**: Any API call to the LLM provider exceeding **4000 ms** (4 seconds).
+1. **Execution Timeout**: Any API call to the LLM provider exceeding **7000 ms** (7 seconds).
 2. **Quota / Rate Limit Exceeded**: Receiving an HTTP 429 status from the LLM provider.
 3. **Upstream Server Error**: Receiving HTTP 5xx responses from the LLM provider servers.
 4. **Invalid Output / Malformed Response**: Empty response or payload that does not conform to the expected format.

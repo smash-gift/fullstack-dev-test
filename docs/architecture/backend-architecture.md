@@ -79,12 +79,12 @@ sequenceDiagram
         Controller-->>Client: 200 OK (suggestions, cached: true)
     else Cache Miss
         Service->>LLM: generateMessage(occasion, relationship, language)
-        alt LLM Success (Latency <= 4000ms)
+        alt LLM Success (Latency <= 7000ms)
             LLM-->>Service: Suggestions Array
             Service->>Cache: set(cacheKey, suggestions, TTL: 24h)
             Service-->>Controller: Response Payload (cached: false)
             Controller-->>Client: 200 OK (suggestions, provider: "gemini-2.5-flash")
-        else LLM Failure (Timeout > 4000ms, HTTP 429/5xx, Network Error)
+        else LLM Failure (Timeout > 7000ms, HTTP 429/5xx, Network Error)
             LLM-->>Service: LlmException / TimeoutError
             Service-->>Controller: Propagates ServiceUnavailableException
             Controller-->>Client: 503 Service Unavailable (code: "LLM_SERVICE_UNAVAILABLE")
