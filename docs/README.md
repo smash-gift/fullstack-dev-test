@@ -26,5 +26,8 @@ This directory contains formal documentation of functional and architectural spe
 | **RN04** | LLM Failure & Error Handling | Rules for timeout, quota, and HTTP 503 error contract | [`specs/RN04-llm-failure-handling.md`](specs/RN04-llm-failure-handling.md) |
 | **RN05** | Multi-LLM Fallback Chain | Priority chain: Gemini -> Claude Opus -> OpenAI | [`specs/RN05-multi-llm-fallback-chain.md`](specs/RN05-multi-llm-fallback-chain.md) |
 | **API** | REST API & LLM Contract | Payload specification, request headers, and response formats | [`specs/API-contract-spec.md`](specs/API-contract-spec.md) |
+| **UC01-10** | Application Use Cases Suite | Complete use cases (UC01-UC10) for guest flow, editor & export | [`use-cases/README.md`](use-cases/README.md) |
+| **STITCH** | STITCH Prototyping Prompts | Structured prompts library for UI wireframing with STITCH | [`use-cases/stitch-prototyping-prompts.md`](use-cases/stitch-prototyping-prompts.md) |
+| **STITCH-DQR** | STITCH Master Prompt (DQR Colors) | Master prompt with official DQR Tech extracted color palette | [`use-cases/stitch-master-prompt-dqr.md`](use-cases/stitch-master-prompt-dqr.md) |
 
 
