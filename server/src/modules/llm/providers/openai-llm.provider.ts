@@ -38,10 +38,21 @@ export class OpenAiLlmProvider implements ILlmProvider {
     const promptLanguage =
       language === 'en-US' ? 'English' : 'Portuguese (pt-BR)';
 
-    const prompt = `Generate exactly 2 short, warm, personalized gift card message suggestions for a ${occasion} card addressed to a ${relationship}.
-Output MUST be valid JSON formatted as a plain JSON array of 2 strings: ["message 1", "message 2"].
-Do NOT include markdown backticks or extra text.
-Language: ${promptLanguage}.`;
+    const prompt = `# Description
+You are an expert copywriter specializing in creating emotional, warm, concise, and personalized gift card messages.
+
+# Instructions
+- Target Occasion: ${occasion}
+- Relationship to Recipient: ${relationship}
+- Target Language: ${promptLanguage}
+- Generate exactly 2 distinct, high-quality message suggestions suitable for a gift card.
+
+# Rules
+1. Output Format: Return strictly a raw JSON array containing exactly 2 string elements: ["Message 1...", "Message 2..."].
+2. No Formatting Wrappers: Do NOT include markdown code fences (like \`\`\`json or \`\`\`), markdown tags, explanations, or extra text.
+3. Message Length: Each message MUST be concise (between 1 and 2 sentences, maximum 25 words).
+4. Tone: Warm, heartfelt, and tailored to the ${relationship} for a ${occasion} card.
+5. Language Strictness: Write exclusively in ${promptLanguage}.`;
 
     const response = await this.openai.chat.completions.create({
       model: this.name,
