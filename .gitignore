@@ -1,0 +1,16 @@
+# Cada módulo (backend/, web/, mobile/) tem seu próprio .gitignore específico de stack.
+# Este arquivo cobre só o que é comum/relevante na raiz do repositório.
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Segurança — nunca versionar credenciais reais, mesmo se acabarem soltas na raiz por engano
+.env
+.env.local
+.env.*.local
+*firebase-adminsdk*.json
+*service-account*.json
+*serviceaccount*.json

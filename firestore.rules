@@ -1,0 +1,51 @@
+// Fonte de verdade documentada em docs/contracts/firestore-schema.md — mantenha os dois em sincronia.
+// Nunca testadas contra um Firestore real; valide com `firebase emulators:start --only firestore`
+// antes de considerar este arquivo pronto para produção.
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+
+      allow write: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(
+             ['displayName', 'email', 'photoUrl', 'createdAt', 'lastLoginAt'])
+        && (request.resource.data.displayName is string || request.resource.data.displayName == null)
+        && (request.resource.data.email is string || request.resource.data.email == null)
+        && (request.resource.data.photoUrl is string || request.resource.data.photoUrl == null);
+
+      match /history/{entryId} {
+        allow read: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(
+               ['occasion', 'relationship', 'messageOptions', 'selectedMessage', 'createdAt'])
+          && request.resource.data.occasion is string
+          && request.resource.data.occasion.size() > 0
+          && request.resource.data.occasion.size() <= 300
+          && request.resource.data.relationship is string
+          && request.resource.data.relationship.size() > 0
+          && request.resource.data.relationship.size() <= 300
+          && request.resource.data.messageOptions is list
+          && request.resource.data.messageOptions.size() == 3
+          && request.resource.data.selectedMessage is string
+          && request.resource.data.selectedMessage.size() > 0
+          && request.resource.data.selectedMessage in request.resource.data.messageOptions;
+
+        allow update, delete: if false;
+      }
+    }
+
+    // Nega qualquer coisa fora de users/{uid} e sua subcoleção history — Firestore já nega por padrão
+    // o que não bate com nenhuma regra, isso só torna a intenção explícita.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

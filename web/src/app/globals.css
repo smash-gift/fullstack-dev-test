@@ -1,0 +1,206 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Tokens visuais — fonte única de verdade em docs/design/design-tokens.md.
+ * Mantenha os valores abaixo sincronizados com esse documento. Não introduza valores novos
+ * aqui sem antes registrar a proposta de token no handoff para o orquestrador.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-poppins);
+  --font-heading: var(--font-montserrat);
+  --font-body: var(--font-poppins);
+  --font-mono: var(--font-montserrat);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* color.brand.* / color.background.* / color.text.* / color.feedback.* */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-background-soft: var(--background-soft);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-brand-soft: var(--background-brand-soft);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-feedback-success: var(--feedback-success);
+  --color-feedback-warning: var(--feedback-warning);
+  --color-feedback-error: var(--feedback-error);
+  --color-feedback-info: var(--feedback-info);
+  --color-border-soft: var(--border-soft);
+  --color-border-focus: var(--border-focus);
+
+  /* radius.small/medium/large/full — valores exatos do design-tokens.md, não derivados por multiplicador */
+  --radius-sm: var(--radius-token-small);
+  --radius-md: var(--radius-token-medium);
+  --radius-lg: var(--radius-token-large);
+  --radius-xl: var(--radius-token-large);
+  --radius-2xl: var(--radius-token-large);
+  --radius-3xl: var(--radius-token-large);
+  --radius-4xl: var(--radius-token-large);
+  --radius-full: var(--radius-token-full);
+}
+
+:root {
+  /* color.background.* */
+  --background: #ffffff;
+  --foreground: var(--text-primary);
+  --card: #ffffff;
+  --card-foreground: var(--text-primary);
+  --popover: #ffffff;
+  --popover-foreground: var(--text-primary);
+
+  /* color.action.* */
+  --primary: #9d8189;
+  --primary-foreground: #ffffff;
+  --secondary: #f4acb7;
+  --secondary-foreground: #4a3c41;
+  --muted: #f8faf9;
+  --muted-foreground: #6f6267;
+  --accent: #fff1f4;
+  --accent-foreground: #332c2f;
+
+  /* color.feedback.error — provisório, ver docs/design/design-tokens.md ("a definir") */
+  --destructive: #c0435a;
+
+  /* color.border.* */
+  --border: #e7dddf;
+  --border-soft: #f1e8ea;
+  --border-focus: #f4acb7;
+  --input: #e7dddf;
+  --ring: #f4acb7;
+
+  --chart-1: #f4acb7;
+  --chart-2: #ffcad4;
+  --chart-3: #9d8189;
+  --chart-4: #d8e2dc;
+  --chart-5: #6f6267;
+
+  --radius: 0.625rem;
+  --sidebar: #fff1f4;
+  --sidebar-foreground: #332c2f;
+  --sidebar-primary: #9d8189;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffcad4;
+  --sidebar-accent-foreground: #332c2f;
+  --sidebar-border: #e7dddf;
+  --sidebar-ring: #f4acb7;
+
+  /* color.brand.* */
+  --brand-primary: #f4acb7;
+  --brand-secondary: #ffcad4;
+  --brand-accent: #9d8189;
+
+  /* color.background.* adicionais */
+  --background-soft: #d8e2dc;
+  --background-secondary: #f8faf9;
+  --background-brand-soft: #fff1f4;
+
+  /* color.text.* */
+  --text-primary: #332c2f;
+  --text-secondary: #6f6267;
+  --text-muted: #9d8189;
+  --text-inverse: #ffffff;
+
+  /* color.feedback.* — provisórios, sinalizados no handoff para virarem tokens oficiais */
+  --feedback-success: #4f9d69;
+  --feedback-warning: #c98a2b;
+  --feedback-error: #c0435a;
+  --feedback-info: #5b7db1;
+
+  /* radius.* */
+  --radius-token-small: 8px;
+  --radius-token-medium: 12px;
+  --radius-token-large: 16px;
+  --radius-token-full: 9999px;
+}
+
+.dark {
+  --background: #241f21;
+  --foreground: #f8faf9;
+  --card: #332c2f;
+  --card-foreground: #f8faf9;
+  --popover: #332c2f;
+  --popover-foreground: #f8faf9;
+  --primary: #f4acb7;
+  --primary-foreground: #332c2f;
+  --secondary: #4a3c41;
+  --secondary-foreground: #ffcad4;
+  --muted: #3a3235;
+  --muted-foreground: #d8c9cd;
+  --accent: #4a3c41;
+  --accent-foreground: #ffcad4;
+  --destructive: #e07a8d;
+  --border: #4a3c41;
+  --border-soft: #3a3235;
+  --border-focus: #f4acb7;
+  --input: #4a3c41;
+  --ring: #f4acb7;
+  --chart-1: #f4acb7;
+  --chart-2: #ffcad4;
+  --chart-3: #d8e2dc;
+  --chart-4: #9d8189;
+  --chart-5: #f8faf9;
+  --sidebar: #332c2f;
+  --sidebar-foreground: #f8faf9;
+  --sidebar-primary: #f4acb7;
+  --sidebar-primary-foreground: #332c2f;
+  --sidebar-accent: #4a3c41;
+  --sidebar-accent-foreground: #ffcad4;
+  --sidebar-border: #4a3c41;
+  --sidebar-ring: #f4acb7;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-body;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}
