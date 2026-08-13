@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "862452430544",
+    "project_id": "smash-gift-1f87d",
+    "storage_bucket": "smash-gift-1f87d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:862452430544:android:78ccb74c9b4516264150d5",
+        "android_client_info": {
+          "package_name": "com.example.smash_gift"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "862452430544-6pk5m8u62t18pa8b1n5ubbbv6g4l9nu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrw8GwED4AIZZszmFij21F7mkdyz0dtIk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "862452430544-6pk5m8u62t18pa8b1n5ubbbv6g4l9nu7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:862452430544:android:fe1a8988bf2119c14150d5",
+        "android_client_info": {
+          "package_name": "com.smash.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "862452430544-6pk5m8u62t18pa8b1n5ubbbv6g4l9nu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrw8GwED4AIZZszmFij21F7mkdyz0dtIk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "862452430544-6pk5m8u62t18pa8b1n5ubbbv6g4l9nu7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

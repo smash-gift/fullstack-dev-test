@@ -1,0 +1,37 @@
+name: smash_gift
+description: >
+  App Flutter do smash-gift — gera mensagens personalizadas para cartões de presente.
+  Fluxo guest (sem login) é o caminho principal; login Google (via FlutterFire) desbloqueia
+  recursos extras no futuro.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  http: ^1.2.2
+
+  google_fonts: ^8.2.1
+
+  firebase_core: ^4.13.0
+  firebase_auth: ^6.5.7
+  firebase_analytics: ^12.4.6
+  firebase_crashlytics: ^5.2.7
+  google_sign_in: ^7.2.0
+
+  cloud_firestore: ^6.8.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
