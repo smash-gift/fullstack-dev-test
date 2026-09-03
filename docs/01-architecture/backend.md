@@ -56,17 +56,19 @@ backend/
 │   │
 │   ├── presentation/
 │   │   ├── controllers/suggestions.controller.ts
-│   │   ├── validators/suggestions.schema.ts
+│   │   ├── validators/suggestions.schema.ts          # request
+│   │   ├── validators/suggestions-response.schema.ts # response: tipo + OpenAPI
 │   │   ├── middlewares/
 │   │   │   ├── request-id.middleware.ts
 │   │   │   ├── request-logger.middleware.ts
 │   │   │   ├── content-type.middleware.ts            # 415 em corpo não-JSON
-│   │   │   ├── rate-limit.middleware.ts
+│   │   │   ├── rate-limit.middleware.ts              # 429 antes do body parser
 │   │   │   ├── not-found.middleware.ts
 │   │   │   └── error-handler.middleware.ts
 │   │   ├── routes/health.routes.ts
+│   │   ├── routes/docs.routes.ts                     # Swagger UI + CSP escopada
 │   │   ├── routes/v1/suggestions.routes.ts
-│   │   └── docs/openapi.ts
+│   │   └── docs/openapi.ts                           # gerado dos schemas Zod
 │   │
 │   ├── pkg/
 │   │   ├── security/input-sanitizer.ts           # camada 1
@@ -136,7 +138,12 @@ sequenceDiagram
     participant B as FallbackCatalog
 
     F->>M: POST /api/v1/suggestions
-    M->>M: requestId · CORS · rate limit
+    M->>M: helmet · requestId · log · CORS
+    M->>M: rate limit (antes do body parser)
+    alt limite estourado
+        M--xF: 429 · Retry-After · sem fallback
+    end
+    M->>M: content-type · express.json (4 KB)
     M->>C: request válido
     C->>C: valida body (Zod) — falha → 400
     C->>U: execute(input)
@@ -147,6 +154,7 @@ sequenceDiagram
         U->>P: generateSuggestions(input, signal)
         alt sucesso
             P-->>U: Suggestion[]
+            U->>U: SuggestionGuard.assertSafe (camada 3)
             U->>K: set(chave, suggestions, TTL)
         else timeout · 429 · 5xx · JSON inválido
             P--xU: LlmError (erro de domínio)
@@ -192,6 +200,13 @@ Toda leitura de `process.env` acontece em **um único arquivo**: `pkg/config/env
 validado com Zod na subida do processo. Se faltar variável obrigatória, o servidor
 **não sobe** — falha barulhenta na inicialização é melhor que `undefined` silencioso em
 produção às 3h da manhã.
+
+Duas regras de ambiente **impedem o boot**, em vez de virarem item de checklist:
+
+| Condição | Motivo |
+|---|---|
+| Falta a key do provider ativo | `undefined` silencioso vira `5xx` em produção |
+| `NODE_ENV=production` com `CORS_ORIGINS=*` | O item de deploy que sobrevive porque nada quebra visivelmente quando é esquecido |
 
 Lista completa das variáveis: [`../04-operations/environment.md`](../04-operations/environment.md).
 

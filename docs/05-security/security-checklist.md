@@ -64,9 +64,14 @@ grep -rn "flutter_html\|flutter_markdown\|linkify" flutter_app/ && echo "FALHA" 
 - [ ] `helmet` ativo
 - [ ] `x-powered-by` desligado
 - [ ] Limite de corpo em 4 KB
-- [ ] `CORS_ORIGINS` explícito quando `NODE_ENV=production`
+- [ ] `CORS_ORIGINS` explícito quando `NODE_ENV=production` *(o boot já impede o contrário)*
+- [ ] `TRUST_PROXY_HOPS` igual ao número real de proxies à frente
 - [ ] Rate limit ativo em `/api/v1/*`
-- [ ] `/health` fora do rate limit
+- [ ] `/health` e `/docs` fora do rate limit
+- [ ] `429` sem `data` — não degrada para sugestões
+- [ ] `429` com cabeçalhos de CORS
+- [ ] CSP presente em `/docs` e ausente nas rotas JSON
+- [ ] `/docs` servindo só os três assets da allowlist
 - [ ] Nenhuma resposta de erro com stack trace
 - [ ] `AbortController` em toda chamada externa
 

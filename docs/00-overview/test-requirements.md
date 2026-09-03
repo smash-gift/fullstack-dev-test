@@ -23,9 +23,15 @@ resolvido por decisão explícita, não por código)
 | B5 | *"How you structure the prompt ... is up to you"* | ✅ | `01-architecture/backend.md` |
 | B6 | *"the backend must **not expose raw errors** to the client"* | ✅ | `ADR-0004` |
 | B7 | *"Document ... **what you consider a failure**, how you respond to the client, and why"* | ✅ | `ADR-0003` |
-| B8 | *"Rate limiting (optional) — if you implement it, document the limit and the behavior"* | ⬜ | `ADR-0005` |
-| B9 | *"describe how you would **reduce cost in production**"* | ⬜ | `ADR-0006` |
-| B10 | *"whether you implemented any **caching** in this test (and why or why not)"* | ✅ | `ADR-0006` |
+| B8 | *"Rate limiting (optional) — if you implement it, document the limit and the behavior"* | ✅ | `ADR-0005` · `03-api/contract.md` |
+| B9 | *"**In your README**, describe how you would **reduce cost in production**"* | 🟦 | `ADR-0006` — análise pronta; **o README só nasce na fase 14** |
+| B10 | *"**In your README** ... whether you implemented any **caching** in this test (and why or why not)"* | 🟦 | `ADR-0006` — decisão registrada; **o README só nasce na fase 14** |
+
+> **B9 e B10 estavam marcados como ⬜ e ✅ respectivamente, e nenhum dos dois estava certo.**
+> O enunciado exige as duas respostas **no README**, que ainda não existe. O conteúdo está
+> pronto no `ADR-0006`; o que falta é o lugar onde o enunciado pede que ele apareça. Marcar
+> B10 como feito era afirmar uma entrega que ninguém consegue ler. Ambos viram `✅` na
+> [fase 14](../02-phases/phase-14-readme.md).
 
 ## 2. Frontend (Flutter / Dart)
 

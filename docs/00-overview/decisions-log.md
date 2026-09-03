@@ -155,6 +155,13 @@ muda latência, custo e comportamento sem aviso.
 | D53 | ETag | Desligado | **Assistente** | Manter o default do Express | 06 |
 | D54 | Versões de runtime | **Fixadas** sem `^` | **Assistente** | Confiar apenas no lockfile | 06 |
 | D55 | Sincronia do `.env.example` | Teste derivado do schema Zod | **Assistente** | Revisão manual | 06 |
+| D56 | Gerador de OpenAPI | **Nenhum** — `z.toJSONSchema` do Zod 4.5 | **Assistente** | `@asteasolutions/zod-to-openapi`, como o plano previa | 07 |
+| D57 | Swagger UI | `swagger-ui-dist` + página nossa | **Assistente** | `swagger-ui-express` (script inline) ou CDN (offline quebrado) | 07 |
+| D58 | CORS `*` em produção | **Impede o processo de subir** | **Assistente** | Item de checklist de deploy | 07 |
+| D59 | Confiança em proxy | `TRUST_PROXY_HOPS`, contagem; `true` **rejeitado** | **Assistente** | `trust proxy: true` | 07 |
+| D60 | Cabeçalhos de rate limit | `draft-6`, três cabeçalhos separados | **Assistente** | `draft-7`/`draft-8`, compactados em um | 07 |
+| D61 | Telemetria de instalação do `@scarf/scarf` | Opt-out em `scarfSettings` | **Assistente** | `ignore-scripts=true` global, ou ignorar | 07 |
+| D62 | Assets do Swagger | Allowlist de 3 arquivos, lidos no boot | **Assistente** | `express.static` na pasta do pacote | 07 |
 
 **Contexto de D50 — medir antes de implementar.** O plano dizia `400`. Medindo o
 comportamento real primeiro, o problema não era o código de status: `express.json()`
@@ -218,6 +225,33 @@ em vez de o plano ser silenciosamente reescrito.
 dev` funciona sem nenhuma configuração. O avaliador consegue exercitar o contrato inteiro,
 a validação e o formato de resposta **antes** de precisar de qualquer API key. A fase 03
 promove `openai` a default, conforme o `ADR-0002`.
+
+**Contexto de D56 — medir antes de instalar.** O plano nomeava uma biblioteca de geração de
+OpenAPI. Antes de instalá-la, a pergunta: *o Zod já não faz isso?* A versão 4.5 faz —
+`z.toJSONSchema(schema, { target: 'openapi-3.0' })`. Três dependências evitadas sem perder
+nada, porque o que importava era a **fonte única**, não a biblioteca. O plano descreveu um
+meio; o objetivo era outro.
+
+**Contexto de D58 — checklist não é garantia.** O plano dizia "CORS condicionado a
+`NODE_ENV`", e o documento de deploy trazia "`CORS_ORIGINS` explícito — nunca `*`" como
+item a marcar. Item de checklist sobrevive exatamente porque nada quebra visivelmente
+quando é esquecido. Agora o processo se recusa a subir, com a mensagem dizendo o que pôr no
+lugar. É o mesmo movimento da fase 05, quando o guard de saída virou porta em vez de
+convenção: **o que precisa ser garantia não pode depender de alguém lembrar.**
+
+**Contexto de D59 — a correção óbvia era a insegura.** O rate limit conta por IP; atrás de
+proxy, todo mundo vira um cliente só. A primeira resposta que ocorre é `trust proxy: true`,
+e ela troca um problema de contabilidade por um de segurança: o Express passa a acreditar
+no `X-Forwarded-For` e o limite fica a um cabeçalho de distância de ser contornado. A
+contagem de saltos resolve os dois, e o schema **rejeita** o valor `true` para que a forma
+insegura não seja configurável.
+
+**Contexto de D61 — o que veio junto sem convite.** Medindo o custo de `swagger-ui-dist`
+apareceu `@scarf/scarf`, com `postinstall` que reporta a instalação a um terceiro. Ninguém
+que clona este repositório concordou com isso. A saída larga seria `ignore-scripts=true`,
+que desliga o script de instalação de todas as dependências — mais chance de quebrar a
+instalação do avaliador do que de resolver. O opt-out específico do pacote resolve o
+problema real, e um teste impede que ele suma numa regeneração do manifesto.
 
 ---
 

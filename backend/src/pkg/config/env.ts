@@ -51,6 +51,27 @@ const baseSchema = z.object({
   CACHE_ENABLED: booleanFromString.default(true),
   CACHE_TTL_MS: z.coerce.number().int().positive().default(600_000),
   CACHE_MAX_ENTRIES: z.coerce.number().int().positive().default(500),
+
+  // Every request that misses the cache costs real money in tokens. A public
+  // endpoint with no ceiling is one where a `while true; do curl; done` spends
+  // the owner's budget. See ADR-0005 for why 30 / 5 min.
+  RATE_LIMIT_ENABLED: booleanFromString.default(true),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(300_000),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+
+  // How many reverse proxies sit in front of this process. Rate limiting keys
+  // on the client IP, so behind a proxy every request would otherwise share
+  // the proxy's address and one caller could exhaust everyone's quota.
+  //
+  // A hop count rather than a boolean on purpose: `trust proxy: true` accepts
+  // whatever `X-Forwarded-For` says, which lets a caller forge a new identity
+  // per request and walk straight through the limit.
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+
+  // The docs endpoint is a deliberate information disclosure: it publishes the
+  // full API surface. Open here because this repository exists to be
+  // inspected; a switch so a deployment can decide otherwise.
+  DOCS_ENABLED: booleanFromString.default(true),
 });
 
 /**
@@ -60,6 +81,18 @@ const baseSchema = z.object({
  * with providers they are not using.
  */
 const envSchema = baseSchema.superRefine((env, ctx) => {
+  // A wildcard CORS policy in production is the kind of default that survives
+  // because nothing visibly breaks. Refusing to start makes it impossible to
+  // deploy by accident, and turns a deploy-checklist item into a guarantee.
+  if (env.NODE_ENV === 'production' && env.CORS_ORIGINS.trim() === '*') {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['CORS_ORIGINS'],
+      message:
+        'must list explicit origins in production (for example https://app.example.com), never *',
+    });
+  }
+
   if (env.LLM_PROVIDER === 'stub') return;
 
   const variable = API_KEY_BY_PROVIDER[env.LLM_PROVIDER];

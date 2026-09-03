@@ -18,7 +18,7 @@ Status ao vivo: [`../00-overview/checklist.md`](../00-overview/checklist.md)
 | 04 | [Tratamento de falhas](phase-04-failure-handling.md) | Erros de domínio, fallback, logs | ✅ |
 | 05 | 🔒 [Segurança do LLM](phase-05-llm-security.md) | 4 camadas contra prompt injection | ✅ |
 | 06 | 🔒 [Baseline de segurança](phase-06-application-security.md) | Headers, limites, log, dependências | ✅ |
-| 07 | [Diferenciais do backend](phase-07-backend-extras.md) | Rate limit, CORS, cache, Swagger | ⬜ |
+| 07 | [Diferenciais do backend](phase-07-backend-extras.md) | Rate limit, CORS, cache, Swagger | ✅ |
 | 08 | [Testes do backend](phase-08-backend-tests.md) | Vitest: fallback + segurança | ⬜ |
 | 09 | [App Flutter](phase-09-flutter-app.md) | Projeto e tela principal | ⬜ |
 | 10 | [Arquitetura Flutter](phase-10-flutter-architecture.md) | 4 camadas, models, URL configurável | ⬜ |

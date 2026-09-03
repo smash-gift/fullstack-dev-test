@@ -30,7 +30,9 @@ cp .env.example .env
 | `PORT` | ❌ | `3000` | Porta HTTP |
 | `NODE_ENV` | ❌ | `development` | `development` \| `production` \| `test` |
 | `LOG_LEVEL` | ❌ | `info` | `debug` \| `info` \| `warn` \| `error` |
-| `CORS_ORIGINS` | ❌ | `*` em dev | Lista separada por vírgula. Em produção, sempre explícita |
+| `CORS_ORIGINS` | ❌ | `*` | Lista separada por vírgula. Com `NODE_ENV=production`, `*` **impede o boot** |
+| `TRUST_PROXY_HOPS` | ❌ | `0` | Quantos proxies reversos estão à frente. `true` é rejeitado — ver abaixo |
+| `DOCS_ENABLED` | ❌ | `true` | `false` remove `/docs` e `/docs/openapi.json` |
 
 ### Provider de LLM
 
@@ -80,6 +82,16 @@ cp .env.example .env
 | `RATE_LIMIT_WINDOW_MS` | ❌ | `300000` | Janela — 5 minutos |
 | `RATE_LIMIT_MAX` | ❌ | `30` | Máximo por IP na janela |
 
+Escopo: `/api/v1/*`. `/health` e `/docs` ficam de fora — health check de orquestrador bate
+por design, e documentação não deve ser bloqueada por engano.
+
+> **`TRUST_PROXY_HOPS` é o que faz o limite valer atrás de um proxy.** Sem ele, toda
+> requisição chega com o endereço do proxy e todos os clientes viram um só. Com
+> `trust proxy: true` — a correção que ocorre primeiro — o Express passa a acreditar no
+> `X-Forwarded-For`, e um chamador forja identidade nova por requisição: o limite fica a um
+> cabeçalho de distância de ser contornado. Por isso a variável é uma **contagem**, e o
+> schema rejeita `true`.
+
 Ver [`ADR-0005`](../01-architecture/decisions/adr-0005-rate-limiting.md).
 
 ### Cache
@@ -105,6 +117,14 @@ falta e encerra com código diferente de zero:
 ```
 [config] Invalid environment:
   - OPENAI_API_KEY: required when LLM_PROVIDER=openai
+```
+
+A mesma porta fecha a configuração de CORS insegura:
+
+```
+Invalid environment:
+  - CORS_ORIGINS: must list explicit origins in production (for example
+    https://app.example.com), never *
 ```
 
 Falhar alto na inicialização é deliberado. A alternativa — subir e falhar na primeira

@@ -114,3 +114,65 @@ describe('parseCorsOrigins', () => {
     ]);
   });
 });
+
+/**
+ * A wildcard CORS policy in production is the kind of default that survives
+ * precisely because nothing visibly breaks. Refusing to start turns a
+ * deploy-checklist item into something that cannot be skipped.
+ */
+describe('CORS in production', () => {
+  const production = {
+    NODE_ENV: 'production',
+    LLM_PROVIDER: 'stub',
+  } as NodeJS.ProcessEnv;
+
+  it('refuses to start with a wildcard', () => {
+    expect(() => loadEnv({ ...production, CORS_ORIGINS: '*' })).toThrow(/CORS_ORIGINS/);
+  });
+
+  it('says what to put there instead of just refusing', () => {
+    expect(() => loadEnv({ ...production, CORS_ORIGINS: '*' })).toThrow(/https:\/\/app\.example/);
+  });
+
+  it('ignores whitespace around the wildcard', () => {
+    expect(() => loadEnv({ ...production, CORS_ORIGINS: '  *  ' })).toThrow(/CORS_ORIGINS/);
+  });
+
+  it('accepts an explicit list', () => {
+    expect(() => loadEnv({ ...production, CORS_ORIGINS: 'https://app.example.com' })).not.toThrow();
+  });
+
+  it('leaves development alone, where the wildcard is the point', () => {
+    expect(() =>
+      loadEnv({
+        NODE_ENV: 'development',
+        LLM_PROVIDER: 'stub',
+        CORS_ORIGINS: '*',
+      } as NodeJS.ProcessEnv),
+    ).not.toThrow();
+  });
+});
+
+/**
+ * The rate limiter keys on the client IP. Trusting the whole X-Forwarded-For
+ * chain would let a caller mint a new identity per request, so the setting is
+ * a hop count and never a boolean.
+ */
+describe('proxy configuration', () => {
+  it('trusts nothing by default', () => {
+    expect(loadEnv({ LLM_PROVIDER: 'stub' } as NodeJS.ProcessEnv).TRUST_PROXY_HOPS).toBe(0);
+  });
+
+  it('accepts a hop count', () => {
+    expect(
+      loadEnv({ LLM_PROVIDER: 'stub', TRUST_PROXY_HOPS: '1' } as NodeJS.ProcessEnv)
+        .TRUST_PROXY_HOPS,
+    ).toBe(1);
+  });
+
+  it('rejects a boolean, which is the shape that would be unsafe', () => {
+    expect(() =>
+      loadEnv({ LLM_PROVIDER: 'stub', TRUST_PROXY_HOPS: 'true' } as NodeJS.ProcessEnv),
+    ).toThrow(/TRUST_PROXY_HOPS/);
+  });
+});

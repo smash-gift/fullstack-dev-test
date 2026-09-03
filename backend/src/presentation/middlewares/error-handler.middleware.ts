@@ -1,6 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { DomainError, LlmError, ValidationError } from '../../domain/errors/index.js';
+import {
+  DomainError,
+  LlmError,
+  RateLimitedError,
+  ValidationError,
+} from '../../domain/errors/index.js';
 import type { Logger } from '../../pkg/logger/logger.js';
 import { failure } from '../../pkg/response/http-response.js';
 
@@ -45,6 +50,20 @@ export function errorHandlerMiddleware(logger: Logger) {
         error.message,
       );
       res.status(500).json(failure('INTERNAL_ERROR', 'An unexpected error occurred.', meta));
+      return;
+    }
+
+    // Ahead of the generic DomainError branch because a 429 carries two extra
+    // things: the `Retry-After` header, and the same number in the body for
+    // clients that read JSON more easily than headers.
+    if (error instanceof RateLimitedError) {
+      logger.warn({ requestId: req.requestId, path: req.path }, 'rate limit exceeded');
+      res.set('Retry-After', String(error.retryAfterSeconds));
+      res
+        .status(429)
+        .json(
+          failure(error.code, error.message, meta, { retryAfterSeconds: error.retryAfterSeconds }),
+        );
       return;
     }
 

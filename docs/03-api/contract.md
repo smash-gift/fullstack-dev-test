@@ -213,11 +213,22 @@ estava certa — a diferença entre os dois códigos é justamente para onde o c
 ```
 
 ```
+RateLimit-Policy: 30;w=300
 RateLimit-Limit: 30
 RateLimit-Remaining: 0
 RateLimit-Reset: 143
 Retry-After: 143
 ```
+
+Os cabeçalhos `RateLimit-*` acompanham **toda** resposta do endpoint, não só a bloqueada:
+um cliente sabe quanto lhe resta antes de esbarrar no limite.
+
+**Um `429` não degrada.** Servir sugestões a quem estourou o limite anularia o limite e
+ensinaria o cliente que insistir funciona — `429` é sinal para desacelerar, então segue
+sendo sinal. O corpo não traz `data`.
+
+**Um `429` mantém os cabeçalhos de CORS.** Sem eles o navegador reporta falha de CORS e o
+cliente nunca descobre que foi limitado: diagnóstico errado para o problema certo.
 
 ### `500 INTERNAL_ERROR`
 
@@ -316,5 +327,16 @@ curl -sS -X POST http://localhost:3000/api/v1/suggestions \
 Métodos: `GET`, `POST`, `OPTIONS`. Headers: `Content-Type`.
 
 `*` em desenvolvimento existe porque `flutter run -d chrome` sobe em porta efêmera
-diferente a cada execução — fixar origem quebraria o fluxo local do avaliador. Em
-produção, lista explícita, sempre.
+diferente a cada execução — fixar origem quebraria o fluxo local do avaliador.
+
+Em produção, lista explícita, **sempre** — e isso não é convenção: com
+`NODE_ENV=production` e `CORS_ORIGINS=*`, o processo **se recusa a subir**.
+
+```
+Invalid environment:
+  - CORS_ORIGINS: must list explicit origins in production (for example
+    https://app.example.com), never *
+```
+
+Um item de checklist de deploy sobrevive justamente porque nada quebra visivelmente quando
+é esquecido. Este quebra.

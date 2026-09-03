@@ -111,6 +111,46 @@ palpite informado.
 - **Janela fixa tem efeito de borda:** dá para enviar 60 requisições na virada de duas
   janelas. *Sliding window* resolveria, ao custo de mais estado.
 
+## O que a implementação acrescentou à decisão
+
+Registrado depois de implementar, porque três detalhes só apareceram ao escrever o código.
+
+### A identidade do cliente quase virou o buraco
+
+O limite conta por IP. Atrás de um proxy reverso, toda requisição chega com o endereço do
+proxy e um chamador gasta a quota de todos. A correção óbvia — `trust proxy: true` — **abre
+um problema maior**: o Express passa a acreditar no `X-Forwarded-For`, e um chamador forja
+uma identidade nova por requisição.
+
+`TRUST_PROXY_HOPS` é, portanto, uma **contagem de saltos**, e o schema de ambiente rejeita
+o valor `true`. Há teste confirmando que, com `0`, um `X-Forwarded-For` forjado não cria
+identidade nova.
+
+### A ordem dos middlewares é parte do controle
+
+| Ordem | Consequência |
+|---|---|
+| CORS antes do limitador | O `429` chega com `Access-Control-Allow-Origin`; sem isso o navegador reporta falha de CORS e o cliente nunca sabe que foi limitado |
+| CORS antes do limitador | O preflight `OPTIONS` não consome quota — cobrar por ele cortaria pela metade o orçamento real de um cliente web |
+| Limitador antes do `express.json` | A requisição bloqueada não tem corpo interpretado nem token gasto |
+
+### Cabeçalhos: `draft-6`
+
+`express-rate-limit` oferece três formatos. Escolhido o `draft-6`, que soletra o orçamento
+em três cabeçalhos legíveis (`RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`)
+em vez de compactá-los em um. Quem depura um `429` lê de relance.
+
+`Retry-After` é escrito pelo nosso error handler a partir do erro de domínio, e não
+delegado à biblioteca: assim o valor do cabeçalho e o `details.retryAfterSeconds` do corpo
+saem do mesmo número, por construção.
+
+### `Retry-After` nunca é zero
+
+`resetTime` é opcional nos próprios tipos da biblioteca — o store em memória sempre o
+preenche, um store Redis não precisa. Quando falta, a resposta é o tamanho da janela.
+E o valor mínimo é `1`: `Retry-After: 0` lê-se como "tente de novo agora", que é a
+instrução oposta.
+
 ## Em produção, o que mudaria
 
 1. Store em Redis, para o limite valer no cluster inteiro.

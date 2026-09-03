@@ -16,8 +16,10 @@ cliente. Complementa [`llm-security.md`](llm-security.md).
 | `Content-Type` exigido | `contentTypeMiddleware` → `415` | Interpretação ambígua do corpo | ✅ fase 06 |
 | Validação de entrada | Zod na borda | T1, entrada malformada | ✅ fase 02 |
 | Sanitização de entrada | `pkg/security/input-sanitizer.ts` | T1 — prompt injection | ✅ fase 05 |
-| Rate limiting | 30 / 5 min por IP | T3 | ⬜ fase 07 |
-| CORS | Lista explícita em produção | Uso cruzado indevido | ⬜ fase 07 |
+| Rate limiting | 30 / 5 min por IP, antes do body parser | T3 | ✅ fase 07 |
+| CORS | Lista explícita em produção, **imposta no boot** | Uso cruzado indevido | ✅ fase 07 |
+| CSP | Escopada em `/docs` | XSS na única página HTML | ✅ fase 07 |
+| Identidade do cliente | `TRUST_PROXY_HOPS`, nunca `trust proxy: true` | Bypass do rate limit por `X-Forwarded-For` forjado | ✅ fase 07 |
 | Sem stack trace na resposta | `error-handler` final | Vazamento de informação | ✅ fase 02 |
 | Timeout em toda chamada externa | `AbortController` | Exaustão de recurso | ✅ fase 04 |
 
@@ -46,7 +48,7 @@ Três defaults do `helmet` foram alterados, e cada um por um motivo concreto:
 
 | Ajuste | Por quê |
 |---|---|
-| `contentSecurityPolicy: false` | Esta API não devolve documento que um navegador renderize. Reativado na fase 07, quando o Swagger UI passa a servir HTML de verdade |
+| `contentSecurityPolicy: false` **globalmente** | Esta API não devolve documento que um navegador renderize. A fase 07 **reativou** a política, escopada em `/docs` — a única rota que serve HTML |
 | `crossOriginEmbedderPolicy: false` | COEP governa embedding de recurso em documento; não há documento |
 | `crossOriginResourcePolicy: 'cross-origin'` | **O default `same-origin` contradiz o produto** — esta API existe para ser chamada de outra origem, pelo app Flutter. Quem controla acesso aqui é o CORS |
 
@@ -81,6 +83,46 @@ heurística da camada 1 na fase 05.
 
 O comportamento medido virou teste, que é o que impede a conclusão de envelhecer em
 silêncio.
+
+### A CSP de `/docs`
+
+A única rota que devolve HTML, e a única com política:
+
+```
+default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline';
+img-src 'self' data:; font-src 'self'; connect-src 'self';
+base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+```
+
+`script-src 'self'` só é possível porque a página e o inicializador do Swagger UI são
+**arquivos nossos**: o `swagger-ui-express` injetaria `<script>` inline e obrigaria
+`'unsafe-inline'` no diretivo que mais importa. `style-src 'unsafe-inline'` é um
+afrouxamento real — o Swagger UI injeta estilo em runtime —, confinado a uma página cujo
+conteúdo inteiro nós escrevemos.
+
+Os assets vêm de uma **allowlist de três arquivos**; `.map`, `package.json` e
+`oauth2-redirect.html` respondem `404`, com teste. Uma atualização de dependência não
+decide o que esta API expõe.
+
+Verificado renderizando em Chrome headless — as duas operações aparecem, com zero violações
+de CSP —, e não lendo a documentação do `helmet`.
+
+### Rate limiting: a ordem é o controle
+
+O limitador é montado **antes** do body parser e do controller, e **depois** do CORS. As
+três propriedades que saem disso não são acidente:
+
+| Propriedade | Por quê |
+|---|---|
+| Requisição bloqueada custa zero em token | O middleware corta antes de qualquer chamada ao modelo |
+| `429` chega ao navegador com `Access-Control-Allow-Origin` | CORS roda antes; sem isso o cliente vê "erro de CORS" e nunca sabe que foi limitado |
+| Preflight `OPTIONS` não consome quota | Respondido pelo CORS, nunca chega ao contador |
+
+**A identidade do cliente é o ponto frágil**, e a mitigação óbvia é a errada:
+`trust proxy: true` faria o Express aceitar o que o `X-Forwarded-For` disser, deixando o
+limite a um cabeçalho de distância de ser contornado. Por isso `TRUST_PROXY_HOPS` é uma
+contagem de saltos, o schema **rejeita** o valor `true`, e há teste confirmando que um
+`X-Forwarded-For` forjado não cria identidade nova quando não há proxy configurado.
 
 ### Superfícies que não existem
 
@@ -185,9 +227,37 @@ máquina nova não puxe silenciosamente um minor diferente do que foi testado:
 | `express` | 5.2.1 | Servidor HTTP |
 | `helmet` | 8.3.0 | Cabeçalhos de segurança |
 | `cors` | 2.8.6 | CORS configurável por ambiente |
-| `zod` | 4.5.4 | Validação de entrada e de saída do modelo |
+| `zod` | 4.5.4 | Validação de entrada, de saída do modelo **e geração do OpenAPI** |
 | `pino` | 10.3.1 | Log estruturado |
 | `dotenv` | 17.4.2 | Carrega `.env` em desenvolvimento |
+| `express-rate-limit` | 8.7.0 | Rate limiting por IP *(fase 07)* |
+| `swagger-ui-dist` | 5.32.14 | Assets do Swagger UI, servidos localmente *(fase 07)* |
+
+> **A fase 07 não instalou o gerador de OpenAPI que o plano previa.** O Zod 4.5 emite JSON
+> Schema nativamente, então `@asteasolutions/zod-to-openapi` e suas duas dependências
+> ficaram de fora. Menos superfície pela via mais barata: perceber que já havia a
+> ferramenta.
+
+**As versões fixadas agora têm teste** (`tests/unit/dependency-policy.test.ts`), em vez de
+serem uma afirmação num documento.
+
+### Telemetria de instalação — encontrada e desligada
+
+`swagger-ui-dist` depende de `@scarf/scarf`, cujo `postinstall` reporta a instalação a um
+terceiro. Quem clona este repositório não concordou com isso, então o opt-out está no
+manifesto:
+
+```json
+"scarfSettings": { "enabled": false }
+```
+
+Escolhido em vez de `ignore-scripts=true` no `.npmrc`, que silenciaria esta telemetria
+desabilitando o script de instalação de **todas** as dependências. Há teste garantindo que
+o campo não seja perdido numa regeneração do `package.json`.
+
+> A leitura do `report.js` do pacote (`userHasOptedOut`) confirma que o campo é lido do
+> manifesto raiz. Não foi possível reproduzir a chamada de rede fora de uma instalação
+> real: o que está documentado é o caminho de código, não uma requisição medida.
 
 Nenhum SDK de provider de LLM: os três adapters usam `fetch` nativo
 ([`D33`](../00-overview/decisions-log.md)). Três dependências a menos, e três superfícies
@@ -237,15 +307,17 @@ Enquanto o alvo não é decidido ([`../04-operations/deploy.md`](../04-operation
 o que já se sabe que será obrigatório:
 
 - [ ] HTTPS obrigatório, com HSTS
-- [ ] `CORS_ORIGINS` explícito — nunca `*`
+- [x] `CORS_ORIGINS` explícito — nunca `*` · **imposto pelo boot desde a fase 07**
 - [ ] `NODE_ENV=production` (desliga stack trace e CORS permissivo)
 - [ ] `LOG_LEVEL=info` — nunca `debug`
 - [ ] Key como segredo do ambiente, jamais na imagem
+- [ ] `TRUST_PROXY_HOPS` igual ao número real de proxies à frente — sem isso o rate
+      limit conta todo mundo como um cliente só
 - [ ] Rate limit revisado para exposição pública
 - [ ] Teto de gasto e alerta configurados no provider de LLM
 - [ ] `/health` sem dependência do LLM (já é assim)
 - [ ] Container rodando com usuário não-root
-- [ ] Decidir se `/docs` fica público
+- [ ] Decidir se `/docs` fica público (`DOCS_ENABLED`)
 
 O teto de gasto no provider merece destaque: é o único controle que funciona quando **todos
 os outros falharem**. Rate limit protege contra abuso conhecido; o teto protege contra o

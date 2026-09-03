@@ -51,16 +51,28 @@ const freeTextField = (label: string) =>
  * changing a request hides from the caller that it was not honoured.
  */
 export const suggestMessagesBodySchema = z.object({
-  occasion: freeTextField('occasion'),
-  relationship: freeTextField('relationship'),
-  tone: z.enum(SUGGESTION_TONES).default('warm'),
-  language: z.enum(SUGGESTION_LANGUAGES).default('en'),
+  occasion: freeTextField('occasion').meta({
+    description: 'What the card is for. Free text; letters, digits and light punctuation only.',
+    example: 'birthday',
+  }),
+  relationship: freeTextField('relationship').meta({
+    description: 'Who the card is for, relative to the sender.',
+    example: 'friend',
+  }),
+  tone: z.enum(SUGGESTION_TONES).default('warm').meta({ description: 'Voice of the message.' }),
+  language: z
+    .enum(SUGGESTION_LANGUAGES)
+    .default('en')
+    .meta({ description: 'Language the suggestions are written in.' }),
   count: z.coerce
     .number()
     .int('count must be an integer')
     .min(MIN_SUGGESTION_COUNT, `count must be ${MIN_SUGGESTION_COUNT} or ${MAX_SUGGESTION_COUNT}`)
     .max(MAX_SUGGESTION_COUNT, `count must be ${MIN_SUGGESTION_COUNT} or ${MAX_SUGGESTION_COUNT}`)
-    .default(MAX_SUGGESTION_COUNT),
+    .default(MAX_SUGGESTION_COUNT)
+    .meta({
+      description: 'How many suggestions to return. Rejected outside 2..3, never clamped.',
+    }),
 });
 
 export type SuggestMessagesBody = z.infer<typeof suggestMessagesBodySchema>;

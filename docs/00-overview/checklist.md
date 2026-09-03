@@ -9,7 +9,7 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 4 / 16 fases concluídas
+**Progresso geral:** 7 / 16 fases concluídas
 
 ---
 
@@ -84,16 +84,16 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Lockfile versionado e `npm audit` limpo
 - [ ] Cleartext HTTP restrito ao build de debug — *fase 09*
 
-## 7. Implementar diferenciais no backend — ⬜
+## 7. Implementar diferenciais no backend — ✅
 → [`phase-07-backend-extras.md`](../02-phases/phase-07-backend-extras.md)
 
-- [ ] Rate limiting
+- [x] Rate limiting — 30 / 5 min por IP, `429` com `Retry-After`, sem fallback
 - [x] Timeout explícito para chamadas ao LLM *(fase 04)*
-- [ ] Tipagem das respostas
-- [ ] Configuração de CORS
+- [x] Tipagem das respostas — inferida dos mesmos schemas que geram o OpenAPI
+- [x] Configuração de CORS — por ambiente; `*` **impede o boot** em produção
 - [x] Estrutura preparada para cache *(antecipado para a fase 02)*
-- [ ] Explicar no README se o cache foi ou não implementado
-- [ ] Swagger / OpenAPI *(extra além do checklist)*
+- [ ] Explicar no README se o cache foi ou não implementado — *o README nasce na fase 14*
+- [x] Swagger / OpenAPI *(extra além do checklist)* — `/docs`, gerado dos schemas Zod
 
 ## 8. Criar testes do backend — ⬜
 → [`phase-08-backend-tests.md`](../02-phases/phase-08-backend-tests.md)

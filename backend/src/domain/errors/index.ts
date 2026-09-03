@@ -1,4 +1,5 @@
 export { DomainError } from './domain-error.js';
+export { RateLimitedError } from './rate-limit-error.js';
 export {
   ValidationError,
   MethodNotAllowedError,

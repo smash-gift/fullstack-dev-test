@@ -4,11 +4,14 @@ import helmet from 'helmet';
 
 import '../pkg/http/request-context.js';
 import { parseCorsOrigins } from '../pkg/config/env.js';
+import { buildOpenApiDocument } from '../presentation/docs/openapi.js';
 import { contentTypeMiddleware } from '../presentation/middlewares/content-type.middleware.js';
 import { errorHandlerMiddleware } from '../presentation/middlewares/error-handler.middleware.js';
 import { notFoundMiddleware } from '../presentation/middlewares/not-found.middleware.js';
+import { rateLimitMiddleware } from '../presentation/middlewares/rate-limit.middleware.js';
 import { requestIdMiddleware } from '../presentation/middlewares/request-id.middleware.js';
 import { requestLoggerMiddleware } from '../presentation/middlewares/request-logger.middleware.js';
+import { docsRoutes } from '../presentation/routes/docs.routes.js';
 import { healthRoutes } from '../presentation/routes/health.routes.js';
 import { v1Routes } from '../presentation/routes/v1/index.js';
 import type { Container } from './container.js';
@@ -21,8 +24,9 @@ export const API_VERSION = '1.0.0';
  * left at a default that suggests a protection this service does not need, and
  * the ones that matter for a JSON endpoint are kept.
  *
- * `contentSecurityPolicy` is disabled here and revisited in phase 07, when
- * Swagger UI starts serving an actual HTML page.
+ * `contentSecurityPolicy` is disabled globally for that reason, and set
+ * tightly on `/docs` — the one route that does serve HTML. See
+ * `presentation/routes/docs.routes.ts`.
  */
 const HELMET_OPTIONS = {
   contentSecurityPolicy: false,
@@ -54,9 +58,43 @@ export function buildApp(container: Container): Express {
 
   app.use(helmet(HELMET_OPTIONS));
 
+  // Rate limiting keys on the client IP. Behind a reverse proxy every request
+  // would otherwise arrive with the proxy's address, so one caller could spend
+  // everybody's quota. A hop count, never `true`: trusting the whole
+  // `X-Forwarded-For` chain lets a caller forge a fresh identity per request.
+  app.set('trust proxy', container.env.TRUST_PROXY_HOPS);
+
   app.use(requestIdMiddleware());
   app.use(requestLoggerMiddleware(container.logger));
-  app.use(cors({ origin: parseCorsOrigins(container.env.CORS_ORIGINS) }));
+
+  // CORS before the rate limiter so a blocked cross-origin request still comes
+  // back with the headers a browser needs — otherwise the client sees a CORS
+  // failure and never learns it was rate limited.
+  //
+  // The method list is the one this API actually serves. Advertising DELETE on
+  // an endpoint that answers 405 for it would be a header contradicting the
+  // routing table.
+  app.use(
+    cors({
+      origin: parseCorsOrigins(container.env.CORS_ORIGINS),
+      methods: ['GET', 'POST', 'OPTIONS'],
+    }),
+  );
+
+  // Before the body parser and the controller: a blocked request must cost
+  // nothing, neither a parsed body nor a token. `/health` and `/docs` are
+  // outside the scope — an orchestrator's health check is frequent by design,
+  // and documentation should never be locked out by accident.
+  if (container.env.RATE_LIMIT_ENABLED) {
+    app.use(
+      '/api/v1',
+      rateLimitMiddleware({
+        windowMs: container.env.RATE_LIMIT_WINDOW_MS,
+        max: container.env.RATE_LIMIT_MAX,
+      }),
+    );
+  }
+
   app.use(contentTypeMiddleware());
 
   // 4kb for two fields capped at 60 characters each is generous. The cap is
@@ -67,6 +105,10 @@ export function buildApp(container: Container): Express {
 
   app.use(healthRoutes({ version: API_VERSION, llmProvider: container.llmProvider.name }));
   app.use('/api/v1', v1Routes(container.suggestionsController));
+
+  if (container.env.DOCS_ENABLED) {
+    app.use('/docs', docsRoutes(buildOpenApiDocument({ version: API_VERSION })));
+  }
 
   app.use(notFoundMiddleware());
   app.use(errorHandlerMiddleware(container.logger));

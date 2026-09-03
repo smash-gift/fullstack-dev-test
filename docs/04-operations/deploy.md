@@ -50,10 +50,15 @@ Independentemente da escolha:
 - [ ] `.dockerignore` excluindo `node_modules`, `.env`, `tests`
 - [ ] `/health` como probe de liveness — **sem** dependência do LLM
 - [ ] Key configurada como segredo do ambiente, nunca na imagem
-- [ ] `CORS_ORIGINS` explícito, sem `*`
+- [ ] `CORS_ORIGINS` explícito, sem `*` — **o processo não sobe sem isso** em
+      `NODE_ENV=production`, então este item se cobra sozinho
+- [ ] `TRUST_PROXY_HOPS` igual ao número real de proxies à frente (Coolify/Traefik: `1`).
+      Errar aqui não quebra nada visivelmente: só faz o rate limit contar todos os
+      clientes como um só
 - [ ] Rate limit ativo e com valores revisados para exposição pública
 - [ ] `NODE_ENV=production`
-- [ ] Decidir se `/docs` fica público (aqui, provavelmente sim — o propósito é inspeção)
+- [ ] Decidir se `/docs` fica público via `DOCS_ENABLED` (aqui, provavelmente `true` — o
+      propósito é inspeção)
 
 ## Se o Flutter também for publicado
 
