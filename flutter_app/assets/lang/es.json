@@ -1,0 +1,52 @@
+{
+  "app_title": "Sugerencias de Mensajes",
+
+  "home_headline": "¿Qué dirá la tarjeta?",
+  "home_subhead": "Dinos la ocasión y para quién es. Escribimos tres.",
+  "home_empty_hint": "No se envía nada hasta que toques el botón.",
+
+  "field_occasion_label": "Ocasión",
+  "field_occasion_hint": "Cumpleaños",
+  "field_relationship_label": "Relación",
+  "field_relationship_hint": "Mejor amigo",
+  "field_tone_label": "Tono",
+  "field_required": "Completa esto para continuar.",
+
+  "tone_warm": "Cálido",
+  "tone_funny": "Divertido",
+  "tone_formal": "Formal",
+  "tone_heartfelt": "Emotivo",
+
+  "action_generate": "Escribir mis mensajes",
+  "action_generate_again": "Escribir otras tres",
+  "action_writing": "Escribiendo…",
+  "action_try_again": "Reintentar",
+  "action_copy": "Copiar",
+  "action_copied": "Copiado",
+  "action_settings": "Dirección del servidor",
+
+  "results_title": "Sugerencias",
+  "results_count": "{count} sugerencias",
+  "results_length": "{count} caracteres",
+
+  "degraded_title": "Nuestro redactor está fuera de línea.",
+  "degraded_body": "Estas son mensajes elegidos a mano — igual de tuyas.",
+
+  "error_connection_title": "No puedo conectar con el servidor.",
+  "error_connection_body": "Comprueba que el backend esté activo en {url}.",
+  "error_timeout_title": "El servidor tardó demasiado.",
+  "error_timeout_body": "Puede estar arrancando. Inténtalo en un momento.",
+  "error_validation_title": "Revisa los campos de arriba.",
+  "error_rate_limited_title": "Demasiadas solicitudes.",
+  "error_rate_limited_body": "Inténtalo en {seconds} segundos.",
+  "error_server_title": "Algo falló de nuestro lado.",
+  "error_server_body": "No fue culpa tuya. Inténtalo en un momento.",
+
+  "settings_title": "Dirección del servidor",
+  "settings_description": "Adónde envía las solicitudes esta app. Aquí no se guarda ninguna credencial — la clave de la API vive en el servidor.",
+  "settings_url_label": "URL base",
+  "settings_url_invalid": "Escribe una dirección completa, como http://localhost:3000",
+  "settings_save": "Guardar",
+  "settings_cancel": "Cancelar",
+  "settings_reset": "Volver al valor por defecto"
+}

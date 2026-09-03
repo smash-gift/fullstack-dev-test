@@ -1,0 +1,52 @@
+{
+  "app_title": "Message Suggester",
+
+  "home_headline": "What should the card say?",
+  "home_subhead": "Tell us the occasion and who it's for. We'll write three.",
+  "home_empty_hint": "Nothing is sent anywhere until you tap.",
+
+  "field_occasion_label": "Occasion",
+  "field_occasion_hint": "Birthday",
+  "field_relationship_label": "Relationship",
+  "field_relationship_hint": "Best friend",
+  "field_tone_label": "Tone",
+  "field_required": "Add this before we can write.",
+
+  "tone_warm": "Warm",
+  "tone_funny": "Funny",
+  "tone_formal": "Formal",
+  "tone_heartfelt": "Heartfelt",
+
+  "action_generate": "Write my messages",
+  "action_generate_again": "Write three more",
+  "action_writing": "Writing…",
+  "action_try_again": "Try again",
+  "action_copy": "Copy",
+  "action_copied": "Copied to clipboard",
+  "action_settings": "Backend address",
+
+  "results_title": "Suggestions",
+  "results_count": "{count} suggestions",
+  "results_length": "{count} characters",
+
+  "degraded_title": "Our writer is offline right now.",
+  "degraded_body": "These are hand-picked classics — still yours to use.",
+
+  "error_connection_title": "Can't reach the server.",
+  "error_connection_body": "Check that the backend is running at {url}.",
+  "error_timeout_title": "The server took too long.",
+  "error_timeout_body": "It may be waking up. Try again in a moment.",
+  "error_validation_title": "Check the fields above.",
+  "error_rate_limited_title": "Too many requests.",
+  "error_rate_limited_body": "Try again in {seconds} seconds.",
+  "error_server_title": "Something went wrong on our side.",
+  "error_server_body": "Nothing you did. Try again in a moment.",
+
+  "settings_title": "Backend address",
+  "settings_description": "Where this app sends requests. No credentials are stored here — the API key lives on the server.",
+  "settings_url_label": "Base URL",
+  "settings_url_invalid": "Enter a full address, like http://localhost:3000",
+  "settings_save": "Save",
+  "settings_cancel": "Cancel",
+  "settings_reset": "Reset to default"
+}

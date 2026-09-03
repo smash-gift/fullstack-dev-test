@@ -1,10 +1,10 @@
 # Fase 06 — Baseline de segurança da aplicação
 
-**Status:** ✅ concluída *(backend)* · **Checklist:** item 6 *(adicionado ao checklist original)*
+**Status:** ✅ concluída · **Checklist:** item 6 *(adicionado ao checklist original)*
 
-> As três tarefas de **cliente** — cleartext HTTP e ausência de credencial no app — ficam
-> abertas porque não existe projeto Flutter para verificar. A regra nasce aqui e é aplicada
-> na [fase 09](phase-09-flutter-app.md).
+> As três tarefas de **cliente** ficaram abertas nesta fase porque não existia projeto
+> Flutter para verificar. **Fechadas na [fase 09](phase-09-flutter-app.md)**, e não por
+> leitura do fonte: por inspeção dos quatro binários construídos.
 
 ## Objetivo
 
@@ -34,7 +34,7 @@ Referência: [`../05-security/application-security.md`](../05-security/applicati
 ### Segredos
 - [x] Key lida apenas em `pkg/config/env.ts`
 - [x] `.env.example` completo e sem valor real — **com teste** contra o schema
-- [ ] Nenhuma credencial no projeto Flutter — *regra definida; verificável só na fase 09*
+- [x] Nenhuma credencial no projeto Flutter — *verificado na fase 09, com teste*
 
 ### Dependências
 - [x] `package-lock.json` versionado
@@ -43,12 +43,23 @@ Referência: [`../05-security/application-security.md`](../05-security/applicati
 - [x] Revisar a necessidade de cada dependência direta
 
 ### Cliente — regra definida aqui, **aplicada e verificada na fase 09**
-- [ ] Cleartext HTTP **só** em build de debug (Android e iOS)
-- [ ] Nenhuma exceção de ATS/cleartext no manifesto de release
+- [x] Cleartext HTTP **só** em build de debug (Android e iOS)
+- [x] Nenhuma exceção de ATS/cleartext no manifesto de release
 
-> Não existe projeto Flutter ainda. Marcar estes itens agora seria afirmar uma verificação
-> que não aconteceu — a regra está escrita e vira item **bloqueante** na
-> [fase 15](phase-15-pre-delivery-review.md).
+> Quando esta fase foi escrita não existia projeto Flutter, e marcar os itens teria sido
+> afirmar uma verificação que não aconteceu. A fase 09 fez a verificação — no
+> `app-release.apk`, no `app-debug.apk` e nos dois `Runner.app` —, e não no código-fonte:
+>
+> | Artefato | Resultado |
+> |---|---|
+> | `app-release.apk` | sem `networkSecurityConfig`, sem `usesCleartextTraffic`, XML não empacotado |
+> | `app-debug.apk` | exceção presente |
+> | iOS release | nenhuma chave de ATS |
+> | iOS debug | `NSAllowsLocalNetworking = true` |
+>
+> No caminho apareceu um defeito que ninguém procurava: **o manifesto de release do
+> template Flutter não declara `INTERNET`**, então um release deste app instalaria e
+> falharia toda requisição.
 
 ## Decisões da fase
 
@@ -202,7 +213,7 @@ Suíte completa: **367 testes.**
 - [x] JSON malformado → `400`, sem `5xx`
 - [x] Log em `info` sem key, sem prompt, sem valores de campo
 - [x] `npm audit --audit-level=high` limpo
-- [ ] Cleartext restrito a debug, verificado por grep no manifesto — *fase 09*
+- [x] Cleartext restrito a debug — verificado nos binários na fase 09
 
 ## Riscos
 

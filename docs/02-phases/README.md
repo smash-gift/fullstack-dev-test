@@ -20,11 +20,11 @@ Status ao vivo: [`../00-overview/checklist.md`](../00-overview/checklist.md)
 | 06 | 🔒 [Baseline de segurança](phase-06-application-security.md) | Headers, limites, log, dependências | ✅ |
 | 07 | [Diferenciais do backend](phase-07-backend-extras.md) | Rate limit, CORS, cache, Swagger | ✅ |
 | 08 | [Testes do backend](phase-08-backend-tests.md) | Vitest: fallback + segurança | ✅ |
-| 09 | [App Flutter](phase-09-flutter-app.md) | Projeto e tela principal | ⬜ |
-| 10 | [Arquitetura Flutter](phase-10-flutter-architecture.md) | 4 camadas, models, URL configurável | ⬜ |
-| 11 | [Estados da interface](phase-11-ui-states.md) | Idle, Loading, Success, Error | ⬜ |
-| 12 | [Fluxo ponta a ponta](phase-12-end-to-end.md) | Birthday + Friend + fallback | ⬜ |
-| 13 | [Testes Flutter](phase-13-flutter-tests.md) | Widget e unit tests | ⬜ |
+| 09 | [App Flutter](phase-09-flutter-app.md) | Projeto, tema e tela principal | ✅ |
+| 10 | [Arquitetura Flutter](phase-10-flutter-architecture.md) | 4 camadas, models, URL configurável | ✅ |
+| 11 | [Estados da interface](phase-11-ui-states.md) | Idle, Loading, Success, Error, Degradado | ✅ |
+| 12 | [Fluxo ponta a ponta](phase-12-end-to-end.md) | Birthday + Friend + fallback real | ✅ |
+| 13 | [Testes Flutter](phase-13-flutter-tests.md) | Widget e unit tests | ✅ |
 | 14 | [README](phase-14-readme.md) | Documento em inglês para o avaliador | ⬜ |
 | 15 | [Revisão pré-entrega](phase-15-pre-delivery-review.md) | Lint, testes, clone limpo, auditoria | ⬜ |
 | 16 | [Entrega](phase-16-delivery.md) | Push e Pull Request | ⬜ |

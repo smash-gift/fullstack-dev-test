@@ -77,18 +77,28 @@ flutter run --dart-define=API_BASE_URL=http://localhost:3000
 
 ### Escolha do alvo
 
-```bash
-# Chrome — o caminho mais rápido para avaliar
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3000
+O projeto foi criado para **Android, iOS e Web**. Desktop ficou de fora: não acrescenta
+nada à avaliação e traria configuração de sandbox para manter.
 
-# macOS desktop
-flutter run -d macos --dart-define=API_BASE_URL=http://localhost:3000
+```bash
+# Chrome — o caminho mais rápido para avaliar, e nenhum SDK móvel necessário
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3000
 
 # Emulador Android — ATENÇÃO ao endereço
 flutter run -d emulator-5554 --dart-define=API_BASE_URL=http://10.0.2.2:3000
 
 # iOS Simulator
 flutter run -d iPhone --dart-define=API_BASE_URL=http://localhost:3000
+```
+
+### Ou sem passar endereço nenhum
+
+O default já é o certo para cada plataforma — `10.0.2.2` no Android, `localhost` no resto —
+e o endereço também é **editável com o app rodando**, pelo ícone no canto superior direito.
+Serve para reapontar um app já instalado sem recompilar.
+
+```bash
+flutter run          # o default resolve sozinho
 ```
 
 ---
@@ -158,11 +168,34 @@ npm run test:coverage
 # Tudo de uma vez: typecheck, lint, formatação e testes
 npm run verify
 
-# Flutter
+# Flutter — 95 testes, ~3 s, sem rede e sem backend rodando
 cd flutter_app
 flutter test
 flutter test --coverage
 ```
+
+### Os testes que exigem o backend de pé
+
+```bash
+# terminal 1
+cd backend && npm run dev
+
+# terminal 2 — a pilha real do cliente contra a API real
+cd flutter_app && RUN_LIVE_BACKEND_TESTS=true flutter test
+```
+
+E o caminho que o enunciado coloca acima dos outros, com o LLM falhando **de verdade**:
+
+```bash
+# terminal 1 — credencial inválida de propósito
+cd backend && LLM_PROVIDER=openai OPENAI_API_KEY=sk-invalid LLM_MAX_RETRIES=0 npm run dev
+
+# terminal 2
+cd flutter_app && RUN_LIVE_BACKEND_TESTS=true RUN_LIVE_DEGRADED_TEST=true flutter test
+```
+
+Sem as variáveis, esses testes são **pulados** — `flutter test` continua verde numa máquina
+onde ninguém subiu servidor, que é o que o enunciado espera do avaliador.
 
 Os testes **não precisam de API key nem de rede** — os providers são substituídos por
 duplos de teste. É um efeito direto da arquitetura de ports

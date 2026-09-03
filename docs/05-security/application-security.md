@@ -145,7 +145,7 @@ adicionado. Quem incluir um banco depois precisa reabrir esta tabela.
 
 | Regra | Verificação |
 |---|---|
-| Key só no servidor, nunca no Flutter | `grep -rniE '(api[_-]?key|secret)' flutter_app/lib/` |
+| Key só no servidor, nunca no Flutter | **Teste automatizado** (`flutter_app/test/architecture/`) |
 | Key lida em um único arquivo (`pkg/config/env.ts`) | Revisão de código |
 | Key nunca em log, em nenhum nível | Revisão do logger |
 | Key nunca em resposta HTTP | Formato único de erro |
@@ -272,18 +272,28 @@ custa um arquivo, não uma refatoração — o que muda a resposta a incidente d
 
 ## Flutter
 
-### Sem segredo no cliente
+### Sem segredo no cliente — ✅ verificado por teste
 
 O app conhece **apenas** `API_BASE_URL`. Nenhuma key, nenhum token, nenhuma credencial.
+
+Três testes estáticos guardam isso: nada em `lib/` casa com o formato de uma chave real,
+nada em `lib/` sequer **nomeia** uma credencial (`apiKey`, `secret`, `bearer`,
+`authorization`), e o `AppConfig` não menciona `KEY`, `TOKEN` nem `SECRET`.
 
 `--dart-define` foi escolhido em vez de `.env` como asset justamente para não sugerir que
 existe lugar seguro para segredo no cliente — não existe. Asset de app publicado é
 extraível ([`ADR-0007`](../01-architecture/decisions/adr-0007-flutter-clean-dart.md)).
 
-### Renderização
+### Renderização — ✅ verificado por teste
 
 Regra da camada 4 ([`llm-security.md`](llm-security.md)): texto de sugestão só em `Text`,
 nunca em widget que interprete marcação, sem `linkify`.
+
+Nenhum pacote de HTML, Markdown, linkify, `url_launcher` ou webview existe no `pubspec`, e
+nenhum símbolo desses aparece em `lib/`. Payloads reais — URL, `<script>`, link markdown —
+são renderizados literalmente, e a asserção é que **nenhum ancestral do texto é um
+`InkWell` ou `GestureDetector`**: o que escapar do guard do backend fica visível, nunca
+tocável.
 
 ### Cleartext HTTP — configuração que **não pode** ir para release
 
@@ -297,7 +307,34 @@ Para o app falar com `http://localhost:3000` (ou `10.0.2.2`) durante o desenvolv
 transformaria todo o tráfego do app em texto claro, interceptável em qualquer rede
 hostil — do tipo de erro que passa despercebido porque "funciona".
 
-Item explícito de verificação na fase 15.
+### Como isso foi implementado, e verificado
+
+| Plataforma | Mecanismo | Por que é garantia e não convenção |
+|---|---|---|
+| Android | `network_security_config.xml` em `src/debug/res/xml/` | A **localização** é o controle: um build de release não compila esse diretório, edite quem editar o arquivo |
+| iOS | `Info-Debug.plist` para Debug, `Info.plist` para Release e Profile | A exceção não existe no arquivo que o release compila; não há literal para alguém esquecer de remover |
+
+Verificado nos **binários**, não no fonte:
+
+```
+app-release.apk   networkSecurityConfig ausente · usesCleartextTraffic ausente
+                  network_security_config.xml não empacotado
+app-debug.apk     exceção presente
+Runner.app (rel)  nenhuma chave de ATS
+Runner.app (dbg)  NSAllowsLocalNetworking = true
+```
+
+Mesmo em debug o iOS usa `NSAllowsLocalNetworking`, nunca `NSAllowsArbitraryLoads`:
+cleartext alcança apenas hostnames locais.
+
+> **A abordagem óbvia não funciona.** Substituir uma variável de build dentro do
+> `Info.plist` (`<${VAR}/>`) quebra o build — o Xcode lê o arquivo como property list antes
+> de expandir build settings. E mudar `INFOPLIST_FILE` só no xcconfig não tem efeito:
+> configuração de target sobrepõe xcconfig. Os dois só apareceram porque os builds foram
+> inspecionados.
+
+Dois plists podem divergir, então **um teste afirma que a única diferença entre eles é o
+bloco de ATS**.
 
 ---
 

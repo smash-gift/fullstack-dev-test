@@ -9,7 +9,7 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 8 / 16 fases concluídas
+**Progresso geral:** 13 / 16 fases concluídas
 
 ---
 
@@ -108,52 +108,58 @@ mantiveram o conteúdo e foram renumerados.
 - [x] 🔒 Suíte live de red-team executada, com relatório gerado
 - [ ] 🔒 Suíte live de red-team (gated, pulada por default)
 
-## 9. Criar aplicativo Flutter — ⬜
+## 9. Criar aplicativo Flutter — ✅
 → [`phase-09-flutter-app.md`](../02-phases/phase-09-flutter-app.md)
 
-- [ ] Criar projeto com Flutter 3.38+
-- [ ] Criar tela principal
-- [ ] Campo/seleção para `occasion`
-- [ ] Campo/seleção para `relationship`
-- [ ] Botão para gerar sugestões
-- [ ] Exibir as 2–3 sugestões retornadas
+- [x] Criar projeto com Flutter 3.44
+- [x] Criar tela principal
+- [x] Campo para `occasion`
+- [x] Campo para `relationship`
+- [x] Seletor de `tone` *(além do checklist — o backend já aceitava)*
+- [x] Botão para gerar sugestões
+- [x] Exibir as 2–3 sugestões retornadas, com botão de copiar
+- [x] 🔒 Sugestão renderizada só com `Text`
+- [x] 🔒 Cleartext HTTP restrito a debug — verificado nos quatro binários
 
-## 10. Organizar arquitetura Flutter — ⬜
+## 10. Organizar arquitetura Flutter — ✅
 → [`phase-10-flutter-architecture.md`](../02-phases/phase-10-flutter-architecture.md)
 
-- [ ] Separar UI
-- [ ] Separar gerenciamento de estado
-- [ ] Separar API client / repository
-- [ ] Criar models para request/response
-- [ ] Tornar a URL do backend configurável
+- [x] Separar UI — um widget por arquivo, page só compõe
+- [x] Separar gerenciamento de estado — `SuggestionsStore` (`ChangeNotifier`)
+- [x] Separar API client / repository — 4 camadas Clean Dart
+- [x] Criar models para request/response — Entity × Model × DTO
+- [x] Tornar a URL do backend configurável — `--dart-define` + modal em runtime
+- [x] 22 testes estáticos guardando as três regras
 
-## 11. Implementar estados da interface — ⬜
+## 11. Implementar estados da interface — ✅
 → [`phase-11-ui-states.md`](../02-phases/phase-11-ui-states.md)
 
-- [ ] Estado inicial
-- [ ] Loading
-- [ ] Success
-- [ ] Error
-- [ ] Desabilitar ações quando necessário
-- [ ] Exibir feedback claro ao usuário
+- [x] Estado inicial
+- [x] Loading
+- [x] Success
+- [x] Error — separado em campo × conexão
+- [x] **Degradado** *(quarto estado, além do checklist)*
+- [x] Desabilitar ações durante a requisição
+- [x] Feedback que nomeia causa e ação
 
-## 12. Testar fluxo completo — ⬜
+## 12. Testar fluxo completo — ✅
 → [`phase-12-end-to-end.md`](../02-phases/phase-12-end-to-end.md)
 
-- [ ] Flutter → Backend
-- [ ] Backend → LLM
-- [ ] LLM → Backend
-- [ ] Backend → Flutter
-- [ ] Testar pelo menos **Birthday + Friend**
-- [ ] Simular falha do LLM e verificar o fallback
+- [x] Flutter → Backend → LLM → Backend → Flutter
+- [x] Testar **Birthday + Friend** — e o mesmo fluxo em português
+- [x] Falha do LLM **real** (credencial inválida) → fallback verificado
+- [x] Injeção barrada chega ao cliente como problema de campo
 
-## 13. Criar testes Flutter — ⬜
+## 13. Criar testes Flutter — ✅
 → [`phase-13-flutter-tests.md`](../02-phases/phase-13-flutter-tests.md)
 
-- [ ] Widget test da tela principal
-- [ ] Testar loading
-- [ ] Testar exibição das sugestões
-- [ ] Testar estado de erro
+- [x] Widget test da tela principal — os cinco estados
+- [x] Testar loading
+- [x] Testar exibição das sugestões
+- [x] Testar estado de erro
+- [x] Testar o aviso de degradação
+- [x] Unit test do store e do use case
+- [x] 95 testes offline, sem rede e sem backend
 
 ## 14. Caprichar no README — ⬜
 → [`phase-14-readme.md`](../02-phases/phase-14-readme.md)

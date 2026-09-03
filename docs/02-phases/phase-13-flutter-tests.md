@@ -1,98 +1,109 @@
 # Fase 13 — Testes Flutter
 
-**Status:** ⬜ pendente · **Checklist:** item 13
+**Status:** ✅ concluída · **Checklist:** item 13
 
 > *"Flutter: unit or widget tests for the main screen are a plus."*
 
-## Objetivo
+## Resultado
 
-Testar a tela principal nos quatro estados, mais a lógica do store e do use case, **sem
-rede**.
+| Métrica | Valor |
+|---|---|
+| Testes offline | **95**, em ~3 s |
+| Rede ou backend | nenhum |
+| Testes live, atrás de portão | 3 + 1 |
+| `flutter analyze` | limpo |
 
-## Tasks
-
-- [ ] Configurar `flutter_test`
-- [ ] Widget test da tela principal
-- [ ] Testar o estado de loading
-- [ ] Testar a exibição das sugestões
-- [ ] Testar o estado de erro
-- [ ] Testar o aviso de degradação
-- [ ] Unit test do `SuggestionsStore`
-- [ ] Unit test do `GetSuggestionsUseCase`
+```
+test/
+├── architecture/   22  regras de camada e de segurança, verificadas por máquina
+├── unit/           44  store · settings · i18n
+├── widget/         29  os cinco estados · camada 4 · layout em 4 larguras
+└── live/            4  a pilha real contra o backend real (pulados por padrão)
+```
 
 ## Por que estes testes rodam offline
 
-O `IHttpClient` da regra R1 é injetável. O teste passa um duplo:
+A regra R1 é o que paga por isso. `IHttpClient` é injetável, então o duplo substitui a rede
+inteira:
 
 ```dart
-class FakeHttpClient implements IHttpClient {
-  final HttpResponse Function() onPost;
-  FakeHttpClient(this.onPost);
-
-  @override
-  Future<HttpResponse> post(String url, {Object? body}) async => onPost();
-}
+final client = FakeHttpClient(statusCode: 429, body: errorBody('RATE_LIMITED', ...));
+final store  = buildStore(client);
 ```
 
-Sem servidor, sem `HttpOverrides`, sem flakiness. É o retorno direto da regra R1
-([`ADR-0007`](../01-architecture/decisions/adr-0007-flutter-clean-dart.md)).
+Sem servidor, sem `HttpOverrides`, sem espera de socket — e a suíte inteira em dois
+segundos. É o retorno direto de uma regra de arquitetura que, isolada, pareceria cerimônia.
 
-## Plano de testes
+## O que é coberto
 
-### Widget tests — tela principal
+### Store — 19 casos
 
-| Teste | Verifica |
+Caminho feliz, o que é enviado, degradação preservada até a tela, e cada falha do contrato:
+conexão, timeout, `429` com os segundos, `400` que vira problema de campo, `500`, e um
+`200` que o cliente não consegue ler.
+
+Três merecem destaque, porque são regras de produto e não de código:
+
+| Caso | Regra |
 |---|---|
-| Estado inicial | Campos e botão visíveis; nenhum resultado; nenhum erro |
-| Botão com formulário vazio | Desabilitado |
-| Toque em Generate | Loading aparece **e o botão desabilita** |
-| Resposta com 3 sugestões | 3 cards renderizados com os textos corretos |
-| Resposta com 2 sugestões | 2 cards |
-| Falha de rede | Estado de erro com "Tentar novamente" |
-| Erro `400` do backend | Mensagem de validação, sem opção de repetir cegamente |
-| `degraded: true` | **Sugestões aparecem E o aviso aparece** |
-| Toque em Tentar novamente | Nova requisição é disparada |
-| 🔒 Sugestão contendo `<b>x</b>` | Renderizada **como texto literal**, não interpretada |
-| 🔒 Sugestão contendo `http://exemplo` | **Não** vira link tocável |
+| `429` não produz sugestões | Servir mesmo assim ensinaria que insistir funciona |
+| Retry que falha mantém as sugestões anteriores | Tirar um resultado bom pune quem tentou de novo |
+| Segundo submit durante a requisição é ignorado | Duas respostas correndo para ver qual aparece |
 
-O teste de `degraded` é o mais importante: verifica que a decisão do
-[`ADR-0003`](../01-architecture/decisions/adr-0003-fallback-strategy.md) chega íntegra até
-o pixel. Backend, mapeamento e interface precisam concordar, e este é o único teste que
-cobre os três juntos.
+### Os cinco estados — widget tests na tela real
 
-### Unit tests — `SuggestionsStore`
+Cada um pumpa a `SuggestionsPage` de verdade, no tema de verdade, com os textos lidos do
+`en.json` de verdade. Uma string que sumir do arquivo quebra um widget test em vez de
+renderizar a chave em silêncio.
 
-| Teste | Verifica |
-|---|---|
-| Estado inicial | `SuggestionsIdle` |
-| Durante a chamada | Transita para `SuggestionsLoading` |
-| Sucesso | `SuggestionsSuccess` com as sugestões |
-| Sucesso degradado | `SuggestionsSuccess` com `degraded: true` |
-| Falha | `SuggestionsError` com mensagem de usuário |
-| Toque duplo rápido | Não dispara duas requisições |
-| Cada transição | Chama `notifyListeners()` |
+### Camada 4 — a regra de renderização
 
-### Unit tests — `GetSuggestionsUseCase`
+Payloads reais — URL, `<script>`, link markdown — passados como texto de sugestão. Todos
+aparecem literalmente, e a asserção é que **nenhum ancestral do texto é um `InkWell` ou
+`GestureDetector`**.
 
-| Teste | Verifica |
-|---|---|
-| DTO válido | Repositório é chamado com os valores corretos |
-| Erro do repositório | Propagado como erro de domínio, não como exceção de SDK |
+### Layout — quatro larguras
+
+320 px (iPhone SE), 390, 834 e 1440. Em cada uma, no repouso e com resultados,
+`tester.takeException()` tem de ser nulo — é assim que um estouro de layout vira falha de
+teste em vez de uma listra amarela que alguém precisa notar num screenshot.
+
+> Um screenshot em janela estreita **sugeriu** estouro. O teste a 320 px mostrou que não
+> havia: o Chrome headless trunca a janela abaixo de um mínimo. A imagem levantou a
+> pergunta; o teste deu a resposta.
+
+### i18n — quatro direções de drift fechadas
+
+Três arquivos de idioma e uma lista de chaves podem divergir de quatro formas. Para cada
+idioma: nenhuma chave que o código pede está faltando, nenhuma chave sobra, nenhuma
+tradução está vazia, e **os placeholders são os mesmos do inglês** — um `{seconds}` que
+some numa tradução faz o valor desaparecer só para aqueles usuários.
+
+## Três bugs que os testes acharam
+
+**1. O helper de teste não espelhava a produção.** O `buildStore` resolvia a URL de uma
+string capturada em vez do `SettingsStore`. O teste que troca o endereço no modal falhou —
+e estava certo. Um helper que fia diferente da produção testa um sistema que não é entregue.
+
+**2. Quatro regras estáticas liam comentários.** Descrito na
+[fase 10](phase-10-flutter-architecture.md).
+
+**3. `flutter test` dependia do backend estar rodando.** Descrito na
+[fase 12](phase-12-end-to-end.md).
+
+## Uma asserção que estava larga demais
+
+O teste da camada 4 afirmava "nenhum `InkWell` no card" e falhou — no botão de copiar. A
+saída fácil seria remover a asserção. A certa foi escopá-la aos **ancestrais do texto da
+sugestão**, que é o que a regra sempre quis dizer: o texto do modelo não é tocável, e o
+botão que nós escrevemos é.
 
 ## Critério de pronto
 
-- [ ] `flutter test` passa
-- [ ] Os quatro estados têm teste
-- [ ] Nenhum teste faz requisição de rede real
-- [ ] Testes rodam em menos de 30 segundos
-- [ ] `flutter analyze` limpo
-- [ ] Cobertura do `presenter/` e do `domain/` acima de 80%
-- [ ] 🔒 Marcação em texto de sugestão é exibida, nunca interpretada
-
-## Riscos
-
-| Risco | Mitigação |
-|---|---|
-| Widget test instável por timing | `pumpAndSettle` com timeout explícito; sem `Future.delayed` real |
-| Teste acoplado a texto de interface | Buscar por `Key` sempre que possível, não por string literal |
-| Teste tocar a rede sem querer | Nenhum teste instancia `HttpClientAdapter` real |
+- [x] `flutter test` passa **sem rede e sem backend**
+- [x] Widget test de cada um dos cinco estados
+- [x] Unit test do store e do use case
+- [x] Degradação verificada até o widget
+- [x] Camada 4 verificada com payloads reais
+- [x] Layout verificado de 320 a 1440 px
+- [x] Regras de arquitetura **falham** quando violadas

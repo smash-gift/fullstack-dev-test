@@ -1,102 +1,89 @@
 # Fase 11 — Estados da interface
 
-**Status:** ⬜ pendente · **Checklist:** item 11
-
-> *"Handle **loading, success, and error** states so the user always has clear feedback."*
+**Status:** ✅ concluída · **Checklist:** item 11
 
 ## Objetivo
 
-Garantir que o usuário **nunca** fique sem saber o que está acontecendo.
+O enunciado pede três estados. Este backend tem um quarto que nenhum dos três descreve.
 
-## Tasks
+## Cinco estados, não três
 
-- [ ] Modelar o estado com classe selada
-- [ ] Estado inicial (Idle)
-- [ ] Estado de carregamento
-- [ ] Estado de sucesso
-- [ ] Estado de erro
-- [ ] Aviso de degradação
-- [ ] Desabilitar ações quando apropriado
-- [ ] Traduzir erro técnico para linguagem de usuário
-
-## Estado selado
-
-```dart
-sealed class SuggestionsState {}
-
-class SuggestionsIdle    extends SuggestionsState {}
-class SuggestionsLoading extends SuggestionsState {}
-class SuggestionsSuccess extends SuggestionsState {
-  final List<SuggestionEntity> suggestions;
-  final bool degraded;
-}
-class SuggestionsError   extends SuggestionsState {
-  final String message;
-  final bool canRetry;
-}
-```
-
-**Por que selado e não booleanos soltos.** Com `isLoading` + `hasError` + `suggestions`
-convivendo, combinações impossíveis se tornam representáveis — *loading* e *error*
-verdadeiros ao mesmo tempo, por exemplo. Com estado selado, o `switch` no widget é
-exaustivo e o compilador reclama quando um caso novo é esquecido. **Estado ilegal deixa de
-ser representável.**
-
-## Comportamento por estado
-
-| Estado | Tela | Botão Generate | Campos |
-|---|---|---|---|
-| **Idle** | Formulário + orientação | Habilitado se válido | Editáveis |
-| **Loading** | Indicador de progresso | **Desabilitado** | Bloqueados |
-| **Success** | 2–3 cards copiáveis | Habilitado | Editáveis |
-| **Success + degraded** | Idem + aviso discreto | Habilitado | Editáveis |
-| **Error** | Mensagem + Tentar novamente | Habilitado | Editáveis |
-
-**Bloquear durante o loading** evita requisições duplicadas por toque repetido — que
-custam dinheiro real em token.
-
-## Tradução de erro
-
-O usuário não vê `SocketException` nem `429`. Vê:
-
-| Situação | Mensagem | Tentar de novo? |
+| # | Estado | O que o usuário vê |
 |---|---|---|
-| Sem conexão | "Check your internet connection and try again." | ✅ |
-| Timeout | "This is taking longer than usual. Try again." | ✅ |
-| `429` do nosso backend | "Too many requests. Please wait a moment." | ✅ após espera |
-| `400` | "Please check the occasion and relationship fields." | ❌ até corrigir |
-| `500` | "Something went wrong on our side. Please try again." | ✅ |
+| 01 | **Repouso** | Formulário, e nada fingindo ser resultado |
+| 02 | **Carregando** | Botão travado dizendo *Writing…*, três esqueletos do tamanho dos cards |
+| 03 | **Sucesso** | As sugestões, cada uma com copiar e contagem de caracteres |
+| 04 | **Degradado** | Aviso âmbar **e as mensagens** — a requisição deu certo |
+| 05 | **Erro** | O que aconteceu, onde, e um botão para tentar de novo |
 
-O cliente decide a mensagem a partir de `error.code`, **nunca** do texto da mensagem —
-código é contrato estável, texto não é
-([`ADR-0004`](../01-architecture/decisions/adr-0004-error-taxonomy.md)).
+Cada um tem widget test. Os cinco foram desenhados no
+[mockup aprovado](https://claude.ai/code/artifact/c743b834-f7f0-46c9-b385-815461f82c2a)
+antes de existir código.
 
-## O aviso de degradação
+## Degradado é âmbar, não vermelho
 
-Quando `degraded: true`, um banner discreto informa que as sugestões não vieram do modelo
-de IA e oferece tentar novamente.
+`200` com `degraded: true` é o estado que o backend inteiro existe para servir. A requisição
+deu certo e as mensagens são utilizáveis; pintar de vermelho ensinaria o usuário a
+desconfiar de um resultado perfeitamente bom.
 
-**Por que mostrar.** O backend responde `200` mesmo com o LLM fora. Esconder isso seria
-mentir por omissão: o usuário acharia que aquele texto genérico foi personalizado para
-ele. O aviso é discreto — não bloqueia, não assusta — mas está lá.
+> **Our writer is offline right now.**
+> These are hand-picked classics — still yours to use.
 
-**Não é uma tela de erro.** As sugestões aparecem normalmente e são utilizáveis. O aviso
-qualifica, não impede.
+O aviso explica sem transformar em falha. Há teste afirmando que o `FailureBanner`
+**não** aparece neste estado.
+
+## Erro tem dois lugares, porque são dois problemas
+
+| Problema | Onde aparece | Por quê |
+|---|---|---|
+| Campo inválido (`400`) | Sob o campo | O usuário conserta ali mesmo |
+| Servidor inalcançável | Banner no topo | Não é sobre nenhum campo |
+
+Mostrar os dois no mesmo lugar faria um problema parecer dois. O erro de campo some assim
+que o usuário começa a corrigir — deixá-lo enquanto ele digita diz que o app não está
+prestando atenção.
+
+## Todo erro nomeia uma causa e uma ação
+
+Nenhuma tela deste app diz "algo deu errado" e para por aí.
+
+| Falha | Texto |
+|---|---|
+| Conexão | *Can't reach the server. Check that the backend is running at `{url}`.* |
+| Timeout | *The server took too long. It may be waking up. Try again in a moment.* |
+| Rate limit | *Too many requests. Try again in `{seconds}` seconds.* |
+| Servidor | *Something went wrong on our side. Nothing you did.* |
+
+O endereço aparece no texto porque "não consigo conectar" sem dizer **a quê** não dá o que
+fazer em seguida. Há teste verificando que a URL configurada aparece na mensagem.
+
+## Modelagem do estado — desvio do plano
+
+O plano pedia uma `sealed class SuggestionsState` com uma subclasse por estado. O que foi
+escrito é um `enum SuggestionsStatus` mais os dados ao lado, no mesmo store.
+
+O motivo: a tela precisa de coisas que **atravessam** os estados. Uma falha de retry não
+apaga as sugestões anteriores — tirar um resultado utilizável de alguém porque a segunda
+tentativa falhou seria punir quem tentou de novo. Com estado selado, `SuggestionsError`
+teria de carregar as sugestões antigas, e a separação que a classe selada prometia já
+estaria desfeita na primeira exigência real do produto.
+
+O que a classe selada dava de garantia — não esquecer um caso — está preservado onde
+importa: o `switch` sobre `SuggestionsFailure`, que **é** selado, é exaustivo. Um tipo novo
+de falha não compila até alguém decidir o que o usuário lê.
+
+## Ações desabilitadas quando devem
+
+- Campos e chips travam durante a requisição.
+- O botão vira indicador de progresso e recusa toque.
+- Um segundo submit durante a requisição é ignorado — sem isso, duas respostas correriam
+  para ver qual aparece.
 
 ## Critério de pronto
 
-- [ ] Os quatro estados são visualmente distintos
-- [ ] Botão desabilitado durante o loading
-- [ ] Toque repetido não dispara requisições duplicadas
-- [ ] Nenhuma mensagem técnica chega ao usuário
-- [ ] `degraded: true` mostra o aviso e as sugestões juntos
-- [ ] Erro oferece caminho de recuperação
-- [ ] Estado inicial explica o que fazer, sem parecer quebrado
-
-## Riscos
-
-| Risco | Mitigação |
-|---|---|
-| Aviso de degradação assustar o usuário | Tom informativo, discreto, não bloqueante |
-| Mensagem de erro genérica demais | Uma mensagem por classe de erro, com ação sugerida |
-| Loading sem fim se a resposta sumir | Timeout também no cliente, acima do timeout do servidor |
+- [x] Os cinco estados existem e têm teste
+- [x] Degradação avisa sem parecer erro
+- [x] Erro de campo fica no campo; erro de conexão fica no topo
+- [x] Todo erro nomeia causa e ação
+- [x] Ações desabilitadas durante a requisição
+- [x] Tema claro e escuro, ambos testados

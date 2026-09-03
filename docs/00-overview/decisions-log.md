@@ -167,6 +167,13 @@ muda latência, custo e comportamento sem aviso.
 | D65 | Rótulo da passagem 2 da live | `no_unsafe_output` | **Assistente** | `model_resisted` — o que a primeira versão dizia | 08 |
 | D66 | Regras de arquitetura | Teste estático, verificado contra arquivo-sonda | **Assistente** | Conferência na revisão da fase 15 | 08 |
 | D67 | Adapters OpenRouter e Gemini | **Limitação declarada** em vez de alegação | **Assistente** | Deixar "três adapters" implicar que os três foram verificados | 08 |
+| D68 | Fases 09 e 10 | **Fundidas** — a tela nasce nas camadas | **Assistente** | Escrever lógica no widget para refatorar depois, como o plano previa | 09 |
+| D69 | Paleta | Escala **neutra**, marca gasta só na ação | **Usuário** | Fundos roxos, como a primeira versão | 09 |
+| D70 | Exceção de cleartext no iOS | **Dois plists**, um por configuração | **Assistente** | Substituição de variável no `Info.plist` (não funciona) | 09 |
+| D71 | Modelagem do estado | `enum` + dados ao lado | **Assistente** | `sealed class SuggestionsState`, como o plano previa | 11 |
+| D72 | Roteiros ponta a ponta | **Teste gated**, não roteiro manual | **Assistente** | Dois roteiros para alguém executar à mão | 12 |
+| D73 | `tone` na tela · `language` pelo aparelho | Aceito | **Usuário** | Só `occasion` e `relationship`, como o enunciado pede | 09 |
+| D74 | i18n | **en · pt · es** desde o começo | **Usuário** | Só inglês, com strings isoladas | 09 |
 
 **Contexto de D50 — medir antes de implementar.** O plano dizia `400`. Medindo o
 comportamento real primeiro, o problema não era o código de status: `express.json()`
@@ -287,6 +294,39 @@ têm teste unitário com `fetch` interceptado e nunca receberam uma resposta rea
 há credencial para eles. Estão corretos **pelo contrato** e estariam errados se o serviço
 divergir da documentação dele. Deixar isso implícito na contagem seria deixar o avaliador
 concluir sozinho uma coisa que não foi verificada.
+
+**Contexto de D68 — quando seguir o plano custaria trabalho jogado fora.** O plano separava
+"fazer funcionar" de "organizar em camadas", o que faz sentido quando a forma final ainda é
+desconhecida. Aqui ela estava decidida antes da primeira linha: o padrão Clean Dart com as
+regras R1, R2 e R3 já escritas. Escrever rede dentro do widget para refatorar em seguida
+seria produzir código para descartar. A fase 10 não sumiu — deixou de ser refatoração e
+passou a ser o que **impede** as camadas de se desfazerem: 22 testes estáticos.
+
+**Contexto de D70 — a solução elegante não compila.** A ideia era manter um `Info.plist` só
+e substituir um booleano vindo do xcconfig: `<${ATS_ALLOWS_LOCAL_NETWORKING}/>`. O Xcode lê
+o arquivo como property list **antes** de expandir build settings, e o build falha na hora.
+Falha alta é o modo certo de falhar, mas não resolve. Dois arquivos reais, um por
+configuração, é o mecanismo que o build system suporta — com um teste afirmando que a única
+diferença entre eles é o bloco de ATS, porque dois arquivos podem divergir.
+
+> E houve um segundo tropeço no mesmo item: mudar `INFOPLIST_FILE` no xcconfig **não teve
+> efeito nenhum**, porque configuração de target sobrepõe xcconfig. Só apareceu porque o
+> binário de debug foi inspecionado em vez de o fonte ser lido.
+
+**Contexto de D71 — a classe selada não sobreviveu à primeira exigência real.** O plano
+pedia `sealed class SuggestionsState` com uma subclasse por estado, e o argumento — estado
+ilegal irrepresentável — é bom. O que quebrou foi o produto: quando um retry falha, as
+sugestões anteriores continuam na tela, porque tirar um resultado utilizável de alguém
+porque a segunda tentativa falhou é punir quem tentou de novo. `SuggestionsError` teria de
+carregar as sugestões antigas, e a separação já estaria desfeita. O valor da selagem foi
+preservado onde ele de fato paga: `SuggestionsFailure` é selado, e o `switch` que decide o
+que o usuário lê é exaustivo.
+
+**Contexto de D72 — roteiro manual prova uma vez.** O plano descrevia dois roteiros para
+alguém executar à mão. Viraram um arquivo de teste que exercita a pilha real do cliente
+contra o backend real, atrás de portão de ambiente. O roteiro B — falha do LLM — usa uma
+credencial **inválida de propósito**, então quem falha é o provider de verdade e não um
+duplo. É a diferença entre "eu rodei e funcionou" e "roda quando qualquer pessoa quiser".
 
 ---
 

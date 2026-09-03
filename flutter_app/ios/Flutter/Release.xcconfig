@@ -1,0 +1,7 @@
+#include "Generated.xcconfig"
+
+// Release and Profile both build from this file, and both get the plist with
+// no App Transport Security exception in it. Stated explicitly rather than
+// left to the project's default, so the pairing with Debug.xcconfig is
+// readable in one place.
+INFOPLIST_FILE = Runner/Info.plist

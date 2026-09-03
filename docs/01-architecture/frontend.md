@@ -11,49 +11,56 @@ Padrão: **Clean Dart** (Flutterando), organizado por módulo/feature.
 ```
 flutter_app/
 ├── lib/
-│   ├── main.dart
+│   ├── main.dart                                  carrega os textos, sobe o app
 │   ├── app/
-│   │   ├── app_widget.dart
-│   │   ├── injector.dart                    # DI manual — composition root
+│   │   ├── app_widget.dart                        temas e a rota única
+│   │   ├── injector.dart                          DI manual — composition root
 │   │   └── core/
-│   │       ├── config/app_config.dart       # lê --dart-define
-│   │       ├── http/
-│   │       │   ├── http_client.dart         # INTERFACE nossa (regra R1)
-│   │       │   ├── http_response.dart
-│   │       │   └── http_exceptions.dart
-│   │       ├── theme/app_theme.dart
-│   │       └── widgets/                     # widgets globais reutilizáveis
+│   │       ├── config/app_config.dart             lê --dart-define
+│   │       ├── config/settings_store.dart         endereço editável em runtime
+│   │       ├── drivers/http/i_http_client.dart    INTERFACE nossa (regra R1)
+│   │       ├── drivers/http/http_client_adapter.dart   único import de package:http
+│   │       ├── result/result.dart                 Result<S, F> selado
+│   │       ├── theme/app_colors.dart              tokens da Smash · AppPalette
+│   │       ├── theme/app_theme.dart               claro e escuro
+│   │       └── widgets/                           section_label · labelled_field
 │   │
-│   └── modules/
-│       └── suggestions/
-│           ├── domain/
-│           │   ├── entities/suggestion_entity.dart
-│           │   ├── dtos/suggest_request_dto.dart
-│           │   ├── repositories/suggestions_repository.dart      # PORT
-│           │   ├── usecases/get_suggestions_usecase.dart
-│           │   └── errors/suggestions_errors.dart
-│           ├── infra/
-│           │   ├── models/suggestion_model.dart                  # extends Entity
-│           │   ├── models/suggestions_response_model.dart
-│           │   ├── datasources/suggestions_datasource.dart       # PORT
-│           │   └── repositories/suggestions_repository_impl.dart
-│           ├── external/
-│           │   └── datasources/http_suggestions_datasource.dart
-│           └── presenter/
-│               ├── pages/suggestions_page.dart                   # SÓ compõe
-│               ├── controllers/suggestions_store.dart
-│               ├── states/suggestions_state.dart
-│               └── widgets/
-│                   ├── occasion_field.dart
-│                   ├── relationship_field.dart
-│                   ├── generate_button.dart
-│                   ├── suggestion_card.dart
-│                   ├── suggestions_list.dart
-│                   ├── degraded_banner.dart
-│                   ├── loading_view.dart
-│                   ├── error_view.dart
-│                   └── empty_view.dart
+│   ├── config/internationalization/
+│   │   ├── app_localizations.dart                 singleton · tr()
+│   │   └── localizations_key.dart                 sealed class L
+│   │
+│   └── modules/suggestions/
+│       ├── domain/
+│       │   ├── entities/suggestion.dart
+│       │   ├── entities/suggestions_result.dart   degraded · source · reason
+│       │   ├── dtos/suggest_request_dto.dart
+│       │   ├── errors/suggestions_failure.dart    sealed
+│       │   ├── repositories/i_suggestions_repository.dart        PORT
+│       │   └── usecases/get_suggestions_usecase.dart
+│       ├── infra/
+│       │   ├── models/suggestion_model.dart                      extends Entity
+│       │   ├── models/suggestions_result_model.dart
+│       │   ├── datasources/i_suggestions_datasource.dart         PORT
+│       │   └── repositories/suggestions_repository_impl.dart
+│       ├── external/
+│       │   └── datasources/http_suggestions_datasource.dart
+│       └── presenter/
+│           ├── pages/suggestions_page.dart                       SÓ compõe
+│           ├── stores/suggestions_store.dart                     ChangeNotifier
+│           └── widgets/
+│               ├── app_header.dart          ├── suggestion_card.dart
+│               ├── occasion_field.dart      ├── suggestions_list.dart
+│               ├── relationship_field.dart  ├── degraded_banner.dart
+│               ├── tone_selector.dart       ├── failure_banner.dart
+│               ├── generate_button.dart     ├── loading_skeleton.dart
+│               ├── settings_dialog.dart     └── empty_hint.dart
+│
+├── assets/lang/            en.json · pt.json · es.json
 └── test/
+    ├── architecture/       22  regras verificadas por máquina
+    ├── unit/               44  store · settings · i18n
+    ├── widget/             29  cinco estados · camada 4 · layout
+    └── live/                4  pilha real contra backend real (pulados por padrão)
 ```
 
 ---
@@ -107,34 +114,53 @@ Future<Result> call(String occasion, String relationship);
 
 ## Gerenciamento de estado
 
-`SuggestionsStore extends ChangeNotifier`, com estado modelado por classe selada:
+`SuggestionsStore extends ChangeNotifier`. Um `enum SuggestionsStatus` mais os dados ao
+lado — **não** a classe selada que o plano previa.
 
 ```dart
-sealed class SuggestionsState {}
+enum SuggestionsStatus { idle, loading, success, failure }
 
-class SuggestionsIdle    extends SuggestionsState {}
-class SuggestionsLoading extends SuggestionsState {}
-class SuggestionsSuccess extends SuggestionsState {
-  final List<SuggestionEntity> suggestions;
-  final bool degraded;          // true = veio do fallback do backend
-}
-class SuggestionsError   extends SuggestionsState {
-  final String message;         // já traduzido para linguagem de usuário
-  final bool canRetry;
+class SuggestionsStore extends ChangeNotifier {
+  SuggestionsStatus get status;
+  SuggestionsResult? get result;      // sobrevive a uma falha de retry
+  SuggestionsFailure? get failure;
+  Map<String, String> get fieldIssues;   // o que vai sob o campo
+  SuggestionsFailure? get bannerFailure; // o que vai no topo
 }
 ```
 
-**Por que classe selada e não booleanos soltos.** Com `isLoading` + `hasError` +
-`suggestions` convivendo, existem combinações impossíveis representáveis — *loading* e
-*error* verdadeiros ao mesmo tempo, por exemplo. Com estado selado, o `switch` no widget
-é exaustivo e o compilador reclama se um caso novo for esquecido. Estado ilegal deixa de
-ser representável.
+### Por que a classe selada não sobreviveu ao produto
 
-**Por que `ChangeNotifier` e não MobX.** MobX é o padrão pessoal do desenvolvedor, mas
-exige `build_runner` e código gerado. Para um teste técnico que o avaliador vai clonar e
-rodar, um passo a menos entre `git clone` e app na tela vale mais que a ergonomia do MobX.
-A separação de camadas é idêntica nos dois casos — o que muda é só o mecanismo de
-notificação. Registrado como decisão **D14**.
+A ideia era boa e o motivo de abandoná-la é concreto: a tela precisa de coisas que
+**atravessam** os estados.
+
+Quando um retry falha, as sugestões anteriores **continuam na tela** — tirar um resultado
+utilizável de alguém porque a segunda tentativa falhou seria punir quem tentou de novo. Com
+estado selado, `SuggestionsError` teria de carregar as sugestões antigas, e a separação que
+a classe prometia já estaria desfeita na primeira exigência real.
+
+O que a selagem entregava de valor — não esquecer um caso — está preservado onde importa:
+`SuggestionsFailure` **é** selado, e o `switch` que decide o que o usuário lê é exaustivo.
+Um tipo novo de falha não compila até alguém decidir a mensagem.
+
+Registrado como **D71**.
+
+### Por que `ChangeNotifier` e não MobX
+
+Decidido com o usuário. MobX exige `build_runner` e código gerado; para um teste técnico
+que o avaliador vai clonar e rodar, um passo a menos entre `git clone` e app na tela vale
+mais que a ergonomia. A separação de camadas é idêntica nos dois casos — muda só o
+mecanismo de notificação. Registrado como **D14** e confirmado na fase 09.
+
+### Onde o estado **não** fica
+
+Não há `setState` em lugar nenhum da camada de apresentação, e a page é `StatelessWidget`.
+Até os `TextEditingController` vivem no store: controller dentro da page é estado que um
+teste precisa alcançar atravessando a árvore de widgets.
+
+O único `State` do projeto é o do modal de ajustes, que gerencia o próprio campo de texto e
+a própria linha de erro — o que a regra R2 proíbe é widget declarado **dentro de uma page**,
+não um diálogo autocontido.
 
 ---
 
@@ -148,11 +174,13 @@ Lido em um lugar só:
 
 ```dart
 // app/core/config/app_config.dart
-class AppConfig {
-  static const apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:3000',
-  );
+static const _defineValue = String.fromEnvironment('API_BASE_URL');
+
+static String get defaultBaseUrl {
+  if (kIsWeb) return 'http://localhost:3000';
+  return defaultTargetPlatform == TargetPlatform.android
+      ? 'http://10.0.2.2:3000'    // o emulador alcança o host aqui
+      : 'http://localhost:3000';
 }
 ```
 
@@ -160,9 +188,20 @@ class AppConfig {
 em **tempo de compilação**: não vira asset, não é lido em runtime, e não existe risco de
 alguém colocar segredo ali achando que está protegido.
 
-**Armadilha documentada:** emulador Android não enxerga `localhost` da máquina host — o
-endereço correto lá é `10.0.2.2`. Está em
-[`../04-operations/running-locally.md`](../04-operations/running-locally.md).
+**A armadilha do emulador virou código.** Emulador Android não enxerga `localhost` da
+máquina host; lá o endereço é `10.0.2.2`. É o motivo de o default ser uma função e não uma
+constante — é um erro que custa uma tarde na primeira vez que acontece.
+
+### E editável em runtime, num modal
+
+Um ícone no topo abre um diálogo com o endereço. O `SettingsStore` guarda o valor e o
+datasource o resolve **por requisição**, então a mudança vale no próximo toque e não na
+próxima execução.
+
+Modal e não segunda rota: o enunciado pede uma tela, e um ajuste que o avaliador toca uma
+vez não merece navegação. Não persiste entre execuções — persistência exigiria uma
+dependência de storage para um valor que `--dart-define` já fixa em build. O diálogo existe
+para o avaliador reapontar um app que já está rodando.
 
 ---
 
@@ -170,15 +209,23 @@ endereço correto lá é `10.0.2.2`. Está em
 
 | Estado | O que o usuário vê | Ações habilitadas |
 |---|---|---|
-| **Idle** | Formulário + texto orientando o que fazer | Gerar (se o formulário estiver válido) |
-| **Loading** | Indicador de progresso | Nenhuma — botão desabilitado |
-| **Success** | 2–3 cards com as sugestões, cada um copiável | Gerar de novo · Copiar |
-| **Success + degraded** | Idem, com aviso honesto de qualidade reduzida | Gerar de novo · Tentar novamente |
-| **Error** | Mensagem clara + botão "Tentar novamente" | Tentar novamente |
+| **Idle** | Formulário e nada fingindo ser resultado | Gerar |
+| **Loading** | Botão travado dizendo *Writing…* e três esqueletos do tamanho dos cards | Nenhuma |
+| **Success** | 2–3 cards, cada um com copiar e contagem de caracteres | Gerar de novo · Copiar |
+| **Degraded** | Aviso **âmbar** e as mensagens | Tentar de novo · Copiar |
+| **Error** | Causa, endereço e um botão de retry | Tentar de novo |
 
-O banner de *degraded* existe por uma razão de produto: o backend responde `200` mesmo
-quando o LLM falhou, e esconder isso do usuário seria mentir por omissão. O aviso é
-discreto — não bloqueia, não assusta — mas está lá.
+Os cinco foram desenhados em mockup e aprovados antes de existir código, e cada um tem
+widget test.
+
+**Degradado é âmbar, não vermelho.** O backend responde `200` mesmo quando o LLM falhou;
+esconder isso seria mentir por omissão, e pintar de vermelho ensinaria o usuário a
+desconfiar de um resultado perfeitamente utilizável.
+
+**Erro tem dois lugares porque são dois problemas.** Campo inválido fica sob o campo, onde
+se conserta; servidor inalcançável fica no topo, porque não é sobre nenhum campo. E todo
+erro nomeia uma causa **e** uma ação — inclusive o endereço que falhou, porque "não consigo
+conectar" sem dizer a quê não dá o que fazer em seguida.
 
 ---
 
@@ -195,6 +242,11 @@ O backend já rejeita URL e HTML na saída do modelo
 ([camada 3](../05-security/llm-security.md)). Renderizar como texto puro é a segunda
 camada: se um padrão escapar do guard, ele é **exibido**, não executado nem clicável.
 Importa especialmente no Flutter Web, onde a fronteira com o DOM existe de fato.
+
+**Não é mais "verificável em revisão": é verificada por teste.** Nenhum pacote de HTML,
+Markdown, linkify, `url_launcher` ou webview existe no `pubspec`, nenhum símbolo desses
+aparece em `lib/`, e payloads reais são renderizados literalmente com a asserção de que
+**nenhum ancestral do texto é um `InkWell` ou `GestureDetector`**.
 
 ## ADRs relacionados
 

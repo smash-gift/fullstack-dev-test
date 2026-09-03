@@ -37,13 +37,13 @@ resolvido por decisão explícita, não por código)
 
 | # | Requisito | Status | Onde |
 |---|---|---|---|
-| F1 | *"One main screen: inputs for occasion and relationship"* | ⬜ | `01-architecture/frontend.md` |
-| F2 | *"a way to request suggestions, and display of the results"* | ⬜ | `phase-09` |
-| F3 | *"At least one flow (e.g. **Birthday + Friend**) must work end-to-end"* | ⬜ | `phase-12` |
-| F4 | *"Handle **loading, success, and error** states"* | ⬜ | `phase-11` |
-| F5 | *"The app must call your backend; the **base URL should be configurable**"* | ⬜ | `04-operations/environment.md` |
-| F6 | *"README must explain how to run backend and app and **which URL to use**"* | ⬜ | `04-operations/running-locally.md` |
-| F7 | *"Organize the project so that **UI, API client, and state are clearly separated**"* | ⬜ | `ADR-0007` |
+| F1 | *"One main screen: inputs for occasion and relationship"* | ✅ | `suggestions_page.dart` — uma rota, ajustes em modal |
+| F2 | *"a way to request suggestions, and display of the results"* | ✅ | `phase-09` — com copiar e contagem de caracteres |
+| F3 | *"At least one flow (e.g. **Birthday + Friend**) must work end-to-end"* | ✅ | `phase-12` — medido contra `gpt-4o-mini`, e também em pt |
+| F4 | *"Handle **loading, success, and error** states"* | ✅ | `phase-11` — **cinco** estados; degradado é o quarto |
+| F5 | *"The app must call your backend; the **base URL should be configurable**"* | ✅ | `--dart-define` **e** editável em runtime |
+| F6 | *"README must explain how to run backend and app and **which URL to use**"* | 🟦 | `04-operations/running-locally.md` — **o README nasce na fase 14** |
+| F7 | *"Organize the project so that **UI, API client, and state are clearly separated**"* | ✅ | `phase-10` — 22 testes estáticos guardando as camadas |
 
 ## 3. Documentação (no README do fork)
 
@@ -60,7 +60,7 @@ resolvido por decisão explícita, não por código)
 |---|---|---|---|
 | T1 | *"at least one test that covers the **fallback path when the LLM fails**"* | ✅ | `tests/integration/fallback.route.test.ts` — 39 casos, os cinco modos de falha |
 | T2 | *"More tests (happy path, rate limiting) are a plus"* | ✅ | 707 testes offline, 99,58% de statements |
-| T3 | *"Flutter: unit or widget tests for the main screen are a plus"* | ⬜ | `phase-13` |
+| T3 | *"Flutter: unit or widget tests for the main screen are a plus"* | ✅ | 95 testes offline · os cinco estados · `phase-13` |
 
 ## 5. Processo de entrega
 

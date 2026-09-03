@@ -1,0 +1,26 @@
+name: gift_card_suggester
+description: "Suggests short gift card messages for an occasion and a relationship."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The only third-party runtime dependency, and it is reachable from exactly
+  # one file: app/core/drivers/http/http_client_adapter.dart. Everything else
+  # depends on our own IHttpClient.
+  http: 1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/lang/

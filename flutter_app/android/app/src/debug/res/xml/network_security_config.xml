@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug builds only.
+
+  This file lives under src/debug/, so it is compiled into debug builds and
+  into nothing else. That location is the security control: a release build
+  cannot pick it up, whatever anybody edits here.
+
+  It exists because Android has blocked cleartext HTTP by default since API 28,
+  and talking to a backend on http://10.0.2.2:3000 during development needs an
+  explicit exception. Letting that exception reach a release build would turn
+  every request the app makes into plain text, readable on any hostile network
+  — the kind of mistake that goes unnoticed precisely because everything still
+  works.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

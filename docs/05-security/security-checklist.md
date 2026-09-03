@@ -55,9 +55,10 @@ cat backend/.env.example
 grep -rn "flutter_html\|flutter_markdown\|linkify" flutter_app/ && echo "FALHA" || echo "ok"
 ```
 
-- [ ] Sugestão renderizada só com `Text`
-- [ ] Nenhum widget que interprete marcação
-- [ ] Sem `linkify` no texto de sugestão
+- [x] Sugestão renderizada só com `Text` — *teste automatizado*
+- [x] Nenhum widget que interprete marcação — *teste automatizado*
+- [x] Sem `linkify` no texto de sugestão — *teste automatizado*
+- [x] Nenhum ancestral do texto é `InkWell` ou `GestureDetector` — *teste automatizado*
 
 ## 4. HTTP
 

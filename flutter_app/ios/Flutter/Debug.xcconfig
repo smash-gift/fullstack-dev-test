@@ -1,0 +1,15 @@
+#include "Generated.xcconfig"
+
+// Debug builds read a different Info.plist — the one carrying the App
+// Transport Security exception that lets the app reach a backend on
+// http://localhost:3000 during development.
+//
+// Two real plists rather than one with a substituted value: Xcode parses
+// Info.plist as a property list before expanding build settings, so a
+// placeholder in place of a boolean simply fails to build. Selecting the file
+// per configuration is the mechanism the build system actually supports, and
+// it makes "release has no exception" a fact about which file was compiled.
+//
+// The two files are kept in step by a test that asserts their only difference
+// is the ATS block.
+INFOPLIST_FILE = Runner/Info-Debug.plist
