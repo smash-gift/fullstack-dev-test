@@ -106,6 +106,28 @@ linha de stack) e o fato de a feature ser *stateless*, apresentou quatro caminho
 possíveis — inclusive abrir uma *issue* no repositório original, como o próprio enunciado
 sugere — e a decisão humana foi **manter fora do runtime com ADR explicando os encaixes**.
 
+## Decisões tomadas durante a implementação
+
+| # | Decisão | Escolha | Autoria | Alternativa descartada | Fase |
+|---|---|---|---|---|---|
+| D28 | Antecipar o cache LRU | Implementado na fase 02, não na 07 | **Assistente** | Entregar só `NoOpCache` e manter o cronograma | 02 |
+| D29 | Sistema de módulos | ESM + `NodeNext` | **Assistente** | CommonJS | 02 |
+| D30 | Framework HTTP | Express 5 | **Assistente** | Express 4; Fastify | 02 |
+| D31 | Valor `stub` em `LLM_PROVIDER`, como default | Servidor sobe com `.env` vazio | **Assistente** | Exigir key desde a fase 02 | 02 |
+| D32 | `pkg/errors/` não criado | Erros vivem em `domain/errors/` | **Assistente** | Classe `AppError` genérica em `pkg/` | 02 |
+
+**Contexto de D28 — quando o plano cede.** O plano previa o cache na fase 07. Só que o
+`.env.example` da fase 02 já documenta `CACHE_ENABLED=true`, e o use case já depende do
+port `SuggestionCache`. Entregar a fase com apenas um `NoOpSuggestionCache` publicaria uma
+flag de configuração que **não faz nada** — documentação que mente, o que é pior que
+atrasar cronograma. O cache foi antecipado e o desvio registrado nas duas fases envolvidas,
+em vez de o plano ser silenciosamente reescrito.
+
+**Contexto de D31 — otimizar para quem vai avaliar.** Com `stub` como default, `npm run
+dev` funciona sem nenhuma configuração. O avaliador consegue exercitar o contrato inteiro,
+a validação e o formato de resposta **antes** de precisar de qualquer API key. A fase 03
+promove `openai` a default, conforme o `ADR-0002`.
+
 ---
 
 ## Como este log é mantido

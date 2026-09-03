@@ -8,10 +8,10 @@
 > A resposta honesta e específica é mais útil — para você e para mim — do que uma
 > declaração genérica de "usei IA para acelerar". O que segue é o registro real.
 >
-> **Status:** este arquivo é atualizado ao fim de cada fase. Hoje ele cobre até a
-> conclusão da documentação (fases 1 e a documentação base). As seções de implementação
-> serão preenchidas conforme o código for escrito — **e não antes**, porque descrever
-> trabalho que ainda não aconteceu seria ficção.
+> **Status:** este arquivo é atualizado ao fim de cada fase. Hoje ele cobre até a **fase
+> 02** (fundação do backend). As seções seguintes são preenchidas conforme o código for
+> escrito — **e não antes**, porque descrever trabalho que ainda não aconteceu seria
+> ficção.
 
 ---
 

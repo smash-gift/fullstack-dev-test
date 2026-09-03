@@ -1,6 +1,12 @@
 # Arquitetura do backend
 
-**Stack:** Node.js 20 · TypeScript · Express · Zod · Vitest · Pino · Swagger UI
+**Stack:** Node.js 20 · TypeScript 6 (ESM, `NodeNext`) · Express 5 · Zod 4 · Vitest ·
+Pino · Swagger UI
+
+> **Nota de leitura.** A árvore abaixo é o destino completo. O que já existe está marcado
+> no [progresso das fases](../02-phases/README.md); a fase 02 entregou domínio, camada
+> HTTP, cache e o provider stub. Adapters reais de LLM chegam na fase 03, e as camadas de
+> segurança na fase 05.
 
 ---
 
@@ -40,24 +46,27 @@ backend/
 │   │   │   ├── security/canary.ts
 │   │   │   └── llm-provider.factory.ts
 │   │   ├── cache/in-memory-suggestion-cache.ts
-│   │   ├── fallback/static-fallback-catalog.ts
-│   │   └── http/fetch-http-client.ts
+│   │   ├── cache/no-op-suggestion-cache.ts
+│   │   └── fallback/static-fallback-catalog.ts
 │   │
 │   ├── presentation/
 │   │   ├── controllers/suggestions.controller.ts
 │   │   ├── validators/suggestions.schema.ts
 │   │   ├── middlewares/
-│   │   │   ├── cors.middleware.ts
-│   │   │   ├── rate-limit.middleware.ts
 │   │   │   ├── request-id.middleware.ts
+│   │   │   ├── request-logger.middleware.ts
+│   │   │   ├── rate-limit.middleware.ts
+│   │   │   ├── not-found.middleware.ts
 │   │   │   └── error-handler.middleware.ts
+│   │   ├── routes/health.routes.ts
 │   │   ├── routes/v1/suggestions.routes.ts
 │   │   └── docs/openapi.ts
 │   │
 │   ├── pkg/
 │   │   ├── config/env.ts
 │   │   ├── logger/logger.ts
-│   │   ├── errors/app-error.ts
+│   │   ├── http/request-context.ts
+│   │   ├── utils/id.ts
 │   │   └── response/http-response.ts
 │   │
 │   └── main/

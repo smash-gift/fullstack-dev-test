@@ -43,7 +43,11 @@ O middleware corta **antes** do controller, então requisição bloqueada custa 
 `*` em dev existe porque `flutter run -d chrome` sobe em porta efêmera diferente a cada
 execução — fixar origem quebraria o fluxo local do avaliador.
 
-## Cache
+## Cache — antecipado para a fase 02
+
+O `InMemorySuggestionCache` foi implementado na [fase 02](phase-02-backend-foundation.md),
+porque o `.env` já documentava `CACHE_ENABLED=true` e entregar essa flag sem implementação
+seria publicar configuração que não faz nada. O que segue documenta o que existe.
 
 | Aspecto | Valor |
 |---|---|

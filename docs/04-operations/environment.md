@@ -36,12 +36,18 @@ cp .env.example .env
 
 | Variável | Obrigatória | Default | Descrição |
 |---|---|---|---|
-| `LLM_PROVIDER` | ❌ | `openai` | `openai` \| `openrouter` \| `gemini` |
+| `LLM_PROVIDER` | ❌ | `stub` *(vira `openai` na fase 03)* | `stub` \| `openai` \| `openrouter` \| `gemini` |
 | `LLM_TIMEOUT_MS` | ❌ | `8000` | Timeout por tentativa |
 | `LLM_MAX_RETRIES` | ❌ | `1` | Retries em timeout/5xx. Nunca em `429` |
 | `LLM_TEMPERATURE` | ❌ | `0.8` | Criatividade. Baixo demais gera 3 sugestões iguais |
 
 **Apenas a key do provider ativo é obrigatória.** As outras podem ficar vazias.
+
+> **Estado atual (fase 02).** O default é `stub`: um provider determinístico que não usa
+> rede nem credencial. Isso faz o servidor subir com `.env` vazio, o que permite exercitar
+> o contrato, a validação e o formato de resposta **sem nenhuma API key**. A
+> [`fase 03`](../02-phases/phase-03-llm-integration.md) implementa os adapters reais e
+> promove `openai` a default.
 
 | Variável | Obrigatória quando | Default | Onde obter |
 |---|---|---|---|

@@ -13,7 +13,7 @@ Status ao vivo: [`../00-overview/checklist.md`](../00-overview/checklist.md)
 | # | Fase | Entregável | Status |
 |---|---|---|---|
 | 01 | [Preparar o repositório](phase-01-repository-setup.md) | Fork, branch, estrutura de pastas | ✅ |
-| 02 | [Fundação do backend](phase-02-backend-foundation.md) | Projeto TS, camadas, endpoint validando | ⬜ |
+| 02 | [Fundação do backend](phase-02-backend-foundation.md) | Projeto TS, camadas, endpoint validando | ✅ |
 | 03 | [Integração com LLM](phase-03-llm-integration.md) | Três adapters, prompt, parsing | ⬜ |
 | 04 | [Tratamento de falhas](phase-04-failure-handling.md) | Erros de domínio, fallback, logs | ⬜ |
 | 05 | 🔒 [Segurança do LLM](phase-05-llm-security.md) | 4 camadas contra prompt injection | ⬜ |

@@ -9,7 +9,7 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 1 / 16 fases concluídas
+**Progresso geral:** 2 / 16 fases concluídas
 
 ---
 
@@ -19,18 +19,18 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Fazer fork do repositório original
 - [x] Clonar o fork
 - [x] Criar uma branch (`candidate/tote-araujo`)
-- [ ] Criar as pastas `backend/` e `flutter_app/`
+- [x] Criar a pasta `backend/` *(`flutter_app/` na fase 09)*
 
-## 2. Criar o backend Node.js + TypeScript — ⬜
+## 2. Criar o backend Node.js + TypeScript — ✅
 → [`phase-02-backend-foundation.md`](../02-phases/phase-02-backend-foundation.md)
 
-- [ ] Configurar projeto Node.js 20+ com TypeScript
-- [ ] Criar endpoint para geração das mensagens
-- [ ] Receber `occasion` e `relationship`
-- [ ] Validar os dados recebidos
-- [ ] Definir contrato claro de request/response
-- [ ] Separar controller / service / integração com LLM
-- [ ] Configurar variáveis de ambiente
+- [x] Configurar projeto Node.js 20+ com TypeScript
+- [x] Criar endpoint para geração das mensagens
+- [x] Receber `occasion` e `relationship`
+- [x] Validar os dados recebidos
+- [x] Definir contrato claro de request/response
+- [x] Separar controller / service / integração com LLM
+- [x] Configurar variáveis de ambiente
 
 ## 3. Integrar o LLM — ⬜
 → [`phase-03-llm-integration.md`](../02-phases/phase-03-llm-integration.md)
@@ -90,7 +90,7 @@ mantiveram o conteúdo e foram renumerados.
 - [ ] Timeout explícito para chamadas ao LLM
 - [ ] Tipagem das respostas
 - [ ] Configuração de CORS
-- [ ] Estrutura preparada para cache
+- [x] Estrutura preparada para cache *(antecipado para a fase 02)*
 - [ ] Explicar no README se o cache foi ou não implementado
 - [ ] Swagger / OpenAPI *(extra além do checklist)*
 

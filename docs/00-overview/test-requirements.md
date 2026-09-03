@@ -16,16 +16,16 @@ resolvido por decisão explícita, não por código)
 
 | # | Requisito (citação do enunciado) | Status | Onde |
 |---|---|---|---|
-| B1 | *"Input: `occasion` and `relationship`"* | ⬜ | `03-api/contract.md` |
-| B2 | *"Output: 2–3 short message suggestions suitable for a gift card"* | ⬜ | `03-api/contract.md` |
-| B3 | *"You choose the HTTP method, request/response format, **and document it**"* | ⬜ | `03-api/contract.md` |
+| B1 | *"Input: `occasion` and `relationship`"* | ✅ | `03-api/contract.md` |
+| B2 | *"Output: 2–3 short message suggestions suitable for a gift card"* | ✅ | `03-api/contract.md` |
+| B3 | *"You choose the HTTP method, request/response format, **and document it**"* | ✅ | `03-api/contract.md` |
 | B4 | *"Call one LLM provider (OpenAI or Google AI)"* | ⬜ | `ADR-0002` |
 | B5 | *"How you structure the prompt ... is up to you"* | ⬜ | `01-architecture/backend.md` |
 | B6 | *"the backend must **not expose raw errors** to the client"* | ⬜ | `ADR-0004` |
 | B7 | *"Document ... **what you consider a failure**, how you respond to the client, and why"* | ⬜ | `ADR-0003` |
 | B8 | *"Rate limiting (optional) — if you implement it, document the limit and the behavior"* | ⬜ | `ADR-0005` |
 | B9 | *"describe how you would **reduce cost in production**"* | ⬜ | `ADR-0006` |
-| B10 | *"whether you implemented any **caching** in this test (and why or why not)"* | ⬜ | `ADR-0006` |
+| B10 | *"whether you implemented any **caching** in this test (and why or why not)"* | ✅ | `ADR-0006` |
 
 ## 2. Frontend (Flutter / Dart)
 
@@ -62,7 +62,7 @@ resolvido por decisão explícita, não por código)
 |---|---|---|---|
 | P1 | *"Fork this repository to your own GitHub account"* | ✅ | `ToteADS/fullstack-dev-test` |
 | P2 | *"Create a branch (e.g. `candidate/jane-doe`)"* | ✅ | `candidate/tote-araujo` |
-| P3 | *"two folders at the root ... (e.g. `backend/` and `flutter_app/`)"* | ⬜ | `phase-01` |
+| P3 | *"two folders at the root ... (e.g. `backend/` and `flutter_app/`)"* | 🚧 | `backend/` ✅ · `flutter_app/` na `phase-09` |
 | P4 | *"Open a Pull Request from your branch to the original repository's main"* | ⬜ | `phase-16` |
 
 ---
