@@ -150,10 +150,13 @@ curl -sS -X POST http://localhost:3000/api/v1/suggestions \
 ## 5. Testes
 
 ```bash
-# Backend
+# Backend — 707 testes, ~2,5 s
 cd backend
 npm test
 npm run test:coverage
+
+# Tudo de uma vez: typecheck, lint, formatação e testes
+npm run verify
 
 # Flutter
 cd flutter_app
@@ -164,6 +167,20 @@ flutter test --coverage
 Os testes **não precisam de API key nem de rede** — os providers são substituídos por
 duplos de teste. É um efeito direto da arquitetura de ports
 ([`ADR-0001`](../01-architecture/decisions/adr-0001-clean-architecture-backend.md)).
+
+### Suíte live de red-team — opcional, gasta dinheiro
+
+```bash
+RUN_LIVE_SECURITY_TESTS=true npm run test:security:live
+```
+
+Dispara os 38 payloads do corpus contra o **modelo real** e regenera
+[`docs/05-security/live-redteam-report.md`](../05-security/live-redteam-report.md).
+Custa centavos e leva cerca de um minuto.
+
+**Não é necessária para avaliar o projeto.** Ela está fora do `npm test` por construção —
+config separada, mais duas portas (a variável e a key) — justamente para que nada que gaste
+dinheiro rode por acidente. O relatório da última execução já está no repositório.
 
 ---
 

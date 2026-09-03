@@ -15,6 +15,7 @@ um modelo. Tratar isso apenas como problema de disponibilidade seria incompleto.
 | [`security-checklist.md`](security-checklist.md) | Verificação pré-entrega |
 | [`injection-baseline-2026-09-03.md`](injection-baseline-2026-09-03.md) | **Medição real** contra `gpt-4o-mini`, **antes** das defesas da fase 05 |
 | [`injection-baseline-2026-09-03-after.md`](injection-baseline-2026-09-03-after.md) | A mesma medição **depois** da fase 05 — 5 dos 6 payloads não chegam mais ao modelo |
+| [`live-redteam-report.md`](live-redteam-report.md) | **Gerado por execução** na fase 08: 38 payloads contra o modelo real, em duas passagens. Zero vazamentos — e a medição de quanto a camada 2 vale sozinha |
 
 ## A premissa que orienta tudo
 

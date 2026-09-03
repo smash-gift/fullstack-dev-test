@@ -58,8 +58,8 @@ resolvido por decisão explícita, não por código)
 
 | # | Requisito | Status | Onde |
 |---|---|---|---|
-| T1 | *"at least one test that covers the **fallback path when the LLM fails**"* | ⬜ | `phase-08` |
-| T2 | *"More tests (happy path, rate limiting) are a plus"* | ⬜ | `phase-08` |
+| T1 | *"at least one test that covers the **fallback path when the LLM fails**"* | ✅ | `tests/integration/fallback.route.test.ts` — 39 casos, os cinco modos de falha |
+| T2 | *"More tests (happy path, rate limiting) are a plus"* | ✅ | 707 testes offline, 99,58% de statements |
 | T3 | *"Flutter: unit or widget tests for the main screen are a plus"* | ⬜ | `phase-13` |
 
 ## 5. Processo de entrega
@@ -83,10 +83,11 @@ que existe independentemente de o enunciado citá-la.
 |---|---|---|---|
 | S1 | Modelo de ameaça do sistema | ✅ | `05-security/threat-model.md` |
 | S2 | Defesa em 4 camadas contra prompt injection | ✅ | `ADR-0009` · `phase-05` |
-| S3 | Validação de saída do modelo antes de exibir | ⬜ | `05-security/llm-security.md` |
-| S4 | Baseline de segurança HTTP e de segredos | ⬜ | `ADR-0010` · `phase-06` |
-| S5 | Suíte de testes de segurança (offline) | ⬜ | `phase-08` |
-| S6 | Suíte live de red-team, com relatório | ⬜ | `05-security/security-testing.md` |
+| S3 | Validação de saída do modelo antes de exibir | ✅ | `phase-05` — guard como porta do domínio |
+| S4 | Baseline de segurança HTTP e de segredos | ✅ | `ADR-0010` · `phase-06` |
+| S5 | Suíte de testes de segurança (offline) | ✅ | `phase-08` — corpus de 38 payloads, S1–S6 |
+| S6 | Suíte live de red-team, com relatório | ✅ | [`live-redteam-report.md`](../05-security/live-redteam-report.md) |
+| S8 | Regras de arquitetura verificadas por máquina | ✅ | `tests/architecture/architecture-rules.test.ts` |
 | S7 | Cobertura do OWASP LLM Top 10 mapeada | ✅ | `05-security/llm-security.md` |
 
 **Nota de escopo.** Isso amplia o escopo além do pedido, o que normalmente seria um erro em

@@ -9,7 +9,7 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 7 / 16 fases concluídas
+**Progresso geral:** 8 / 16 fases concluídas
 
 ---
 
@@ -95,16 +95,17 @@ mantiveram o conteúdo e foram renumerados.
 - [ ] Explicar no README se o cache foi ou não implementado — *o README nasce na fase 14*
 - [x] Swagger / OpenAPI *(extra além do checklist)* — `/docs`, gerado dos schemas Zod
 
-## 8. Criar testes do backend — ⬜
+## 8. Criar testes do backend — ✅
 → [`phase-08-backend-tests.md`](../02-phases/phase-08-backend-tests.md)
 
-- [ ] Testar geração normal de sugestões
-- [ ] **Testar prioritariamente o fallback quando o LLM falha**
-- [ ] Testar validação dos parâmetros
-- [ ] Testar resposta inválida do LLM
-- [ ] Testar rate limiting
-- [ ] 🔒 Suíte de segurança S1–S6 (sanitizador, guard de saída, corpus de injeção)
-- [ ] 🔒 Corpus de injeção: nenhum `5xx`, nenhuma saída insegura
+- [x] Testar geração normal de sugestões
+- [x] **Testar prioritariamente o fallback quando o LLM falha** — 39 casos, no HTTP
+- [x] Testar validação dos parâmetros
+- [x] Testar resposta inválida do LLM — inclusive atravessando o adapter real
+- [x] Testar rate limiting
+- [x] 🔒 Suíte de segurança S1–S6 (sanitizador, guard de saída, corpus, regras estáticas)
+- [x] 🔒 Corpus de injeção: nenhum `5xx`, nenhuma saída insegura — 38 payloads
+- [x] 🔒 Suíte live de red-team executada, com relatório gerado
 - [ ] 🔒 Suíte live de red-team (gated, pulada por default)
 
 ## 9. Criar aplicativo Flutter — ⬜
