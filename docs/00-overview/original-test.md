@@ -1,3 +1,13 @@
+> **Nota de preservação.** Este é o enunciado original do teste, movido da raiz do
+> repositório para cá com `git mv` quando o `README.md` da raiz passou a hospedar a
+> documentação da solução — como o próprio enunciado determina (*"Your fork's README must
+> include..."*).
+>
+> **A única alteração feita no texto** foi ajustar o caminho relativo da imagem do
+> diagrama, que quebrou com a mudança de pasta. Nenhuma palavra do conteúdo foi editada.
+
+---
+
 # Technical Test — Senior Developer
 
 **Role:** Senior Full Stack Developer  
@@ -25,7 +35,7 @@ You must also handle **failure of the LLM API** (e.g. timeout, 429, 5xx) with a 
 
 The diagram below summarizes the flow: the user enters occasion and relationship in the Flutter app; the app calls your Node.js API; the API calls the LLM and returns 2–3 suggestions. When the LLM fails, the backend should return a safe fallback instead of an error stack.
 
-![Message suggester flow: Flutter app (occasion, relationship) → Node.js API → LLM; fallback path when LLM fails](assets/message-suggester-flow.png)
+![Message suggester flow: Flutter app (occasion, relationship) → Node.js API → LLM; fallback path when LLM fails](../../assets/message-suggester-flow.png)
 
 ---
 
