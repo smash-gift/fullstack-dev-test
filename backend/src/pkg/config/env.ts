@@ -75,6 +75,13 @@ const envSchema = baseSchema.superRefine((env, ctx) => {
 export type Env = z.infer<typeof envSchema>;
 
 /**
+ * Every variable this application reads, derived from the schema rather than
+ * retyped. `.env.example` is checked against this list, so a new setting cannot
+ * ship undocumented.
+ */
+export const ENV_KEYS = Object.keys(baseSchema.shape) as (keyof z.infer<typeof baseSchema>)[];
+
+/**
  * Reads and validates the environment. The only place that touches
  * `process.env`.
  *

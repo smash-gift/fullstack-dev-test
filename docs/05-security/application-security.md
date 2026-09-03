@@ -7,19 +7,80 @@ cliente. Complementa [`llm-security.md`](llm-security.md).
 
 ## Backend — HTTP
 
-| Controle | Implementação | Ameaça |
-|---|---|---|
-| Cabeçalhos de segurança | `helmet` | Diversos |
-| `X-Powered-By` desligado | `app.disable('x-powered-by')` | Fingerprinting |
-| Limite de corpo | `express.json({ limit: '4kb' })` | T3 — DoS por payload |
-| Validação de entrada | Zod na borda | T1, entrada malformada |
-| Rate limiting | 30 / 5 min por IP | T3 |
-| CORS | Lista explícita em produção | Uso cruzado indevido |
-| Sem stack trace na resposta | `error-handler` final | Vazamento de informação |
-| Timeout em toda chamada externa | `AbortController` | Exaustão de recurso |
+| Controle | Implementação | Ameaça | Status |
+|---|---|---|---|
+| Cabeçalhos de segurança | `helmet` | Diversos | ✅ fase 06 |
+| `X-Powered-By` desligado | `app.disable('x-powered-by')` | Fingerprinting | ✅ fase 02 |
+| ETag desligado | `app.disable('etag')` | Fingerprint fraco do corpo | ✅ fase 06 |
+| Limite de corpo | `express.json({ limit: '4kb' })` | T3 — DoS por payload | ✅ fase 02 |
+| `Content-Type` exigido | `contentTypeMiddleware` → `415` | Interpretação ambígua do corpo | ✅ fase 06 |
+| Validação de entrada | Zod na borda | T1, entrada malformada | ✅ fase 02 |
+| Sanitização de entrada | `pkg/security/input-sanitizer.ts` | T1 — prompt injection | ✅ fase 05 |
+| Rate limiting | 30 / 5 min por IP | T3 | ⬜ fase 07 |
+| CORS | Lista explícita em produção | Uso cruzado indevido | ⬜ fase 07 |
+| Sem stack trace na resposta | `error-handler` final | Vazamento de informação | ✅ fase 02 |
+| Timeout em toda chamada externa | `AbortController` | Exaustão de recurso | ✅ fase 04 |
 
 **4 KB de limite de corpo** é generoso para uma requisição cujo maior campo tem 60
 caracteres. Corpo grande aqui só existe por engano ou por má-fé.
+
+### Cabeçalhos efetivamente presentes na resposta
+
+Medidos com `NODE_ENV=production`, não copiados da documentação do `helmet`:
+
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Referrer-Policy: no-referrer
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: cross-origin
+Origin-Agent-Cluster: ?1
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+```
+
+Três defaults do `helmet` foram alterados, e cada um por um motivo concreto:
+
+| Ajuste | Por quê |
+|---|---|
+| `contentSecurityPolicy: false` | Esta API não devolve documento que um navegador renderize. Reativado na fase 07, quando o Swagger UI passa a servir HTML de verdade |
+| `crossOriginEmbedderPolicy: false` | COEP governa embedding de recurso em documento; não há documento |
+| `crossOriginResourcePolicy: 'cross-origin'` | **O default `same-origin` contradiz o produto** — esta API existe para ser chamada de outra origem, pelo app Flutter. Quem controla acesso aqui é o CORS |
+
+O terceiro é o que merece atenção: deixar um CORP restritivo ao lado de um CORS permissivo
+seria um cabeçalho que **parece** um controle e não é. Pior que não ter: dá falsa confiança
+a quem lê a resposta.
+
+### `Content-Type` inválido devolve `415`, não `400`
+
+O plano previa `400`. Na medição, o comportamento sem guard era pior do que "errado":
+`express.json()` **ignora silenciosamente** um corpo cujo `Content-Type` não reconhece, e o
+cliente recebia `occasion is required` para uma requisição que **enviou** `occasion`.
+
+Uma resposta que aponta para o lugar errado custa uma tarde a quem integra. `415` com a
+mensagem dizendo qual media type usar resolve em dez segundos, e é a semântica correta de
+HTTP para o caso.
+
+### Profundidade de aninhamento: a regra que não foi escrita
+
+O plano pedia um limite explícito de profundidade de JSON. Medindo antes de implementar:
+
+| Profundidade | Bytes | Resultado |
+|---|---|---|
+| 300 níveis | 2 150 | `400` — parser lida sem esforço |
+| 600 níveis | 4 250 | `413` — barrado pelo tamanho |
+| 1 000 níveis | 9 150 | `413` — barrado pelo tamanho |
+
+O teto de 4 KB **já é** o limite de profundidade: o objeto mais fundo que cabe tem ~560
+níveis, que o parser processa normalmente. Uma regra de profundidade separada seria uma
+regra que nunca dispara — pelo mesmo motivo que os marcadores estruturais saíram da
+heurística da camada 1 na fase 05.
+
+O comportamento medido virou teste, que é o que impede a conclusão de envelhecer em
+silêncio.
 
 ### Superfícies que não existem
 
@@ -47,8 +108,15 @@ adicionado. Quem incluir um banco depois precisa reabrir esta tabela.
 | Key nunca em log, em nenhum nível | Revisão do logger |
 | Key nunca em resposta HTTP | Formato único de erro |
 | `.env` no `.gitignore` desde a fase 01 | `git ls-files \| grep '\.env$'` |
-| `.env.example` sem valor real | Inspeção |
+| `.env.example` sem valor real | **Teste automatizado** (`tests/unit/env-example.test.ts`) |
+| `.env.example` cobre toda variável que o código lê | **Teste automatizado**, derivado do schema |
 | Nenhuma key no histórico do Git | `git log -p --all \| grep -E 'sk-\|AIza'` |
+
+> **O `.env.example` já tinha desincronizado.** As duas variáveis de retry criadas na fase
+> 04 (`LLM_MAX_RETRIES`, `LLM_RETRY_BASE_DELAY_MS`) nunca chegaram ao exemplo — ou seja, o
+> único documento de configuração que um avaliador lê antes de rodar o projeto escondia
+> dois botões. Corrigido, e agora guardado por um teste que deriva a lista do próprio
+> schema Zod, em vez de depender de alguém lembrar.
 
 **Procedimento em caso de exposição:** revogar a key no provider **primeiro**, limpar o
 histórico depois. Chave exposta em repositório público é varrida por bots em minutos —
@@ -100,7 +168,30 @@ distinção existir: os campos podem conter dado pessoal digitado pelo usuário 
 | Instalação reprodutível | `npm ci` | `flutter pub get` |
 | Auditoria antes da entrega | `npm audit --audit-level=high` | `flutter pub outdated` |
 | Superfície mínima | Poucas dependências diretas | Só `http` |
-| Versões fixadas | Sem `^` em dependência de runtime | — |
+| Versões fixadas | ✅ sem `^` em dependência de runtime | — |
+
+### Resultado medido — 2026-09-03
+
+```
+$ npm audit --audit-level=high
+found 0 vulnerabilities
+```
+
+As seis dependências de runtime, fixadas em versão exata para que um `npm install` numa
+máquina nova não puxe silenciosamente um minor diferente do que foi testado:
+
+| Pacote | Versão | Por que existe |
+|---|---|---|
+| `express` | 5.2.1 | Servidor HTTP |
+| `helmet` | 8.3.0 | Cabeçalhos de segurança |
+| `cors` | 2.8.6 | CORS configurável por ambiente |
+| `zod` | 4.5.4 | Validação de entrada e de saída do modelo |
+| `pino` | 10.3.1 | Log estruturado |
+| `dotenv` | 17.4.2 | Carrega `.env` em desenvolvimento |
+
+Nenhum SDK de provider de LLM: os três adapters usam `fetch` nativo
+([`D33`](../00-overview/decisions-log.md)). Três dependências a menos, e três superfícies
+a menos que precisariam de auditoria.
 
 **Menos dependência é menos superfície.** É mais uma razão para a regra R1 (embrulhar
 pacote externo atrás de interface própria): trocar uma dependência comprometida por outra

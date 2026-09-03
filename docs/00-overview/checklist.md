@@ -71,18 +71,18 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Toda violação termina no fallback, nunca em `5xx`
 - [x] Regra de renderização segura definida para o Flutter
 
-## 6. Baseline de segurança da aplicação 🔒 — ⬜
+## 6. Baseline de segurança da aplicação 🔒 — ✅ *(backend)*
 → [`phase-06-application-security.md`](../02-phases/phase-06-application-security.md)
 
 *Item acrescentado ao checklist original.*
 
-- [ ] `helmet` e `x-powered-by` desligado
-- [ ] Limite de corpo (4 KB)
-- [ ] JSON malformado e `Content-Type` inválido → `400`, nunca `5xx`
-- [ ] Política de nível de log (`info` × `debug`)
-- [ ] Key nunca logada, em nenhum nível
-- [ ] Lockfile versionado e `npm audit` limpo
-- [ ] Cleartext HTTP restrito ao build de debug
+- [x] `helmet` e `x-powered-by` desligado
+- [x] Limite de corpo (4 KB)
+- [x] JSON malformado → `400` e `Content-Type` inválido → `415`, nunca `5xx`
+- [x] Política de nível de log (`info` × `debug`)
+- [x] Key nunca logada, em nenhum nível
+- [x] Lockfile versionado e `npm audit` limpo
+- [ ] Cleartext HTTP restrito ao build de debug — *fase 09*
 
 ## 7. Implementar diferenciais no backend — ⬜
 → [`phase-07-backend-extras.md`](../02-phases/phase-07-backend-extras.md)

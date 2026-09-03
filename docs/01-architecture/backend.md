@@ -60,6 +60,7 @@ backend/
 │   │   ├── middlewares/
 │   │   │   ├── request-id.middleware.ts
 │   │   │   ├── request-logger.middleware.ts
+│   │   │   ├── content-type.middleware.ts            # 415 em corpo não-JSON
 │   │   │   ├── rate-limit.middleware.ts
 │   │   │   ├── not-found.middleware.ts
 │   │   │   └── error-handler.middleware.ts

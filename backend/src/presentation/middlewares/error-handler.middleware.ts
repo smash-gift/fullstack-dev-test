@@ -7,6 +7,8 @@ import { failure } from '../../pkg/response/http-response.js';
 /** Maps a domain error code to its HTTP status. */
 const STATUS_BY_CODE: Record<string, number> = {
   VALIDATION_ERROR: 400,
+  METHOD_NOT_ALLOWED: 405,
+  UNSUPPORTED_MEDIA_TYPE: 415,
   RATE_LIMITED: 429,
   NOT_FOUND: 404,
 };
@@ -33,9 +35,10 @@ export function errorHandlerMiddleware(logger: Logger) {
       return;
     }
 
-    // Until phase 04 wires the fallback, an LLM failure can still reach here.
-    // It must not carry the provider name or the upstream reason to the client:
-    // those identify our vendor and echo internal state. The log keeps them.
+    // Since phase 04 the use case degrades instead of throwing, so this branch
+    // is a backstop rather than a live path. It stays because an LLM error must
+    // never carry the provider name or the upstream reason to the client: those
+    // identify our vendor and echo internal state. The log keeps them.
     if (error instanceof LlmError) {
       logger.error(
         { requestId: req.requestId, code: error.code, reason: error.degradationReason },

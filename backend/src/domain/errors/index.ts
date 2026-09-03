@@ -1,5 +1,9 @@
 export { DomainError } from './domain-error.js';
-export { ValidationError, type ValidationIssue } from './validation-error.js';
+export {
+  ValidationError,
+  MethodNotAllowedError,
+  type ValidationIssue,
+} from './validation-error.js';
 export {
   LlmError,
   LlmTimeoutError,

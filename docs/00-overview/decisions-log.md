@@ -149,6 +149,30 @@ muda latência, custo e comportamento sem aviso.
 | D47 | Regra `I cannot` | Exige verbo de recusa em seguida | **Assistente** | A frase isolada, como especificado | 05 |
 | D48 | Marcadores estruturais na heurística de entrada | **Removidos** | **Assistente** | Manter regras que a allowlist torna inalcançáveis | 05 |
 | D49 | Log de vazamento de canário | `error`; todo o resto continua `warn` | **Assistente** | Um nível só para toda degradação | 05 |
+| D50 | `Content-Type` inválido | **`415`**, com mensagem acionável | **Assistente** | `400`, como o plano previa | 06 |
+| D51 | Limite de profundidade de JSON | **Não implementado** — medido e coberto pelos 4 KB | **Assistente** | Regra explícita que nunca dispararia | 06 |
+| D52 | `Cross-Origin-Resource-Policy` | `cross-origin` | **Assistente** | Manter o `same-origin` do helmet | 06 |
+| D53 | ETag | Desligado | **Assistente** | Manter o default do Express | 06 |
+| D54 | Versões de runtime | **Fixadas** sem `^` | **Assistente** | Confiar apenas no lockfile | 06 |
+| D55 | Sincronia do `.env.example` | Teste derivado do schema Zod | **Assistente** | Revisão manual | 06 |
+
+**Contexto de D50 — medir antes de implementar.** O plano dizia `400`. Medindo o
+comportamento real primeiro, o problema não era o código de status: `express.json()`
+**ignora silenciosamente** um corpo cujo `Content-Type` não reconhece, e o cliente recebia
+`occasion is required` para uma requisição que enviou `occasion`. Uma resposta que aponta
+para o lugar errado custa uma tarde a quem integra.
+
+**Contexto de D52 — cabeçalho que parece controle.** O `helmet` entrega
+`Cross-Origin-Resource-Policy: same-origin` por default. Esta API existe para ser chamada
+de outra origem — é o app Flutter que a consome. Um CORP restritivo ao lado de um CORS
+permissivo é pior que nenhum dos dois: dá falsa confiança a quem lê a resposta e não
+protege nada. Quem controla acesso aqui é o CORS.
+
+**Contexto de D55 — a documentação já tinha mentido uma vez.** As duas variáveis de retry
+da fase 04 nunca chegaram ao `.env.example`. O único documento de configuração que um
+avaliador lê antes de rodar o projeto escondia dois botões. A correção não foi só
+acrescentar as linhas: foi derivar a lista do próprio schema Zod, para que a próxima
+variável não dependa de alguém lembrar de editar dois arquivos.
 
 **Contexto de D44 — convenção não é garantia.** O plano punha o guard dentro do parsing
 compartilhado dos adapters. Mas o `StubLlmProvider` não usa esse parsing: monta as

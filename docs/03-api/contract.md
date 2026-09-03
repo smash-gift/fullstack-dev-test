@@ -168,6 +168,37 @@ Formato único para todos os erros. Ver
 Requisição inválida **nunca** recebe fallback — é erro do chamador, e servir sugestões
 esconderia o bug dele.
 
+### `415 UNSUPPORTED_MEDIA_TYPE`
+
+```jsonc
+{
+  "error": {
+    "code": "UNSUPPORTED_MEDIA_TYPE",
+    "message": "Content-Type text/plain is not supported; use application/json"
+  },
+  "meta": { "requestId": "req_...", "timestamp": "..." }
+}
+```
+
+Sem esta resposta, `express.json()` ignoraria o corpo em silêncio e o cliente receberia
+`occasion is required` para uma requisição que **enviou** `occasion` — uma resposta que
+aponta para o campo errado.
+
+### `405 METHOD_NOT_ALLOWED`
+
+```jsonc
+{
+  "error": {
+    "code": "METHOD_NOT_ALLOWED",
+    "message": "Method not allowed. Allowed: POST"
+  },
+  "meta": { "requestId": "req_...", "timestamp": "..." }
+}
+```
+
+Acompanhado de `Allow: POST`. `404` diria ao chamador para conferir a URL, quando a URL
+estava certa — a diferença entre os dois códigos é justamente para onde o chamador olha.
+
 ### `429 RATE_LIMITED`
 
 ```jsonc
@@ -210,8 +241,9 @@ stack — fica no log do servidor, correlacionado pelo `requestId`.
 | `200` | — | Sucesso, do LLM **ou** do fallback |
 | `400` | `VALIDATION_ERROR` | Body inválido |
 | `404` | `NOT_FOUND` | Rota inexistente |
-| `405` | `METHOD_NOT_ALLOWED` | Verbo errado |
-| `413` | `PAYLOAD_TOO_LARGE` | Body acima do limite |
+| `405` | `METHOD_NOT_ALLOWED` | Verbo errado em rota existente (com `Allow`) |
+| `413` | `PAYLOAD_TOO_LARGE` | Body acima de 4 KB |
+| `415` | `UNSUPPORTED_MEDIA_TYPE` | `Content-Type` não é `application/json` |
 | `429` | `RATE_LIMITED` | Rate limit estourado |
 | `500` | `INTERNAL_ERROR` | Exceção não prevista |
 

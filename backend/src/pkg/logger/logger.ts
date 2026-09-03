@@ -1,4 +1,4 @@
-import pino, { type Logger } from 'pino';
+import pino, { type DestinationStream, type Logger } from 'pino';
 
 export type { Logger };
 
@@ -6,6 +6,12 @@ export interface LoggerOptions {
   readonly level: string;
   /** Human-readable output for local development. */
   readonly pretty: boolean;
+  /**
+   * Where the lines go. Defaults to stdout; a test passes a stream so the
+   * redaction policy can be asserted on the real configuration rather than on
+   * a lookalike built inside the test.
+   */
+  readonly destination?: DestinationStream;
 }
 
 /**
@@ -18,7 +24,7 @@ export interface LoggerOptions {
  * never passed to the logger.
  */
 export function createLogger(options: LoggerOptions): Logger {
-  return pino({
+  const config = {
     level: options.level,
     redact: {
       paths: [
@@ -30,7 +36,7 @@ export function createLogger(options: LoggerOptions): Logger {
       ],
       censor: '[redacted]',
     },
-    ...(options.pretty
+    ...(options.pretty && !options.destination
       ? {
           transport: {
             target: 'pino-pretty',
@@ -38,5 +44,7 @@ export function createLogger(options: LoggerOptions): Logger {
           },
         }
       : {}),
-  });
+  };
+
+  return options.destination ? pino(config, options.destination) : pino(config);
 }
