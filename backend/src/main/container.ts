@@ -6,6 +6,7 @@ import { NoOpSuggestionCache } from '../infra/cache/no-op-suggestion-cache.js';
 import { StaticFallbackCatalog } from '../infra/fallback/static-fallback-catalog.js';
 import { createLlmProvider } from '../infra/llm/llm-provider.factory.js';
 import { RetryingLlmProvider } from '../infra/llm/resilience/retrying-llm.provider.js';
+import { LlmOutputGuard } from '../infra/llm/security/output-guard.js';
 import type { Env } from '../pkg/config/env.js';
 import { createLogger, type Logger } from '../pkg/logger/logger.js';
 import { SuggestionsController } from '../presentation/controllers/suggestions.controller.js';
@@ -52,6 +53,7 @@ export function buildContainer(env: Env, overrides: ContainerOverrides = {}): Co
     provider: llmProvider,
     cache: suggestionCache,
     fallback: new StaticFallbackCatalog(),
+    guard: new LlmOutputGuard(),
     logger,
     options: { llmTimeoutMs: env.LLM_TIMEOUT_MS, cacheTtlMs: env.CACHE_TTL_MS },
   });

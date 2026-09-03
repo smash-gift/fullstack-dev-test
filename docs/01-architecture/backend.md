@@ -26,7 +26,9 @@ backend/
 │   │   ├── repositories/
 │   │   │   └── suggestion-cache.ts    # PORT
 │   │   ├── services/
-│   │   │   └── fallback-catalog.ts    # PORT
+│   │   │   ├── fallback-catalog.ts                # port do catálogo
+│   │   │   ├── suggestion-guard.ts                # port do guard de saída ⭐
+│   │   │   └── suggestion-cache-key.ts
 │   │   ├── usecases/
 │   │   │   └── suggest-messages.usecase.ts
 │   │   └── errors/
@@ -42,9 +44,8 @@ backend/
 │   │   │   ├── prompt/suggestion-prompt.ts
 │   │   │   ├── parsing/llm-response.schema.ts
 │   │   │   ├── http/llm-http.ts                  # status → erro de domínio
-│   │   │   ├── security/input-sanitizer.ts       # camada 1
 │   │   │   ├── security/output-guard.ts          # camada 3 ⭐
-│   │   │   ├── security/canary.ts
+│   │   │   ├── security/prompt-canary.ts         # canário, gerado por processo
 │   │   │   ├── resilience/retrying-llm.provider.ts   # decorator de retry
 │   │   │   └── llm-provider.factory.ts
 │   │   ├── cache/in-memory-suggestion-cache.ts
@@ -67,6 +68,8 @@ backend/
 │   │   └── docs/openapi.ts
 │   │
 │   ├── pkg/
+│   │   ├── security/input-sanitizer.ts           # camada 1
+│   │   ├── security/text-safety.ts               # primitivas Unicode (entrada e saída)
 │   │   ├── config/env.ts
 │   │   ├── logger/logger.ts
 │   │   ├── http/request-context.ts
@@ -213,9 +216,15 @@ Log estruturado em JSON via Pino, com `requestId` propagado do middleware até o
 O LLM é tratado como **dependência não-confiável nas duas direções**: pode falhar, e pode
 produzir texto influenciado por quem digitou no formulário.
 
-`infra/llm/security/` concentra as camadas 1 e 3 da defesa. A propriedade que torna isso
-barato: **toda violação detectada vira `LlmInvalidResponseError`** e entra no mesmo funil
-de fallback já construído — nenhum mecanismo novo de degradação foi necessário.
+A camada 1 (sanitização) vive em `pkg/security/`, porque quem a chama é o schema de
+validação em `presentation` — pôr o sanitizador em `infra` inverteria a seta de dependência.
+A camada 3 (guard de saída) vive em `infra/llm/security/`, atrás do port
+`domain/services/suggestion-guard.ts`, e é chamada pelo **caso de uso**: no único caminho
+por onde todo provider passa, para que nenhum adapter consiga contorná-la.
+
+A propriedade que torna isso barato: **toda violação detectada vira
+`LlmInvalidResponseError`** e entra no mesmo funil de fallback já construído — nenhum
+mecanismo novo de degradação foi necessário.
 
 Detalhamento: [`../05-security/llm-security.md`](../05-security/llm-security.md)
 

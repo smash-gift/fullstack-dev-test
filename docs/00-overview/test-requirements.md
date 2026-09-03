@@ -76,7 +76,7 @@ que existe independentemente de o enunciado citá-la.
 | # | Item | Status | Onde |
 |---|---|---|---|
 | S1 | Modelo de ameaça do sistema | ✅ | `05-security/threat-model.md` |
-| S2 | Defesa em 4 camadas contra prompt injection | ⬜ | `ADR-0009` · `phase-05` |
+| S2 | Defesa em 4 camadas contra prompt injection | ✅ | `ADR-0009` · `phase-05` |
 | S3 | Validação de saída do modelo antes de exibir | ⬜ | `05-security/llm-security.md` |
 | S4 | Baseline de segurança HTTP e de segredos | ⬜ | `ADR-0010` · `phase-06` |
 | S5 | Suíte de testes de segurança (offline) | ⬜ | `phase-08` |

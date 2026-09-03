@@ -26,6 +26,10 @@ const payloadSchema = z.object({
  * onward and breaking three layers away from its cause — so the check happens
  * here, inside the adapter, where the context still exists.
  *
+ * Structural validity only. The security guard deliberately does NOT run
+ * here: it runs in the use case, on the one path every provider shares, so
+ * that no adapter can bypass it by not calling this helper.
+ *
  * Every rejection is an LlmInvalidResponseError, which the use case turns
  * into the fallback path.
  */

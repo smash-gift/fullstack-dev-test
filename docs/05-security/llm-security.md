@@ -38,7 +38,13 @@ probabilidade; a 3 limita o dano independentemente do que o modelo tenha feito.
 
 ## Camada 1 — Sanitização de entrada
 
-`infra/llm/security/input-sanitizer.ts`
+`pkg/security/input-sanitizer.ts` · primitivas em `pkg/security/text-safety.ts`
+
+> **Por que `pkg` e não `infra`.** O sanitizador é chamado pelo schema de validação, que
+> vive em `presentation`. Se morasse em `infra`, `presentation` importaria de `infra` e a
+> seta de dependência do projeto se inverteria. `pkg` é a camada de utilitário técnico que
+> qualquer camada pode importar — e as primitivas Unicode ficam lá porque a **saída**
+> também precisa delas, e duas cópias divergiriam.
 
 ### 1.1 Normalização Unicode (NFKC)
 
@@ -69,7 +75,14 @@ então rejeitar é preciso e não custa nada em usabilidade.
 ### 1.4 Allowlist de caracteres
 
 Permitido: letras de qualquer alfabeto (`\p{L}`), números (`\p{N}`), espaço e a pontuação
-`' - . , ! ?`
+`' ’ ‘ - – — . , ! ? &`
+
+> **Três caracteres foram acrescentados durante a implementação**, todos por causa de
+> entrada legítima e nenhum capaz de construir estrutura de prompt:
+> `’` (U+2019) porque o iPhone troca `Mother's` por `Mother’s` sozinho e **o NFKC não
+> converte de volta**; `–` `—` porque travessão é pontuação normal; `&` por `Mr. & Mrs.`.
+> Sem o primeiro, uma parcela grande de usuários de iOS levaria `400` digitando
+> `Mother's Day`.
 
 Tudo o mais é rejeitado — o que elimina de uma vez `` ` ``, `{`, `}`, `<`, `>`, `#`, `|`,
 `\`, `[`, `]`, os blocos de construção de delimitador e de cerca de código.
@@ -90,11 +103,17 @@ Padrões que casam com tentativa explícita:
 
 ```
 ignore (all )?(previous|prior|above)     disregard (the )?(above|previous)
-system prompt                            you are (now|a)
+system (prompt|message|instruction)      you are (now|no longer|a|an)
 new instructions                         act as (a |an )?
-forget (everything|all)                  <\|  |>  ###  ```
-repeat (the|your) (prompt|instructions)  print your (prompt|instructions)
+forget (everything|all|your)             pretend (to be|you are)
+(repeat|print|reveal|show|output) (the|your|all) (prompt|instructions|rules)
+do not follow (the|your|any)
 ```
+
+> **Os marcadores estruturais (`` ``` ``, `<|`, `###`) foram removidos desta lista.**
+> A allowlist acima já rejeita todo caractere de que são feitos, então seriam regras que
+> nunca disparam — e regra que nunca dispara é regra que ninguém mantém. Eles são
+> aplicados na **camada 3**, onde esses caracteres podem de fato aparecer.
 
 **Ação: rejeita com `400`**, código `VALIDATION_ERROR`, issue `unsupported_content`.
 Registra `warn` com o `requestId` — sem ecoar o payload no log.
@@ -171,7 +190,17 @@ O canário é regenerado a cada boot, então nunca vira valor conhecido e reutil
 
 ## Camada 3 — Validação de saída ⭐
 
-`infra/llm/security/output-guard.ts` — **a camada que garante.**
+`infra/llm/security/output-guard.ts`, atrás da porta `domain/services/suggestion-guard.ts`
+— **a camada que garante.**
+
+> **O guard é uma porta, não um helper.** A primeira versão o chamava dentro do parsing
+> compartilhado dos adapters. Funciona — mas depende de todo adapter lembrar de chamar o
+> parsing, e o `StubLlmProvider` já não chama. Uma verificação que um adapter pode pular
+> não é garantia, é convenção.
+>
+> Então a interface fica no `domain`, a implementação no `infra`, e quem chama é o **caso
+> de uso** — no único caminho por onde todo provider passa, inclusive os que forem escritos
+> depois.
 
 Toda saída do modelo é tratada como **entrada não-confiável**, porque parte dela é
 influenciada por quem digitou no formulário.
@@ -191,7 +220,7 @@ influenciada por quem digitou no formulário.
 | 9 | **Contém cerca de código** ` ``` ` | Sinal de estar ecoando estrutura de prompt |
 | 10 | **Contém o canário** | Vazamento do system prompt confirmado |
 | 11 | Contém controle / zero-width / bidi | Mesmas razões da camada 1, agora na saída |
-| 12 | **Meta-resposta**: fala de "system prompt", "instructions", "as an AI", "I cannot" | O modelo está conversando sobre instruções, não escrevendo um cartão |
+| 12 | **Meta-resposta**: fala de "system prompt", "instructions", "as an AI", ou recusa explícita | O modelo está conversando sobre instruções, não escrevendo um cartão |
 
 **Qualquer rejeição → `LlmInvalidResponseError` → fallback → `200` + `degraded: true`.**
 
@@ -202,17 +231,32 @@ precisou de mecanismo novo: entra pelo mesmo funil da falha de LLM, já constru�
 testado e documentado no
 [`ADR-0003`](../01-architecture/decisions/adr-0003-fallback-strategy.md).
 
-**2. Não dá sinal ao atacante.** A resposta de uma injeção bloqueada é **idêntica** à de
-um timeout do provider: `200` com `degraded: true`. O atacante não descobre qual regra
-disparou, nem se disparou alguma — o que torna a exploração por tentativa e erro
-significativamente mais cara.
+**2. Não dá sinal ao atacante.** `LlmOutputBlockedError` **estende** `LlmInvalidResponseError`,
+então o código e o `reason` que chegam ao cliente são os mesmos de um modelo que devolveu
+JSON quebrado. Uma injeção bloqueada e uma resposta inútil qualquer são indistinguíveis de
+fora; o atacante nunca descobre **qual** regra disparou, nem se disparou alguma.
+
+Sendo exato: contra um *timeout* a forma da resposta e o status são idênticos, e o `reason`
+difere porque é um bucket grosseiro de causa (`llm_timeout` × `llm_invalid_response`).
+Nenhum dos dois revela a existência de uma regra de segurança.
 
 ### Regra 12 merece nota
 
 As regras 5 a 11 são casamento de padrão, objetivas. A regra 12 é heurística e pode gerar
 falso positivo — uma mensagem legítima poderia conter a palavra "instructions". Aceitamos:
-o custo é uma sugestão descartada, e o usuário recebe as outras duas ou o fallback. Falha
-segura.
+o custo é o fallback entrar no lugar, e o usuário ainda recebe sugestões utilizáveis.
+Falha segura.
+
+> **`I cannot` sozinho era regra demais.** A especificação original rejeitava a frase.
+> Mas *"I cannot wait to celebrate with you"* é uma mensagem de cartão perfeitamente boa.
+> A regra implementada exige um verbo de recusa em seguida
+> (`comply|assist|help|fulfil|fulfill|do that|provide|reveal|share`): continua pegando
+> recusa de modelo, para de descartar entusiasmo de usuário.
+
+### Rejeição é do lote inteiro, não da sugestão isolada
+
+Se uma sugestão foi manipulada, as outras vieram da **mesma** completion comprometida.
+Filtrar a ruim e servir as irmãs seria confiar que o atacante só mexeu uma vez.
 
 ---
 

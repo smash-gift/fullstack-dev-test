@@ -13,7 +13,8 @@ um modelo. Tratar isso apenas como problema de disponibilidade seria incompleto.
 | [`application-security.md`](application-security.md) | Baseline de segurança web, segredos, dependências |
 | [`security-testing.md`](security-testing.md) | Plano de testes, corpus de ataque, suíte live |
 | [`security-checklist.md`](security-checklist.md) | Verificação pré-entrega |
-| [`injection-baseline-2026-09-03.md`](injection-baseline-2026-09-03.md) | **Medição real** contra `gpt-4o-mini`, antes das defesas da fase 05 |
+| [`injection-baseline-2026-09-03.md`](injection-baseline-2026-09-03.md) | **Medição real** contra `gpt-4o-mini`, **antes** das defesas da fase 05 |
+| [`injection-baseline-2026-09-03-after.md`](injection-baseline-2026-09-03-after.md) | A mesma medição **depois** da fase 05 — 5 dos 6 payloads não chegam mais ao modelo |
 
 ## A premissa que orienta tudo
 

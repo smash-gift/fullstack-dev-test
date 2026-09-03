@@ -37,3 +37,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Local tooling cache, not part of the project
+.impeccable/

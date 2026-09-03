@@ -71,3 +71,32 @@ export class LlmAuthError extends LlmError {
     super(message);
   }
 }
+
+/**
+ * The model answered, and the security guard refused to serve what it said.
+ *
+ * Extends LlmInvalidResponseError rather than standing beside it, so the code
+ * and the degradation reason reaching the client are IDENTICAL to those of a
+ * model that simply returned malformed JSON. An attacker probing the endpoint
+ * cannot tell a blocked payload from an ordinary bad completion, which makes
+ * trial-and-error considerably more expensive.
+ *
+ * `violation` is a stable code, never the offending text: a log is not a sink
+ * for attacker-controlled input.
+ */
+export class LlmOutputBlockedError extends LlmInvalidResponseError {
+  readonly violation: string;
+
+  /**
+   * True only for a confirmed system-prompt disclosure (the canary). That is
+   * the one case here that deserves a human looking at it, rather than a
+   * counter going up.
+   */
+  readonly severe: boolean;
+
+  constructor(violation: string, options: { severe?: boolean } = {}) {
+    super(`LLM output blocked by the security guard: ${violation}`);
+    this.violation = violation;
+    this.severe = options.severe ?? false;
+  }
+}

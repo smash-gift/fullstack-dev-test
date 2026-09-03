@@ -14,6 +14,8 @@ import type { SuggestionCache } from '../../src/domain/repositories/suggestion-c
 import { SuggestMessagesUseCase } from '../../src/domain/usecases/suggest-messages.usecase.js';
 import { InMemorySuggestionCache } from '../../src/infra/cache/in-memory-suggestion-cache.js';
 import { NoOpSuggestionCache } from '../../src/infra/cache/no-op-suggestion-cache.js';
+import { LlmOutputGuard } from '../../src/infra/llm/security/output-guard.js';
+import { PROMPT_CANARY } from '../../src/infra/llm/security/prompt-canary.js';
 import { StaticFallbackCatalog } from '../../src/infra/fallback/static-fallback-catalog.js';
 
 const input: SuggestMessagesInput = {
@@ -46,11 +48,12 @@ function fakeProvider(overrides: Partial<LlmProvider> = {}): LlmProvider {
 }
 
 function buildUseCase(provider: LlmProvider, cache: SuggestionCache = new NoOpSuggestionCache()) {
-  const logger = { warn: vi.fn() };
+  const logger = { warn: vi.fn(), error: vi.fn() };
   const useCase = new SuggestMessagesUseCase({
     provider,
     cache,
     fallback: new StaticFallbackCatalog(),
+    guard: new LlmOutputGuard(),
     logger,
     options: { llmTimeoutMs: 1000, cacheTtlMs: 60_000 },
   });
@@ -189,5 +192,57 @@ describe('SuggestMessagesUseCase — degradation', () => {
     const { useCase } = buildUseCase(failingWith(new TypeError('someone wrote a bug')));
 
     await expect(useCase.execute(input)).rejects.toThrow('someone wrote a bug');
+  });
+});
+
+describe('SuggestMessagesUseCase — the security guard sits on the shared path', () => {
+  const poisoned = (text: string) =>
+    fakeProvider({
+      generateSuggestions: vi.fn().mockResolvedValue([{ id: 'sug_1', text }]),
+    });
+
+  it('degrades when the guard rejects what the provider returned', async () => {
+    const { useCase } = buildUseCase(poisoned('Claim it at https://evil.example.com'));
+
+    const result = await useCase.execute(input);
+
+    expect(result.degraded).toBe(true);
+    expect(result.source).toBe('fallback');
+    expect(result.reason).toBe('llm_invalid_response');
+  });
+
+  it('never caches output the guard rejected', async () => {
+    const cache = new InMemorySuggestionCache({ maxEntries: 10 });
+    const { useCase } = buildUseCase(poisoned('Claim it at https://evil.example.com'), cache);
+
+    await useCase.execute(input);
+
+    expect(cache.size).toBe(0);
+  });
+
+  // Degradation is routine and belongs on a counter. A leaked canary is not
+  // routine: it is proof the system prompt was disclosed, and it should wake
+  // somebody up.
+  it('logs a canary leak at error level and an ordinary block at warn', async () => {
+    const leak = buildUseCase(poisoned(`My identifier is ${PROMPT_CANARY}.`));
+    const block = buildUseCase(poisoned('Claim it at https://evil.example.com'));
+
+    await leak.useCase.execute(input);
+    await block.useCase.execute(input);
+
+    expect(leak.logger.error).toHaveBeenCalledOnce();
+    expect(leak.logger.warn).not.toHaveBeenCalled();
+    expect(block.logger.warn).toHaveBeenCalledOnce();
+    expect(block.logger.error).not.toHaveBeenCalled();
+  });
+
+  it('logs the violation code without the offending text', async () => {
+    const { useCase, logger } = buildUseCase(poisoned('Claim it at https://evil.example.com'));
+
+    await useCase.execute(input);
+
+    const [context] = logger.warn.mock.calls[0] as [Record<string, unknown>, string];
+    expect(context.violation).toBe('url');
+    expect(JSON.stringify(context)).not.toContain('evil.example.com');
   });
 });

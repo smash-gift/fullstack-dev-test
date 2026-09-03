@@ -16,7 +16,7 @@ Status ao vivo: [`../00-overview/checklist.md`](../00-overview/checklist.md)
 | 02 | [Fundação do backend](phase-02-backend-foundation.md) | Projeto TS, camadas, endpoint validando | ✅ |
 | 03 | [Integração com LLM](phase-03-llm-integration.md) | Três adapters, prompt, parsing | ✅ |
 | 04 | [Tratamento de falhas](phase-04-failure-handling.md) | Erros de domínio, fallback, logs | ✅ |
-| 05 | 🔒 [Segurança do LLM](phase-05-llm-security.md) | 4 camadas contra prompt injection | ⬜ |
+| 05 | 🔒 [Segurança do LLM](phase-05-llm-security.md) | 4 camadas contra prompt injection | ✅ |
 | 06 | 🔒 [Baseline de segurança](phase-06-application-security.md) | Headers, limites, log, dependências | ⬜ |
 | 07 | [Diferenciais do backend](phase-07-backend-extras.md) | Rate limit, CORS, cache, Swagger | ⬜ |
 | 08 | [Testes do backend](phase-08-backend-tests.md) | Vitest: fallback + segurança | ⬜ |

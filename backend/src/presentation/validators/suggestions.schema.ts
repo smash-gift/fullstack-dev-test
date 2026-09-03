@@ -6,13 +6,39 @@ import {
   SUGGESTION_LANGUAGES,
   SUGGESTION_TONES,
 } from '../../domain/dtos/suggest-messages-input.dto.js';
+import {
+  describeSanitizationFailure,
+  sanitizeFreeText,
+} from '../../pkg/security/input-sanitizer.js';
 
+/**
+ * Shape first, then safety.
+ *
+ * The length bounds run before sanitisation so that an ordinary typo gets an
+ * ordinary message instead of a security-flavoured one. The 60-character cap
+ * doubles as a control here: it is very little room in which to build an
+ * elaborate injection.
+ */
 const freeTextField = (label: string) =>
   z
     .string({ error: `${label} is required` })
     .trim()
     .min(2, `${label} must be at least 2 characters`)
-    .max(60, `${label} must be at most 60 characters`);
+    .max(60, `${label} must be at most 60 characters`)
+    .transform((value, ctx) => {
+      const result = sanitizeFreeText(value);
+
+      if (!result.ok) {
+        ctx.addIssue({
+          code: 'custom',
+          message: describeSanitizationFailure(label, result.reason),
+          params: { securityReason: result.reason },
+        });
+        return z.NEVER;
+      }
+
+      return result.value;
+    });
 
 /**
  * Validation happens at the edge; the domain receives an input it can trust.

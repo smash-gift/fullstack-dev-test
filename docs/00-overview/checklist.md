@@ -55,21 +55,21 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Criar mensagens de fallback quando o LLM estiver indisponível
 - [x] Registrar erros no backend de forma apropriada
 
-## 5. Segurança do LLM 🔒 — ⬜
+## 5. Segurança do LLM 🔒 — ✅
 → [`phase-05-llm-security.md`](../02-phases/phase-05-llm-security.md)
 
 *Item acrescentado ao checklist original.*
 
-- [ ] Sanitização de entrada: NFKC, controle, zero-width, bidi, tags Unicode
-- [ ] Rejeitar quebra de linha e caracteres fora da allowlist
-- [ ] Heurística de tentativa de injeção
-- [ ] System prompt constante, sem interpolação de dado do usuário
-- [ ] Entrada como valor JSON na mensagem de usuário (spotlighting)
-- [ ] Canário no system prompt para detectar vazamento
-- [ ] Guard de saída: URL, e-mail, HTML, markdown, cerca de código, canário
-- [ ] Guard de saída: detector de meta-resposta
-- [ ] Toda violação termina no fallback, nunca em `5xx`
-- [ ] Regra de renderização segura definida para o Flutter
+- [x] Sanitização de entrada: NFKC, controle, zero-width, bidi, tags Unicode
+- [x] Rejeitar quebra de linha e caracteres fora da allowlist
+- [x] Heurística de tentativa de injeção
+- [x] System prompt constante, sem interpolação de dado do usuário
+- [x] Entrada como valor JSON na mensagem de usuário (spotlighting)
+- [x] Canário no system prompt para detectar vazamento
+- [x] Guard de saída: URL, e-mail, HTML, markdown, cerca de código, canário
+- [x] Guard de saída: detector de meta-resposta
+- [x] Toda violação termina no fallback, nunca em `5xx`
+- [x] Regra de renderização segura definida para o Flutter
 
 ## 6. Baseline de segurança da aplicação 🔒 — ⬜
 → [`phase-06-application-security.md`](../02-phases/phase-06-application-security.md)

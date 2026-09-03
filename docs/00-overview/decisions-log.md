@@ -143,6 +143,25 @@ muda latência, custo e comportamento sem aviso.
 | D41 | Retry em timeout | **Removido** | **Assistente** | 1 retry, como o ADR previa | 04 |
 | D42 | Aliases multilíngues no catálogo | Implementados | **Assistente** | Chavear só em inglês | 04 |
 | D43 | `tone` no fallback | **Ignorado**, `language` respeitado | **Assistente** | Multiplicar o catálogo por 4 |
+| D44 | Guard de saída | **Porta** no `domain`, chamada pelo use case | **Assistente** | Helper chamado pelos adapters (o que o plano previa) | 05 |
+| D45 | Sanitizador de entrada | `pkg/security/`, não `infra/llm/security/` | **Assistente** | `presentation` importando de `infra` | 05 |
+| D46 | Allowlist | `’ – — &` acrescentados | **Assistente** | Só a pontuação especificada | 05 |
+| D47 | Regra `I cannot` | Exige verbo de recusa em seguida | **Assistente** | A frase isolada, como especificado | 05 |
+| D48 | Marcadores estruturais na heurística de entrada | **Removidos** | **Assistente** | Manter regras que a allowlist torna inalcançáveis | 05 |
+| D49 | Log de vazamento de canário | `error`; todo o resto continua `warn` | **Assistente** | Um nível só para toda degradação | 05 |
+
+**Contexto de D44 — convenção não é garantia.** O plano punha o guard dentro do parsing
+compartilhado dos adapters. Mas o `StubLlmProvider` não usa esse parsing: monta as
+sugestões direto. Com a documentação afirmando que a camada 3 **garante**, uma verificação
+que um adapter pode pular vira convenção, não garantia. O guard virou porta no `domain`,
+chamado pelo caso de uso — o único caminho por onde todo provider passa, inclusive os que
+forem escritos depois. Custo: uma interface e uma linha no container.
+
+**Contexto de D46 — o teste que quase não foi escrito.** O apóstrofo tipográfico `’` que o
+iPhone insere sozinho **não** é convertido para `'` pelo NFKC. Sem ele na allowlist,
+`Mother's Day` digitado em iOS levaria `400`. Foi encontrado escrevendo o teste de **entrada
+legítima**, não o de ataque — e a mesma suíte é a que impede a allowlist de virar um filtro
+que quebra `aniversário` ou `結婚式`.
 
 **Contexto de D40 e D41 — o ADR corrigindo a si mesmo.** O `ADR-0003` previa retry em
 timeout com orçamento **por tentativa**, e calculava o pior caso em ≈16,3 s — anotando na

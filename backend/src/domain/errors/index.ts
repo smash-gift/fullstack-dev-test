@@ -6,5 +6,6 @@ export {
   LlmRateLimitError,
   LlmUnavailableError,
   LlmInvalidResponseError,
+  LlmOutputBlockedError,
   LlmAuthError,
 } from './llm-errors.js';
