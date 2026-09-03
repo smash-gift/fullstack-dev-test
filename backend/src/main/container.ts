@@ -3,7 +3,9 @@ import type { LlmProvider } from '../domain/providers/llm-provider.js';
 import { SuggestMessagesUseCase } from '../domain/usecases/suggest-messages.usecase.js';
 import { InMemorySuggestionCache } from '../infra/cache/in-memory-suggestion-cache.js';
 import { NoOpSuggestionCache } from '../infra/cache/no-op-suggestion-cache.js';
+import { StaticFallbackCatalog } from '../infra/fallback/static-fallback-catalog.js';
 import { createLlmProvider } from '../infra/llm/llm-provider.factory.js';
+import { RetryingLlmProvider } from '../infra/llm/resilience/retrying-llm.provider.js';
 import type { Env } from '../pkg/config/env.js';
 import { createLogger, type Logger } from '../pkg/logger/logger.js';
 import { SuggestionsController } from '../presentation/controllers/suggestions.controller.js';
@@ -35,12 +37,23 @@ export function buildContainer(env: Env, overrides: ContainerOverrides = {}): Co
   const logger =
     overrides.logger ??
     createLogger({ level: env.LOG_LEVEL, pretty: env.NODE_ENV === 'development' });
-  const llmProvider = overrides.llmProvider ?? createLlmProvider(env);
+  const baseProvider = overrides.llmProvider ?? createLlmProvider(env);
+  const llmProvider =
+    env.LLM_MAX_RETRIES > 0
+      ? new RetryingLlmProvider(baseProvider, {
+          maxRetries: env.LLM_MAX_RETRIES,
+          baseDelayMs: env.LLM_RETRY_BASE_DELAY_MS,
+          logger,
+        })
+      : baseProvider;
   const suggestionCache = overrides.suggestionCache ?? createSuggestionCache(env);
 
-  const useCase = new SuggestMessagesUseCase(llmProvider, suggestionCache, {
-    llmTimeoutMs: env.LLM_TIMEOUT_MS,
-    cacheTtlMs: env.CACHE_TTL_MS,
+  const useCase = new SuggestMessagesUseCase({
+    provider: llmProvider,
+    cache: suggestionCache,
+    fallback: new StaticFallbackCatalog(),
+    logger,
+    options: { llmTimeoutMs: env.LLM_TIMEOUT_MS, cacheTtlMs: env.CACHE_TTL_MS },
   });
 
   return {

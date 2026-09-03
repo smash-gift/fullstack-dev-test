@@ -138,6 +138,27 @@ primeira execução. O alias `-latest` foi descartado porque a documentação n�
 `gemini-flash-latest` seja endpoint ativo, e porque um alias com hot-swap a cada release
 muda latência, custo e comportamento sem aviso.
 
+| D39 | Retry | Decorator `RetryingLlmProvider`, não lógica no use case | **Assistente** | `if/else` dentro do use case | 04 |
+| D40 | Orçamento de timeout | **Total**, cobrindo retries | **Assistente** | Por tentativa (o que o ADR-0003 previa) | 04 |
+| D41 | Retry em timeout | **Removido** | **Assistente** | 1 retry, como o ADR previa | 04 |
+| D42 | Aliases multilíngues no catálogo | Implementados | **Assistente** | Chavear só em inglês | 04 |
+| D43 | `tone` no fallback | **Ignorado**, `language` respeitado | **Assistente** | Multiplicar o catálogo por 4 |
+
+**Contexto de D40 e D41 — o ADR corrigindo a si mesmo.** O `ADR-0003` previa retry em
+timeout com orçamento **por tentativa**, e calculava o pior caso em ≈16,3 s — anotando na
+sequência que *"é muito para uma tela de espera"*. Na implementação, essa ressalva foi
+tratada como problema a resolver em vez de nota de rodapé: o `AbortSignal` passou a cobrir
+a operação inteira (pior caso volta a 8 s) e o timeout deixou de ser retentado, porque com
+orçamento total o tempo já acabou por definição. O ADR foi atualizado com a correção e o
+motivo, em vez de reescrito como se sempre tivesse dito isso.
+
+**Contexto de D42 — encontrado testando, não planejando.** Ao exercitar
+`{"occasion":"aniversário","language":"pt"}` contra a API real, o fallback caiu no nível
+genérico em vez das mensagens de aniversário em português: o catálogo é chaveado em inglês
+e o usuário digita no idioma dele. Uma tabela de aliases com remoção de diacríticos
+resolveu. O problema só apareceu porque o teste usou entrada realista em vez de sempre
+`birthday + friend`.
+
 **Contexto de D38 — a lacuna no processo.** O `npm test` passou verde com um erro de tipo
 presente nos testes: Vitest não faz typecheck. O erro só apareceu quando `npm run
 typecheck` foi rodado à parte. Em vez de confiar em lembrar de rodar cada comando, o

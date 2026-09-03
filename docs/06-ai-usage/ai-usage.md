@@ -9,7 +9,7 @@
 > declaração genérica de "usei IA para acelerar". O que segue é o registro real.
 >
 > **Status:** este arquivo é atualizado ao fim de cada fase. Hoje ele cobre até a **fase
-> 03** (integração com o LLM). As seções seguintes são preenchidas conforme o código for
+> 04** (tratamento de falhas). As seções seguintes são preenchidas conforme o código for
 > escrito — **e não antes**, porque descrever trabalho que ainda não aconteceu seria
 > ficção.
 

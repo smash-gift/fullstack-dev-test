@@ -9,7 +9,7 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 3 / 16 fases concluídas
+**Progresso geral:** 4 / 16 fases concluídas
 
 ---
 
@@ -44,16 +44,16 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Nunca colocar a API Key no Flutter
 - [x] **Executar uma chamada real bem-sucedida** — OpenAI, 2026-09-03
 
-## 4. Implementar tratamento de falhas — ⬜
+## 4. Implementar tratamento de falhas — ✅
 → [`phase-04-failure-handling.md`](../02-phases/phase-04-failure-handling.md)
 
-- [ ] Tratar timeout
-- [ ] Tratar 429 (rate limit do provider)
-- [ ] Tratar erros 5xx
-- [ ] Tratar resposta inválida do LLM
-- [ ] Não retornar stack trace / erro interno para o Flutter
-- [ ] Criar mensagens de fallback quando o LLM estiver indisponível
-- [ ] Registrar erros no backend de forma apropriada
+- [x] Tratar timeout
+- [x] Tratar 429 (rate limit do provider)
+- [x] Tratar erros 5xx
+- [x] Tratar resposta inválida do LLM
+- [x] Não retornar stack trace / erro interno para o Flutter
+- [x] Criar mensagens de fallback quando o LLM estiver indisponível
+- [x] Registrar erros no backend de forma apropriada
 
 ## 5. Segurança do LLM 🔒 — ⬜
 → [`phase-05-llm-security.md`](../02-phases/phase-05-llm-security.md)
@@ -88,7 +88,7 @@ mantiveram o conteúdo e foram renumerados.
 → [`phase-07-backend-extras.md`](../02-phases/phase-07-backend-extras.md)
 
 - [ ] Rate limiting
-- [ ] Timeout explícito para chamadas ao LLM
+- [x] Timeout explícito para chamadas ao LLM *(fase 04)*
 - [ ] Tipagem das respostas
 - [ ] Configuração de CORS
 - [x] Estrutura preparada para cache *(antecipado para a fase 02)*

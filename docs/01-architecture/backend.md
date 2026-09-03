@@ -45,10 +45,13 @@ backend/
 │   │   │   ├── security/input-sanitizer.ts       # camada 1
 │   │   │   ├── security/output-guard.ts          # camada 3 ⭐
 │   │   │   ├── security/canary.ts
+│   │   │   ├── resilience/retrying-llm.provider.ts   # decorator de retry
 │   │   │   └── llm-provider.factory.ts
 │   │   ├── cache/in-memory-suggestion-cache.ts
 │   │   ├── cache/no-op-suggestion-cache.ts
-│   │   └── fallback/static-fallback-catalog.ts
+│   │   ├── fallback/static-fallback-catalog.ts
+│   │   ├── fallback/fallback-messages.ts             # dado curado, 3 idiomas
+│   │   └── fallback/catalog-aliases.ts               # aniversario -> birthday
 │   │
 │   ├── presentation/
 │   │   ├── controllers/suggestions.controller.ts

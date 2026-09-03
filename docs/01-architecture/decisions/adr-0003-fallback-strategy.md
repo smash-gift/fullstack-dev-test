@@ -137,16 +137,32 @@ contrário.
 
 | Situação | Retry? | Por quê |
 |---|---|---|
-| Timeout | **1x** | Pode ser lentidão transitória. Mais de um retry estoura o orçamento de latência do usuário. |
-| `5xx` | **1x**, com jitter | Instabilidade costuma ser breve. Jitter evita *thundering herd* de todos os clientes retentando junto. |
-| `429` | **Nunca** | Retentar contra rate limit é agressão ao provider e piora a situação. Respeitamos `Retry-After` e caímos direto no fallback. |
-| Resposta inválida | **Nunca** | O modelo já respondeu. Repetir o mesmo prompt tende a produzir o mesmo formato ruim, pagando dobrado por isso. |
+| `5xx` | **1x**, com jitter | Instabilidade costuma ser breve, e falha rápido — sobra orçamento. Jitter evita *thundering herd* de todos os clientes retentando juntos. |
+| Rede / DNS / conexão recusada | **1x**, com jitter | Mesmo raciocínio. |
+| **Timeout** | **Nunca** | O orçamento de tempo já foi gasto, por definição. |
+| `429` | **Nunca** | Retentar contra rate limit é agressão ao provider e piora a situação. |
+| Resposta inválida | **Nunca** | O modelo já respondeu. Repetir o mesmo prompt tende a produzir o mesmo formato ruim, pagando dobrado. |
 | `401` / `403` | **Nunca** | Erro de configuração. Retry não conserta key errada; só atrasa o diagnóstico. |
 
-**Orçamento de latência do pior caso:** `8s` (tentativa) + `~0.3s` (jitter) + `8s` (retry)
-+ `~1ms` (fallback) ≈ **16,3s**. É muito para uma tela de espera. Por isso o app mostra
-progresso desde o primeiro milissegundo, e por isso `LLM_TIMEOUT_MS` é configurável — em
-produção, com dados reais de latência p99, esse número seria ajustado para baixo.
+### Correção feita na implementação (fase 04)
+
+A versão original deste ADR previa **1 retry em timeout**, com timeout **por tentativa**,
+e calculava o pior caso em ≈ **16,3 s** — anotando na sequência que *"é muito para uma tela
+de espera"*.
+
+Ao implementar, essa observação foi levada a sério em vez de ficar como ressalva:
+
+- **O `AbortSignal` cobre a operação inteira**, retries incluídos. O pior caso volta a ser
+  `LLM_TIMEOUT_MS` (8 s), em vez de multiplicar pelo número de tentativas.
+- **Timeout deixou de ser retentado.** Com orçamento total, retentar após um timeout é
+  impossível por definição — o tempo acabou. E mesmo que fosse possível, dobraria a espera
+  de quem já esperou demais.
+
+Retry passa a servir ao caso em que de fato ajuda: falhas que ocorrem **rápido** — `5xx`,
+conexão recusada, DNS — onde sobra orçamento para uma segunda tentativa.
+
+**Pior caso agora: 8 s + ~1 ms de fallback.** O usuário nunca paga pela nossa política de
+retry.
 
 ---
 

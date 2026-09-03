@@ -21,8 +21,8 @@ resolvido por decisão explícita, não por código)
 | B3 | *"You choose the HTTP method, request/response format, **and document it**"* | ✅ | `03-api/contract.md` |
 | B4 | *"Call one LLM provider (OpenAI or Google AI)"* | ✅ | `ADR-0002` · OpenAI verificado ao vivo em 2026-09-03 |
 | B5 | *"How you structure the prompt ... is up to you"* | ✅ | `01-architecture/backend.md` |
-| B6 | *"the backend must **not expose raw errors** to the client"* | ⬜ | `ADR-0004` |
-| B7 | *"Document ... **what you consider a failure**, how you respond to the client, and why"* | ⬜ | `ADR-0003` |
+| B6 | *"the backend must **not expose raw errors** to the client"* | ✅ | `ADR-0004` |
+| B7 | *"Document ... **what you consider a failure**, how you respond to the client, and why"* | ✅ | `ADR-0003` |
 | B8 | *"Rate limiting (optional) — if you implement it, document the limit and the behavior"* | ⬜ | `ADR-0005` |
 | B9 | *"describe how you would **reduce cost in production**"* | ⬜ | `ADR-0006` |
 | B10 | *"whether you implemented any **caching** in this test (and why or why not)"* | ✅ | `ADR-0006` |

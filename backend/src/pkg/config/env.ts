@@ -33,6 +33,11 @@ const baseSchema = z.object({
   // defeats the point of asking for three. High makes them odd for a card.
   LLM_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.8),
   LLM_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(400),
+  // Retries apply only to transient unavailability (5xx, network). Never to
+  // timeouts, 429s, auth errors or malformed responses. See
+  // src/infra/llm/resilience/retrying-llm.provider.ts
+  LLM_MAX_RETRIES: z.coerce.number().int().min(0).max(3).default(1),
+  LLM_RETRY_BASE_DELAY_MS: z.coerce.number().int().positive().default(300),
 
   // Model identifiers confirmed against each provider's live catalogue on
   // 2026-09-03 rather than assumed. See docs/02-phases/phase-03-llm-integration.md

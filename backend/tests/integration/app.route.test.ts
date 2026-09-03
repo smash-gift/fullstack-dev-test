@@ -55,30 +55,44 @@ describe('response hygiene', () => {
 });
 
 /**
- * Phase 04 makes LLM failures degrade instead of erroring. Until then they
- * must at least not tell the client which vendor we use or why it failed.
+ * The behaviour the brief singles out: an LLM failure must reach the client
+ * as usable suggestions plus an honest signal, never as an error.
  */
-describe('LLM failures do not leak internals', () => {
-  it('returns a generic 500 without provider details', async () => {
-    const failing = {
-      name: 'openai',
-      model: 'gpt-4o-mini',
-      generateSuggestions: async () => {
-        throw new LlmAuthError('openai rejected the credentials (HTTP 401)');
-      },
-    };
+describe('LLM failures degrade instead of erroring', () => {
+  const failing = {
+    name: 'openai',
+    model: 'gpt-4o-mini',
+    generateSuggestions: async (): Promise<never> => {
+      throw new LlmAuthError('openai rejected the credentials (HTTP 401)');
+    },
+  };
 
-    const response = await request(buildTestApp({ llmProvider: failing }))
+  const post = () =>
+    request(buildTestApp({ llmProvider: failing }))
       .post('/api/v1/suggestions')
       .send({ occasion: 'birthday', relationship: 'friend' });
 
-    const body = JSON.stringify(response.body);
+  it('returns 200 with suggestions rather than an error', async () => {
+    const response = await post();
 
-    expect(response.status).toBe(500);
-    expect(response.body.error.code).toBe('INTERNAL_ERROR');
+    expect(response.status).toBe(200);
+    expect(response.body.data.suggestions).toHaveLength(3);
+    expect(response.body.data.degraded).toBe(true);
+    expect(response.body.data.source).toBe('fallback');
+    expect(response.body.data.model).toBeNull();
+    expect(response.body.meta.reason).toBe('llm_auth_error');
+  });
+
+  it('leaks neither the provider nor the upstream reason', async () => {
+    const body = JSON.stringify((await post()).body);
+
     expect(body).not.toContain('openai');
     expect(body).not.toContain('401');
     expect(body).not.toContain('credentials');
-    expect(response.body.meta.requestId).toMatch(/^req_/);
+    expect(body).not.toMatch(/at .*\(.*:\d+:\d+\)/);
+  });
+
+  it('still returns a correlation id', async () => {
+    expect((await post()).body.meta.requestId).toMatch(/^req_/);
   });
 });
