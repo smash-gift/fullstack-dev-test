@@ -115,6 +115,33 @@ sugere — e a decisão humana foi **manter fora do runtime com ADR explicando o
 | D30 | Framework HTTP | Express 5 | **Assistente** | Express 4; Fastify | 02 |
 | D31 | Valor `stub` em `LLM_PROVIDER`, como default | Servidor sobe com `.env` vazio | **Assistente** | Exigir key desde a fase 02 | 02 |
 | D32 | `pkg/errors/` não criado | Erros vivem em `domain/errors/` | **Assistente** | Classe `AppError` genérica em `pkg/` | 02 |
+| D33 | Cliente HTTP dos adapters | `fetch` nativo, sem SDK de provider | **Assistente** | SDKs oficiais das três APIs | 03 |
+| D34 | Versão de modelo | **Fixada** (`gemini-3.8-flash`) | **Assistente** | Alias `-latest` | 03 |
+| D35 | Modelo default do OpenRouter | `openai/gpt-4o-mini` — o mesmo do adapter direto | **Assistente** | Um modelo diferente, mais barato | 03 |
+| D36 | Key do Gemini | Header `x-goog-api-key` | **Assistente** | Query string `?key=` | 03 |
+| D37 | Saída estruturada | `json_schema` na OpenAI, `json_object` no OpenRouter | **Assistente** | `json_object` em todos; nenhum dos dois | 03 |
+| D38 | Script `verify` | Um comando roda typecheck + lint + format + testes | **Assistente** | Depender de lembrar cada comando | 03 |
+
+**Contexto de D33 — por que não usar os SDKs oficiais.** Três razões, em ordem de peso:
+o timeout continua sendo nosso (SDKs trazem retry e timeout próprios, que competiriam com
+a política do use case); o mapeamento de status HTTP para erro de domínio fica em **uma
+tabela legível**, em vez de inferido de tipos de exceção específicos de cada SDK; e a
+superfície de supply chain não cresce (LLM03). O custo declarado é que os corpos de
+requisição são escritos à mão — contido pela validação Zod, que transforma divergência de
+API em `LlmInvalidResponseError` e degradação, não em dado corrompido.
+
+**Contexto de D34 — a verificação que mudou o valor.** A expectativa era `gemini-2.0-flash`
+ou `gemini-2.5-flash`. A consulta ao catálogo real do OpenRouter (425 modelos) e à
+documentação da Google mostrou a linha **3.x**, com `gemini-3.8-flash` como Flash mais
+recente. Documentar de memória teria produzido instrução que parece certa e falha na
+primeira execução. O alias `-latest` foi descartado porque a documentação não confirma que
+`gemini-flash-latest` seja endpoint ativo, e porque um alias com hot-swap a cada release
+muda latência, custo e comportamento sem aviso.
+
+**Contexto de D38 — a lacuna no processo.** O `npm test` passou verde com um erro de tipo
+presente nos testes: Vitest não faz typecheck. O erro só apareceu quando `npm run
+typecheck` foi rodado à parte. Em vez de confiar em lembrar de rodar cada comando, o
+script `verify` passou a encadear os quatro.
 
 **Contexto de D28 — quando o plano cede.** O plano previa o cache na fase 07. Só que o
 `.env.example` da fase 02 já documenta `CACHE_ENABLED=true`, e o use case já depende do

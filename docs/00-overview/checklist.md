@@ -9,7 +9,7 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 2 / 16 fases concluídas
+**Progresso geral:** 3 / 16 fases concluídas
 
 ---
 
@@ -32,16 +32,17 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Separar controller / service / integração com LLM
 - [x] Configurar variáveis de ambiente
 
-## 3. Integrar o LLM — ⬜
+## 3. Integrar o LLM — ✅
 → [`phase-03-llm-integration.md`](../02-phases/phase-03-llm-integration.md)
 
-- [ ] Escolher provider (OpenAI default; OpenRouter e Gemini alternativos)
-- [ ] Configurar API Key via `.env`
-- [ ] Criar prompt para geração das mensagens
-- [ ] Solicitar 2–3 sugestões
-- [ ] Garantir mensagens curtas, de 1–2 frases
-- [ ] Tratar/validar a resposta do modelo
-- [ ] Nunca colocar a API Key no Flutter
+- [x] Escolher provider (OpenAI default; OpenRouter e Gemini alternativos)
+- [x] Configurar API Key via `.env`
+- [x] Criar prompt para geração das mensagens
+- [x] Solicitar 2–3 sugestões
+- [x] Garantir mensagens curtas, de 1–2 frases
+- [x] Tratar/validar a resposta do modelo
+- [x] Nunca colocar a API Key no Flutter
+- [x] **Executar uma chamada real bem-sucedida** — OpenAI, 2026-09-03
 
 ## 4. Implementar tratamento de falhas — ⬜
 → [`phase-04-failure-handling.md`](../02-phases/phase-04-failure-handling.md)

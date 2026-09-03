@@ -13,6 +13,7 @@ um modelo. Tratar isso apenas como problema de disponibilidade seria incompleto.
 | [`application-security.md`](application-security.md) | Baseline de segurança web, segredos, dependências |
 | [`security-testing.md`](security-testing.md) | Plano de testes, corpus de ataque, suíte live |
 | [`security-checklist.md`](security-checklist.md) | Verificação pré-entrega |
+| [`injection-baseline-2026-09-03.md`](injection-baseline-2026-09-03.md) | **Medição real** contra `gpt-4o-mini`, antes das defesas da fase 05 |
 
 ## A premissa que orienta tudo
 
@@ -44,6 +45,17 @@ O usuário recebe sugestões seguras. O atacante não recebe sinal útil sobre o
 disparou a defesa. E não foi preciso inventar um segundo mecanismo de tratamento — a
 arquitetura do [`ADR-0003`](../01-architecture/decisions/adr-0003-fallback-strategy.md)
 já tinha a forma certa.
+
+## Evidência, não alegação
+
+Em 2026-09-03, seis payloads de injeção foram disparados contra o modelo real com apenas a
+camada 2 ativa. **Cinco resistiram; um vazou** — e o que vazou (`You are now a pirate`)
+produziu texto formalmente limpo: sem URL, sem HTML, sem vazamento de prompt.
+
+Ou seja: a medição **confirmou empiricamente o risco residual** que o ADR-0009 já declarava,
+e mostrou que a única defesa que pega esse caso é a heurística de entrada da camada 1.
+
+→ [`injection-baseline-2026-09-03.md`](injection-baseline-2026-09-03.md)
 
 ## ADRs
 

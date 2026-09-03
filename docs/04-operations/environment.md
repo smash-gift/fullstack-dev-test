@@ -36,32 +36,41 @@ cp .env.example .env
 
 | Variável | Obrigatória | Default | Descrição |
 |---|---|---|---|
-| `LLM_PROVIDER` | ❌ | `stub` *(vira `openai` na fase 03)* | `stub` \| `openai` \| `openrouter` \| `gemini` |
+| `LLM_PROVIDER` | ❌ | `openai` | `openai` \| `gemini` \| `openrouter` \| `stub` |
 | `LLM_TIMEOUT_MS` | ❌ | `8000` | Timeout por tentativa |
 | `LLM_MAX_RETRIES` | ❌ | `1` | Retries em timeout/5xx. Nunca em `429` |
 | `LLM_TEMPERATURE` | ❌ | `0.8` | Criatividade. Baixo demais gera 3 sugestões iguais |
+| `LLM_MAX_OUTPUT_TOKENS` | ❌ | `400` | Teto de saída — impede resposta inflada e limita custo |
 
 **Apenas a key do provider ativo é obrigatória.** As outras podem ficar vazias.
 
-> **Estado atual (fase 02).** O default é `stub`: um provider determinístico que não usa
-> rede nem credencial. Isso faz o servidor subir com `.env` vazio, o que permite exercitar
-> o contrato, a validação e o formato de resposta **sem nenhuma API key**. A
-> [`fase 03`](../02-phases/phase-03-llm-integration.md) implementa os adapters reais e
-> promove `openai` a default.
+> **Sem key, o servidor não sobe** — e a mensagem diz exatamente o que falta:
+>
+> ```
+> Invalid environment:
+>   - OPENAI_API_KEY: required when LLM_PROVIDER=openai
+>     (or set LLM_PROVIDER=stub to run without credentials)
+> ```
+>
+> **A saída de emergência é `LLM_PROVIDER=stub`**: um provider determinístico, sem rede e
+> sem credencial. Permite explorar o contrato, a validação e o formato de resposta sem
+> nenhuma API key — útil para quem quer inspecionar o projeto antes de criar conta em
+> algum provider.
 
 | Variável | Obrigatória quando | Default | Onde obter |
 |---|---|---|---|
 | `OPENAI_API_KEY` | `LLM_PROVIDER=openai` | — | https://platform.openai.com/api-keys |
 | `OPENAI_MODEL` | ❌ | `gpt-4o-mini` | — |
 | `OPENROUTER_API_KEY` | `LLM_PROVIDER=openrouter` | — | https://openrouter.ai/keys |
-| `OPENROUTER_MODEL` | ❌ | *(definido na fase 3)* | https://openrouter.ai/models |
+| `OPENROUTER_MODEL` | ❌ | `openai/gpt-4o-mini` | https://openrouter.ai/models |
 | `GEMINI_API_KEY` | `LLM_PROVIDER=gemini` | — | https://aistudio.google.com/apikey |
-| `GEMINI_MODEL` | ❌ | *(definido na fase 3)* | — |
+| `GEMINI_MODEL` | ❌ | `gemini-3.8-flash` | https://ai.google.dev/gemini-api/docs/models |
 
-> **Nota.** Os defaults de modelo de OpenRouter e Gemini ficam em aberto de propósito:
-> serão preenchidos na [`phase-03`](../02-phases/phase-03-llm-integration.md) após
-> conferir o identificador exato vigente em cada catálogo. Chutar um identificador de
-> modelo aqui produziria documentação que parece certa e falha na primeira execução.
+> **Identificadores confirmados em 2026-09-03** contra os catálogos vivos de cada provider,
+> não contra memória — a verificação mudou o valor do Gemini, que hoje está na linha 3.x e
+> não na 2.x. As versões são **fixadas** em vez de usar alias `-latest`: um alias que sofre
+> hot-swap a cada release muda latência, custo e comportamento sem aviso.
+> Detalhes em [`phase-03`](../02-phases/phase-03-llm-integration.md).
 
 ### Rate limiting
 

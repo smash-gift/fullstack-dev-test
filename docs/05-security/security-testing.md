@@ -31,6 +31,10 @@ RUN_LIVE_SECURITY_TESTS=true OPENAI_API_KEY=sk-... npm run test:security:live
 
 ---
 
+> **Seis dos payloads do corpus não foram inventados: foram medidos.** O
+> [baseline de 2026-09-03](injection-baseline-2026-09-03.md) disparou-os contra o modelo
+> real e registrou qual venceu. Eles entram na suíte offline como casos de regressão.
+
 ## Corpus de ataque
 
 `tests/security/fixtures/injection-corpus.ts` — cerca de 30 payloads, cada um marcado com

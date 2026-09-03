@@ -17,8 +17,12 @@ export class LlmTimeoutError extends LlmError {
   readonly code = 'LLM_TIMEOUT';
   readonly degradationReason = 'llm_timeout' as const;
 
-  constructor(timeoutMs: number) {
-    super(`LLM request timed out after ${timeoutMs}ms`);
+  constructor(timeoutMs?: number) {
+    super(
+      timeoutMs === undefined
+        ? 'LLM request was aborted after exceeding its time budget'
+        : `LLM request timed out after ${timeoutMs}ms`,
+    );
   }
 }
 

@@ -41,6 +41,7 @@ backend/
 │   │   │   ├── gemini/gemini.provider.ts
 │   │   │   ├── prompt/suggestion-prompt.ts
 │   │   │   ├── parsing/llm-response.schema.ts
+│   │   │   ├── http/llm-http.ts                  # status → erro de domínio
 │   │   │   ├── security/input-sanitizer.ts       # camada 1
 │   │   │   ├── security/output-guard.ts          # camada 3 ⭐
 │   │   │   ├── security/canary.ts

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { DomainError, ValidationError } from '../../domain/errors/index.js';
+import { DomainError, LlmError, ValidationError } from '../../domain/errors/index.js';
 import type { Logger } from '../../pkg/logger/logger.js';
 import { failure } from '../../pkg/response/http-response.js';
 
@@ -30,6 +30,18 @@ export function errorHandlerMiddleware(logger: Logger) {
     if (error instanceof ValidationError) {
       logger.warn({ requestId: req.requestId, issues: error.issues }, 'request validation failed');
       res.status(400).json(failure(error.code, error.message, meta, error.issues));
+      return;
+    }
+
+    // Until phase 04 wires the fallback, an LLM failure can still reach here.
+    // It must not carry the provider name or the upstream reason to the client:
+    // those identify our vendor and echo internal state. The log keeps them.
+    if (error instanceof LlmError) {
+      logger.error(
+        { requestId: req.requestId, code: error.code, reason: error.degradationReason },
+        error.message,
+      );
+      res.status(500).json(failure('INTERNAL_ERROR', 'An unexpected error occurred.', meta));
       return;
     }
 

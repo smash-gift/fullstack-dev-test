@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
+import { LlmAuthError } from '../../src/domain/errors/index.js';
 import { buildTestApp } from '../helpers/build-test-app.js';
 
 describe('GET /health', () => {
@@ -50,5 +51,34 @@ describe('response hygiene', () => {
 
     expect(response.status).toBeLessThan(300);
     expect(response.headers['access-control-allow-origin']).toBe('*');
+  });
+});
+
+/**
+ * Phase 04 makes LLM failures degrade instead of erroring. Until then they
+ * must at least not tell the client which vendor we use or why it failed.
+ */
+describe('LLM failures do not leak internals', () => {
+  it('returns a generic 500 without provider details', async () => {
+    const failing = {
+      name: 'openai',
+      model: 'gpt-4o-mini',
+      generateSuggestions: async () => {
+        throw new LlmAuthError('openai rejected the credentials (HTTP 401)');
+      },
+    };
+
+    const response = await request(buildTestApp({ llmProvider: failing }))
+      .post('/api/v1/suggestions')
+      .send({ occasion: 'birthday', relationship: 'friend' });
+
+    const body = JSON.stringify(response.body);
+
+    expect(response.status).toBe(500);
+    expect(response.body.error.code).toBe('INTERNAL_ERROR');
+    expect(body).not.toContain('openai');
+    expect(body).not.toContain('401');
+    expect(body).not.toContain('credentials');
+    expect(response.body.meta.requestId).toMatch(/^req_/);
   });
 });

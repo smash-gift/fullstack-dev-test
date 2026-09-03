@@ -41,19 +41,10 @@ function start(): void {
 try {
   start();
 } catch (error) {
-  // The logger may not exist yet (invalid config is the usual cause here), so
-  // this uses a minimal logger built from defaults rather than failing silently.
-  const fallbackLogger = createLogger({
-    NODE_ENV: 'production',
-    PORT: 0,
-    LOG_LEVEL: 'error',
-    CORS_ORIGINS: '*',
-    LLM_PROVIDER: 'stub',
-    LLM_TIMEOUT_MS: 1,
-    CACHE_ENABLED: false,
-    CACHE_TTL_MS: 1,
-    CACHE_MAX_ENTRIES: 1,
-  });
+  // The configured logger may not exist yet — invalid configuration is the
+  // usual cause of failing here — so this uses a minimal one rather than
+  // dying silently.
+  const fallbackLogger = createLogger({ level: 'error', pretty: false });
   fallbackLogger.error({ err: error }, 'failed to start server');
   process.exit(1);
 }

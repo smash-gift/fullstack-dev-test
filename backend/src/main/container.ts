@@ -3,7 +3,7 @@ import type { LlmProvider } from '../domain/providers/llm-provider.js';
 import { SuggestMessagesUseCase } from '../domain/usecases/suggest-messages.usecase.js';
 import { InMemorySuggestionCache } from '../infra/cache/in-memory-suggestion-cache.js';
 import { NoOpSuggestionCache } from '../infra/cache/no-op-suggestion-cache.js';
-import { StubLlmProvider } from '../infra/llm/stub/stub-llm.provider.js';
+import { createLlmProvider } from '../infra/llm/llm-provider.factory.js';
 import type { Env } from '../pkg/config/env.js';
 import { createLogger, type Logger } from '../pkg/logger/logger.js';
 import { SuggestionsController } from '../presentation/controllers/suggestions.controller.js';
@@ -32,7 +32,9 @@ export interface ContainerOverrides {
  * environment variables.
  */
 export function buildContainer(env: Env, overrides: ContainerOverrides = {}): Container {
-  const logger = overrides.logger ?? createLogger(env);
+  const logger =
+    overrides.logger ??
+    createLogger({ level: env.LOG_LEVEL, pretty: env.NODE_ENV === 'development' });
   const llmProvider = overrides.llmProvider ?? createLlmProvider(env);
   const suggestionCache = overrides.suggestionCache ?? createSuggestionCache(env);
 
@@ -48,18 +50,6 @@ export function buildContainer(env: Env, overrides: ContainerOverrides = {}): Co
     suggestionCache,
     suggestionsController: new SuggestionsController(useCase),
   };
-}
-
-function createLlmProvider(env: Env): LlmProvider {
-  switch (env.LLM_PROVIDER) {
-    case 'stub':
-      return new StubLlmProvider();
-    // openai, openrouter and gemini adapters arrive in phase 03.
-    default:
-      throw new Error(
-        `LLM_PROVIDER="${env.LLM_PROVIDER}" is not implemented yet. Use "stub" until phase 03.`,
-      );
-  }
 }
 
 function createSuggestionCache(env: Env): SuggestionCache {
