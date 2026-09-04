@@ -15,16 +15,19 @@ class AppHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(7),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.brandViolet, AppColors.brandPink],
-            ),
+        // The real launcher icon, not a stand-in for it. This was a gradient
+        // square from before the app had an icon, which left the header
+        // showing one brand and the home screen another.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(7),
+          child: Image.asset(
+            'assets/brand/app_icon.png',
+            width: 24,
+            height: 24,
+            // The mark carries meaning the title already states, so it is
+            // decorative to a screen reader rather than a second reading of
+            // the same name.
+            excludeFromSemantics: true,
           ),
         ),
         const SizedBox(width: AppTheme.gapSm),
