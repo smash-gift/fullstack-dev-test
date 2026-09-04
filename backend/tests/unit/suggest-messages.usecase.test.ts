@@ -246,3 +246,126 @@ describe('SuggestMessagesUseCase — the security guard sits on the shared path'
     expect(JSON.stringify(context)).not.toContain('evil.example.com');
   });
 });
+
+/**
+ * A safe message that runs long is a miss, not a failure. Serving a generic
+ * catalogue card instead of asking the model again is a worse answer than the
+ * one being thrown away - measurement put the funny tone at roughly one such
+ * miss in five, all of them perfectly usable text.
+ *
+ * The line this draws is the point: shape earns a second ask, safety never
+ * does. Asking again after a leaked canary spends money on an attacker's
+ * behalf and risks leaking twice.
+ */
+describe('SuggestMessagesUseCase — a second ask for a message that is only misshapen', () => {
+  const tooLong: Suggestion[] = [
+    { id: 'sug_1', text: 'Happy birthday. You are older now. Enjoy the cake.' },
+    { id: 'sug_2', text: 'Have a great one.' },
+    { id: 'sug_3', text: 'Wishing you the best.' },
+  ];
+
+  function providerAnswering(...answers: Suggestion[][]): LlmProvider {
+    const generateSuggestions = vi.fn();
+    for (const answer of answers) generateSuggestions.mockResolvedValueOnce(answer);
+    return fakeProvider({ generateSuggestions });
+  }
+
+  it('asks once more, and serves the answer that fits', async () => {
+    const provider = providerAnswering(tooLong, generated);
+    const { useCase } = buildUseCase(provider);
+
+    const result = await useCase.execute(input);
+
+    expect(provider.generateSuggestions).toHaveBeenCalledTimes(2);
+    expect(result.suggestions).toEqual(generated);
+    expect(result.degraded).toBe(false);
+    expect(result.source).toBe('llm');
+  });
+
+  it('caches what the second attempt produced, not the attempt count', async () => {
+    const provider = providerAnswering(tooLong, generated);
+    const { useCase } = buildUseCase(provider, new InMemorySuggestionCache({ maxEntries: 10 }));
+
+    await useCase.execute(input);
+    const second = await useCase.execute(input);
+
+    expect(provider.generateSuggestions).toHaveBeenCalledTimes(2);
+    expect(second.cached).toBe(true);
+    expect(second.suggestions).toEqual(generated);
+  });
+
+  it('degrades when the second attempt misses too, and asks no third time', async () => {
+    const provider = providerAnswering(tooLong, tooLong);
+    const { useCase } = buildUseCase(provider);
+
+    const result = await useCase.execute(input);
+
+    expect(provider.generateSuggestions).toHaveBeenCalledTimes(2);
+    expect(result.degraded).toBe(true);
+    expect(result.source).toBe('fallback');
+    expect(result.reason).toBe('llm_invalid_response');
+  });
+
+  it('says so in the log, because the rate is what deserves watching', async () => {
+    const { useCase, logger } = buildUseCase(providerAnswering(tooLong, generated));
+
+    await useCase.execute(input);
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ violation: 'sentence_count', provider: 'fake' }),
+      expect.stringContaining('asking once more'),
+    );
+  });
+
+  it('never asks again after a leaked canary', async () => {
+    const leaked: Suggestion[] = [{ id: 'sug_1', text: `Sure: ${PROMPT_CANARY}` }];
+    const provider = providerAnswering(leaked, generated);
+    const { useCase } = buildUseCase(provider);
+
+    const result = await useCase.execute(input);
+
+    expect(provider.generateSuggestions).toHaveBeenCalledTimes(1);
+    expect(result.degraded).toBe(true);
+  });
+
+  it.each([
+    ['a link', 'Happy birthday, see https://evil.example for more'],
+    ['markup', 'Happy birthday <script>alert(1)</script>'],
+    ['contact details', 'Happy birthday, call me on 555-123-4567'],
+  ])('never asks again after %s', async (_label, text) => {
+    const provider = providerAnswering([{ id: 'sug_1', text }], generated);
+    const { useCase } = buildUseCase(provider);
+
+    const result = await useCase.execute(input);
+
+    expect(provider.generateSuggestions).toHaveBeenCalledTimes(1);
+    expect(result.degraded).toBe(true);
+  });
+
+  it('never asks again after a transport failure, which has its own retry', async () => {
+    const provider = failingWith(new LlmTimeoutError(1000));
+    const { useCase } = buildUseCase(provider);
+
+    const result = await useCase.execute(input);
+
+    expect(provider.generateSuggestions).toHaveBeenCalledTimes(1);
+    expect(result.reason).toBe('llm_timeout');
+  });
+
+  // The second attempt shares the first one's deadline. A fresh timeout would
+  // let a slow model spend the budget twice, and the person waiting has no way
+  // of knowing why the screen sat still for double the time.
+  it('spends what is left of the budget, not a fresh one', async () => {
+    const signals: AbortSignal[] = [];
+    const generateSuggestions = vi.fn(async (_input: SuggestMessagesInput, signal: AbortSignal) => {
+      signals.push(signal);
+      return signals.length === 1 ? tooLong : generated;
+    });
+    const { useCase } = buildUseCase(fakeProvider({ generateSuggestions }));
+
+    await useCase.execute(input);
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0]).toBe(signals[1]);
+  });
+});

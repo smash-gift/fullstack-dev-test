@@ -283,3 +283,66 @@ describe('a bad request never degrades', () => {
     expect(JSON.stringify(response.body)).not.toContain('suggestions');
   });
 });
+
+/**
+ * What the client sees when the model writes something safe but too long.
+ *
+ * The unit tests pin the decision; this pins the answer that leaves the
+ * process, because a caller experiences the response and not the branch.
+ */
+describe('a message that is only misshapen never reaches the client as a degradation', () => {
+  const tooLong: Suggestion[] = [
+    { id: 'sug_1', text: 'Happy birthday. You are older now. Enjoy the cake.' },
+    { id: 'sug_2', text: 'Have a great one.' },
+    { id: 'sug_3', text: 'Wishing you the best.' },
+  ];
+  const fine: Suggestion[] = [
+    { id: 'sug_1', text: 'Happy birthday! Have a great one.' },
+    { id: 'sug_2', text: 'Wishing you the best.' },
+    { id: 'sug_3', text: 'Many happy returns.' },
+  ];
+
+  function answering(...answers: Suggestion[][]): LlmProvider {
+    let call = 0;
+    return {
+      name: 'openai',
+      model: 'gpt-4o-mini',
+      async generateSuggestions(): Promise<Suggestion[]> {
+        const answer = answers[Math.min(call, answers.length - 1)]!;
+        call += 1;
+        return answer;
+      },
+    };
+  }
+
+  it('answers 200 with the model behind it, after asking once more', async () => {
+    const response = await request(appWith(answering(tooLong, fine)))
+      .post(endpoint)
+      .send(validBody);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.degraded).toBe(false);
+    expect(response.body.data.source).toBe('llm');
+    expect(response.body.data.suggestions).toHaveLength(3);
+    expect(response.body.meta.reason).toBeUndefined();
+  });
+
+  it('still degrades, identically to any other bad completion, when it misses twice', async () => {
+    const response = await request(appWith(answering(tooLong, tooLong)))
+      .post(endpoint)
+      .send(validBody);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.degraded).toBe(true);
+    expect(response.body.data.source).toBe('fallback');
+    expect(response.body.meta.reason).toBe('llm_invalid_response');
+  });
+
+  it('never serves the sentence the guard refused', async () => {
+    const response = await request(appWith(answering(tooLong, tooLong)))
+      .post(endpoint)
+      .send(validBody);
+
+    expect(JSON.stringify(response.body)).not.toContain('Enjoy the cake');
+  });
+});

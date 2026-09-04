@@ -184,7 +184,7 @@ flowchart TD
     UC --> A5
 ```
 
-Two consequences, both load-bearing. **727 backend tests and 151 Flutter tests run with no
+Two consequences, both load-bearing. **746 backend tests and 151 Flutter tests run with no
 network and no API key**, because the providers are swapped for doubles at the port — that
 is what makes "the reviewer can run the tests" true. And **the fallback lives in the use
 case** rather than in an adapter, so every provider inherits the same failure behaviour
@@ -312,6 +312,18 @@ One retry, only for `5xx` and network errors, sharing the total timeout budget i
 multiplying it. Retrying a `429` adds load to a provider that just said it is overloaded;
 retrying a `401` fails identically, slower. Disable with `LLM_MAX_RETRIES=0`.
 
+There is a second, narrower retry, and it exists because of something a physical device
+showed that no test did. The output guard refuses a suggestion for nine reasons; eight are
+about safety — a leaked canary, a link, markup, contact details — and one, `sentence_count`,
+is about shape. Treating them alike meant throwing away a message that was safe, on topic and
+useful, and serving a generic catalogue card instead: a worse answer than the one discarded.
+
+So the guard now says which kind it caught, and a message that is only misshapen earns **one**
+more ask, under the same deadline. Safety violations never get one — asking again spends money
+on an attacker's behalf and risks leaking twice. Measured across 42 real requests, this and a
+sharper prompt rule took the degradation rate on the funny tone from **19% to 2.4%**;
+[ADR-0011](docs/01-architecture/decisions/adr-0011-style-retry.md) has the numbers.
+
 ### See it degrade
 
 Ten seconds by hand, on a machine that never had a valid key:
@@ -374,15 +386,22 @@ that propagates `await` through every caller.
 
 ### What a request costs
 
-Measured against the real API with the exact body the adapter sends: **426–428 input tokens**
+Measured against the real API with the exact body the adapter sends: **446–449 input tokens**
 (a constant; it moves by a token or two because the injection canary changes per process)
 and **44–68 output tokens**. At `gpt-4o-mini` list prices, **≈ US$ 0.0001 per uncached
 request**.
 
-Worth isolating: replacing the hardened system prompt with a one-line one drops the input
-from 428 to **79** tokens. **The prompt hardening costs 349 input tokens, about US$ 0.00005
-per request** — half the unit cost of the product, and still the cheapest control in this
+Worth isolating: replacing the hardened system prompt with a one-line one drops the input to
+**79** tokens. **The prompt hardening costs 367 input tokens, about US$ 0.00005 per
+request** — half the unit cost of the product, and still the cheapest control in this
 repository.
+
+Twenty-one of those input tokens buy something specific. The rule capping a suggestion at two
+sentences used to read *"1 to 2 short sentences"*, and the model broke it on about two in five
+funny-toned requests, because "sentence" is its judgement and ours is a count of `.`, `!` and
+`?`. Stating the rule the way the guard applies it, and asking once more when a message is
+safe but misshapen, took the visible degradation rate from **19% to 2.4%** across 42 measured
+requests — [ADR-0011](docs/01-architecture/decisions/adr-0011-style-retry.md).
 
 ### How I would reduce cost in production
 
@@ -455,7 +474,7 @@ More: [threat model](docs/05-security/threat-model.md) ·
 ## Tests
 
 ```bash
-cd backend && npm test              # 727 tests, 28 files, ~3s
+cd backend && npm test              # 746 tests, 28 files, ~3s
 cd ../flutter_app && flutter test   # 151 tests, ~4s
 ```
 
@@ -464,7 +483,7 @@ lint and format check.
 
 | | Backend | App |
 |---|---|---|
-| Offline tests | **727** in 28 files | **151** |
+| Offline tests | **746** in 28 files | **151** |
 | Statements | **100%** | — |
 | Branches | **100%** | — |
 | Functions | **100%** | — |

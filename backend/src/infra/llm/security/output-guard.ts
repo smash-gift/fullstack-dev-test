@@ -81,10 +81,25 @@ export function assertSuggestionsAreSafe(texts: readonly string[]): void {
   for (const text of texts) {
     const violation = findViolation(text);
     if (violation) {
-      throw new LlmOutputBlockedError(violation, { severe: violation === 'canary' });
+      throw new LlmOutputBlockedError(violation, {
+        severe: violation === 'canary',
+        recoverable: STYLE_VIOLATIONS.has(violation),
+      });
     }
   }
 }
+
+/**
+ * The violations that are about shape, not safety.
+ *
+ * Everything else in `OutputViolation` describes content that must not reach a
+ * user - a leaked canary, a link, markup, contact details, the model talking
+ * about its own instructions. This one describes a message that is perfectly
+ * safe and simply longer than the product allows, which measurement showed the
+ * model producing on roughly one funny-toned request in five even though the
+ * prompt states the limit.
+ */
+const STYLE_VIOLATIONS: ReadonlySet<OutputViolation> = new Set(['sentence_count']);
 
 /** The port implementation wired into the use case. */
 export class LlmOutputGuard implements SuggestionGuard {

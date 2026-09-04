@@ -188,6 +188,9 @@ muda latência, custo e comportamento sem aviso.
 | D86 | Branch inalcançável | **Apagar a guarda e mover a garantia para o tipo** | **Assistente** | `v8 ignore`, que esconde o ramo sem removê-lo | 16 |
 | D87 | Regra alcançável só fora do HTTP | **Função exportada com teste próprio** | **Assistente** | Aceitar a linha sem cobertura | 16 |
 | D88 | Exclusões de coverage | **Nenhuma declarada** | **Assistente** | Excluir constantes e interfaces para chegar a 100% mais rápido | 16 |
+| D89 | Violação de estilo × de segurança | **Estilo ganha uma segunda tentativa; segurança nunca** | **Usuário** | Conviver com 19% de degradação no tom `funny` | 16 |
+| D90 | Quantas tentativas extras | **Uma, constante, sob o mesmo timeout** | **Assistente** | Variável de ambiente, como `LLM_MAX_RETRIES` | 16 |
+| D91 | Regra das duas frases no prompt | **Escrita como contagem de `.` `!` `?`** | **Assistente** | Manter "1 to 2 short sentences", que era desobedecido em 44% | 16 |
 
 **Contexto de D79 — o default não mudou, o motivo mudou.** Antes ele se sustentava na letra
 do enunciado. Depois da fase 15 ele se sustenta em número: mesma tarefa, `gpt-4o-mini` custa
@@ -390,6 +393,23 @@ chave `_default`, e uma ocasião nova sem ela não compila. Dois ramos alcançá
 store Redis ou por um cliente que não é o supertest viraram funções exportadas, testadas
 diretamente. Nenhuma exclusão foi declarada: excluir constantes de tema e interfaces é o
 atalho para um 100% que não quer dizer nada.
+
+**Contexto de D89 a D91 — o aparelho físico encontrou o que a suíte não encontraria.** O app
+foi instalado num Android real e o fluxo executado à mão. Com o tom `funny` a tela mostrou o
+aviso âmbar, e o log dizia `violation: sentence_count`: o modelo escreveu três frases onde o
+contrato permite duas. Medido, degradava **3 vezes em 16** com esse tom, e nenhuma com `warm`.
+
+O incômodo não era a taxa: era `sentence_count` morar na mesma lista de `canary`, `url` e
+`html_tag` — a única regra de **estilo** dentro de um guarda de **segurança**. As duas eram
+tratadas igual, e o efeito era jogar fora uma mensagem segura, sobre o assunto e útil para
+servir um texto genérico do catálogo — uma resposta pior que a descartada.
+
+O usuário escolheu corrigir a causa. `LlmOutputBlockedError` ganhou `recoverable` ao lado de
+`severe`, o caso de uso faz **uma** segunda tentativa sob o mesmo `AbortController`, e a regra
+do prompt passou a falar a língua do verificador: contar `.`, `!` e `?` em vez de pedir
+"1 to 2 short sentences". As duas mudanças eram necessárias — só o retry levaria 44% a 19%,
+só o prompt a 14%, juntas a **2,4%** em 42 requisições medidas. Detalhes e custo em
+[`ADR-0011`](../01-architecture/decisions/adr-0011-style-retry.md).
 
 ---
 

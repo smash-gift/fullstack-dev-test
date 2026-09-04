@@ -33,7 +33,13 @@ export const SUGGESTION_SYSTEM_PROMPT = [
   '',
   'Rules:',
   '- Return exactly as many suggestions as the "count" field asks for.',
-  '- Each suggestion is 1 to 2 short sentences. Never longer.',
+  // Measured, not guessed: the earlier wording - "1 to 2 short sentences,
+  // never longer" - was missed on roughly two funny-toned requests in five,
+  // because "sentence" is the model's judgement call and ours is a count of
+  // terminators. Stating the rule the way the guard applies it closed most of
+  // that gap. See docs/01-architecture/decisions/adr-0011-style-retry.md.
+  '- Each suggestion has at most TWO sentence endings. A sentence ending is',
+  '  . or ! or ? - count them. Two is the limit, three is unusable.',
   '- Write in the language given by "language" (en, pt or es).',
   '- Match the tone given by "tone".',
   '- Never invent a name, a date, a place, an age or a gift.',

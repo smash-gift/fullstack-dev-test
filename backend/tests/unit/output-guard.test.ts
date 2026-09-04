@@ -229,6 +229,36 @@ describe('LlmOutputGuard — the port implementation', () => {
     expect(explicit.severe).toBe(false);
     expect(ordinary.violation).toBe('url');
   });
+
+  // The guard states the fact; the use case decides what to do with it. A
+  // violation of shape can be asked again, a violation of safety cannot, and
+  // getting that backwards means either serving what should be blocked or
+  // paying a model to leak twice.
+  it.each([
+    ['sentence_count', 'One. Two. Three.', true, false],
+    ['canary', `leaked ${PROMPT_CANARY}`, false, true],
+    ['url', 'Happy birthday https://evil.example', false, false],
+    ['html_tag', 'Happy birthday <b>friend</b>', false, false],
+    ['contact_details', 'Call me on 555-123-4567', false, false],
+  ])('marks %s as recoverable=%s severe=%s', (violation, text, recoverable, severe) => {
+    try {
+      assertSuggestionsAreSafe([text]);
+      expect.unreachable('the guard should have refused this text');
+    } catch (error) {
+      expect(error).toBeInstanceOf(LlmOutputBlockedError);
+      const blocked = error as LlmOutputBlockedError;
+      expect(blocked.violation).toBe(violation);
+      expect(blocked.recoverable).toBe(recoverable);
+      expect(blocked.severe).toBe(severe);
+    }
+  });
+
+  it('defaults to neither, so a new violation is never retried by accident', () => {
+    const blocked = new LlmOutputBlockedError('something_new');
+
+    expect(blocked.recoverable).toBe(false);
+    expect(blocked.severe).toBe(false);
+  });
 });
 
 function catchBlocked(text: string): LlmOutputBlockedError {

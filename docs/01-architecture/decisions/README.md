@@ -18,6 +18,7 @@ Um ADR que só lista vantagens não é análise de trade-off — é justificativ
 | [0008](adr-0008-firebase-out-of-runtime.md) | Firebase fora do runtime | Aceito |
 | [0009](adr-0009-llm-security.md) | Segurança do LLM e defesa contra prompt injection | Aceito |
 | [0010](adr-0010-application-security.md) | Baseline de segurança da aplicação | Aceito |
+| [0011](adr-0011-style-retry.md) | Violação de estilo ganha uma segunda tentativa | Aceito |
 
 ## Status possíveis
 

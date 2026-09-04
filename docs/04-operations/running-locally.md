@@ -160,7 +160,7 @@ curl -sS -X POST http://localhost:3000/api/v1/suggestions \
 ## 5. Testes
 
 ```bash
-# Backend — 727 testes, ~2,7 s, 100% de coverage
+# Backend — 746 testes, ~2,7 s, 100% de coverage
 cd backend
 npm test
 npm run test:coverage

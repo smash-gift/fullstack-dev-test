@@ -94,9 +94,23 @@ export class LlmOutputBlockedError extends LlmInvalidResponseError {
    */
   readonly severe: boolean;
 
-  constructor(violation: string, options: { severe?: boolean } = {}) {
+  /**
+   * True when the model broke a rule of style rather than a rule of safety.
+   *
+   * The distinction is worth a field because the answers differ. A message
+   * that leaks the canary or carries a URL must never be served, and asking
+   * the model again is throwing money at an attacker. A message that runs to
+   * three sentences is safe, on topic and useful - it simply misses the shape
+   * we promised, and one more attempt usually lands it. Only the caller knows
+   * whether it can afford that attempt, so the guard states the fact and the
+   * use case decides.
+   */
+  readonly recoverable: boolean;
+
+  constructor(violation: string, options: { severe?: boolean; recoverable?: boolean } = {}) {
     super(`LLM output blocked by the security guard: ${violation}`);
     this.violation = violation;
     this.severe = options.severe ?? false;
+    this.recoverable = options.recoverable ?? false;
   }
 }

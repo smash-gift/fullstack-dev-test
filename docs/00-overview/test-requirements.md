@@ -60,7 +60,7 @@ resolvido por decisão explícita, não por código)
 | # | Requisito | Status | Onde |
 |---|---|---|---|
 | T1 | *"at least one test that covers the **fallback path when the LLM fails**"* | ✅ | `tests/integration/fallback.route.test.ts` — 39 casos, os cinco modos de falha |
-| T2 | *"More tests (happy path, rate limiting) are a plus"* | ✅ | 727 testes offline, **100% de statements, branches, funções e linhas** |
+| T2 | *"More tests (happy path, rate limiting) are a plus"* | ✅ | 746 testes offline, **100% de statements, branches, funções e linhas** |
 | T3 | *"Flutter: unit or widget tests for the main screen are a plus"* | ✅ | 151 testes offline, **100% de linhas** · os cinco estados · `phase-13` |
 
 ## 5. Processo de entrega

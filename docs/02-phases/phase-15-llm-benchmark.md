@@ -171,8 +171,11 @@ vez de ficar só aqui.
 
 #### 2.4 O que a segurança custa em cada provider
 
-O prompt endurecido — spotlighting, canário, schema — custa **349 tokens de entrada**
-(medido na fase 14, trocando-o por um de uma linha: 428 → 79).
+O prompt endurecido — spotlighting, canário, schema — custava **349 tokens de entrada**
+quando este benchmark rodou (medido na fase 14, trocando-o por um de uma linha: 428 → 79).
+Hoje são **367**: o [`ADR-0011`](../01-architecture/decisions/adr-0011-style-retry.md)
+acrescentou 21 tokens à regra de duas frases, e a medição acima é o registro daquela
+execução, não do prompt atual.
 
 | Provider | Custo do endurecimento | % do custo de entrada |
 |---|---|---|

@@ -138,10 +138,10 @@ Medido contra a API real, com o corpo exato que o adapter envia:
 
 | | |
 |---|---|
-| Tokens de entrada | **426–428** — constante; varia dois tokens porque o canário muda a cada processo |
+| Tokens de entrada | **446–449** — constante; varia dois tokens porque o canário muda a cada processo |
 | Tokens de saída | **44–68** em quatro chamadas |
 | Custo por requisição não cacheada | **≈ US$ 0,0001** (tabela do `gpt-4o-mini`) |
-| Custo do system prompt endurecido | **349 tokens**, ≈ US$ 0,00005 — medido trocando-o por um de uma linha (428 → 79) |
+| Custo do system prompt endurecido | **367 tokens**, ≈ US$ 0,00005 — medido trocando-o por um de uma linha (446 → 79) |
 
 O último número é o mais útil dos quatro: **metade do custo unitário do produto é a camada
 de segurança**, e ainda assim ela é o controle mais barato do repositório. Sem medir, essa

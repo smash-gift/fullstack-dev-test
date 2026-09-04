@@ -57,7 +57,7 @@ Tudo que aparece no README foi produzido nesta fase, nesta máquina:
 | `95 passed, 4 skipped` · `No issues found!` | `flutter test` · `flutter analyze` |
 | Versões de Node, npm, Flutter e Dart | `node -v`, `npm -v`, `flutter --version` |
 | Contagem de tokens e custo unitário | Quatro chamadas reais com o corpo exato que o adapter envia |
-| Custo do prompt endurecido (349 tokens) | Mesma requisição com system prompt mínimo, para isolar a diferença |
+| Custo do prompt endurecido (349 tokens à época) | Mesma requisição com system prompt mínimo, para isolar a diferença |
 | Caminho sem API key (`LLM_PROVIDER=stub`) | `.env` de uma linha, servidor subido e requisição respondida |
 
 Os 29 links e caminhos de imagem do README foram conferidos por script: **zero quebrados**.
@@ -108,6 +108,11 @@ produto, e ainda assim o controle de segurança mais barato do repositório.
 
 O que continua fora é preço inventado: as contagens de token são medição, os dólares são
 tabela do dia. O que eu defenderia daqui a seis meses é a **ordem das alavancas**.
+
+> **Atualizado.** Os números desta seção são os da fase 14. O
+> [`ADR-0011`](../01-architecture/decisions/adr-0011-style-retry.md) acrescentou 21 tokens à
+> regra de duas frases depois do teste em aparelho físico: a entrada passou a **446–449** e o
+> endurecimento a **367 tokens**. O README traz os valores atuais.
 
 ## O que o README fechou na matriz
 

@@ -298,7 +298,7 @@ era a menos testada.
 | Backend — branches | 93,3% | **100%** (218/218) |
 | Backend — funções | 100% | **100%** (124/124) |
 | Backend — linhas | 99,77% | **100%** (446/446) |
-| Backend — testes | 707 | **727** |
+| Backend — testes | 707 | **727**, e **746** depois do [`ADR-0011`](../01-architecture/decisions/adr-0011-style-retry.md) |
 | Flutter — linhas | 91,64% | **100%** (634/634) |
 | Flutter — testes | 95 | **151** |
 
@@ -340,6 +340,44 @@ tipo**, e uma ocasião nova sem `_default` deixou de compilar.
   em "resetar" — um teste que passaria exercitando o caminho errado.
 - **`AppPalette.copyWith` e `lerp`**, que quem chama é o Flutter ao animar entre temas. Um
   campo esquecido ali não lança erro: congela uma cor enquanto as outras se movem.
+
+### 6. O aparelho físico encontrou o que o clone limpo não encontraria
+
+O clone limpo prova que o projeto **roda** na máquina de outra pessoa. Não prova que ele se
+comporta bem na mão de alguém. Por isso o app foi instalado num **motorola edge 60 pro**,
+apontado para a API na rede local, e o fluxo foi executado à mão.
+
+O que o aparelho confirmou:
+
+| | |
+|---|---|
+| Birthday + Best friend ponta a ponta | três sugestões do `gpt-4o-mini` real |
+| Cache | segunda chamada com a mesma chave voltou em **21 ms**, contra 2 s |
+| Retry pelo banner de erro | funciona; foi por ele que o fluxo foi refeito |
+| Key no log | **nenhuma**, em nenhum nível |
+| Cleartext | build de **debug**; o release bloqueia HTTP, como a fase 09 verificou nos binários |
+
+O primeiro erro na tela foi de rede — celular em `192.168.18.x`, máquina em `192.168.0.x` —,
+e o app disse exatamente isso: *"The server took too long"*, com o endereço na mensagem. O
+estado de erro fez o trabalho dele.
+
+E então apareceu o achado que nenhuma suíte encontraria, porque não é um defeito de código:
+com o tom **`funny`**, a tela mostrou o aviso âmbar de degradação, e o log dizia
+`violation: sentence_count`. O modelo escreveu três frases onde o contrato permite duas.
+Medido: **3 degradações em 16** com esse tom, **0 em 10** com `warm`.
+
+O problema real não era a taxa, era `sentence_count` estar na mesma lista de `canary`, `url`
+e `html_tag` — a única regra de **estilo** dentro de um guarda de **segurança**, tratada como
+se fosse uma. Descartar uma mensagem segura e boa para servir o catálogo é uma resposta pior
+que a descartada.
+
+A correção — classificação `recoverable`, uma segunda tentativa sob o mesmo timeout, e a regra
+do prompt reescrita como contagem de `.`, `!` e `?` — está em
+[`ADR-0011`](../01-architecture/decisions/adr-0011-style-retry.md), com o custo e os números:
+**19% → 2,4%** de degradação em 42 requisições, ao preço de 21 tokens de entrada.
+
+Durante a medição a suíte também bateu no **próprio rate limit** (30 por 5 minutos por IP), o
+que estragou um bloco de números e, de quebra, provou que o limitador funciona fora dos testes.
 
 ## Decisão que continua aberta
 
