@@ -1,0 +1,52 @@
+{
+  "app_title": "Sugestão de Mensagens",
+
+  "home_headline": "O que o cartão vai dizer?",
+  "home_subhead": "Diga a ocasião e para quem é. A gente escreve três.",
+  "home_empty_hint": "Nada é enviado até você tocar no botão.",
+
+  "field_occasion_label": "Ocasião",
+  "field_occasion_hint": "Aniversário",
+  "field_relationship_label": "Relação",
+  "field_relationship_hint": "Melhor amigo",
+  "field_tone_label": "Tom",
+  "field_required": "Preencha antes de continuar.",
+
+  "tone_warm": "Afetuoso",
+  "tone_funny": "Divertido",
+  "tone_formal": "Formal",
+  "tone_heartfelt": "Emocionado",
+
+  "action_generate": "Escrever mensagens",
+  "action_generate_again": "Escrever outras três",
+  "action_writing": "Escrevendo…",
+  "action_try_again": "Tentar de novo",
+  "action_copy": "Copiar",
+  "action_copied": "Copiado",
+  "action_settings": "Endereço do servidor",
+
+  "results_title": "Sugestões",
+  "results_count": "{count} sugestões",
+  "results_length": "{count} caracteres",
+
+  "degraded_title": "Nosso redator está fora do ar.",
+  "degraded_body": "Estas são mensagens escolhidas a dedo — pode usar à vontade.",
+
+  "error_connection_title": "Não consegui falar com o servidor.",
+  "error_connection_body": "Confira se o backend está rodando em {url}.",
+  "error_timeout_title": "O servidor demorou demais.",
+  "error_timeout_body": "Pode estar iniciando. Tente de novo em instantes.",
+  "error_validation_title": "Confira os campos acima.",
+  "error_rate_limited_title": "Requisições demais.",
+  "error_rate_limited_body": "Tente de novo em {seconds} segundos.",
+  "error_server_title": "Algo deu errado do nosso lado.",
+  "error_server_body": "Não foi você. Tente de novo em instantes.",
+
+  "settings_title": "Endereço do servidor",
+  "settings_description": "Para onde este app envia as requisições. Nenhuma credencial fica aqui — a chave da API vive no servidor.",
+  "settings_url_label": "URL base",
+  "settings_url_invalid": "Informe um endereço completo, como http://localhost:3000",
+  "settings_save": "Salvar",
+  "settings_cancel": "Cancelar",
+  "settings_reset": "Voltar ao padrão"
+}
