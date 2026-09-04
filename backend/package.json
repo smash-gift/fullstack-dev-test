@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:security:live": "vitest run --config vitest.live.config.ts",
+    "bench:llm": "vitest run --config vitest.live.config.ts tests/live/llm-benchmark.live.test.ts",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
     "format": "prettier --write \"{src,tests}/**/*.ts\"",

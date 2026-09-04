@@ -118,5 +118,5 @@ por quem digita no formulário.
 | T3 | [`ADR-0005`](../01-architecture/decisions/adr-0005-rate-limiting.md) + caps de tamanho |
 | T4 | Guard de saída + regra de renderização no Flutter |
 | T5 | Política de log em [`application-security.md`](application-security.md) |
-| T6 | [`ADR-0002`](../01-architecture/decisions/adr-0002-llm-provider-port-and-adapters.md) + auditoria da fase 15 |
+| T6 | [`ADR-0002`](../01-architecture/decisions/adr-0002-llm-provider-port-and-adapters.md) + auditoria da fase 16 |
 | T7, T8 | [`application-security.md`](application-security.md) |

@@ -1,6 +1,6 @@
-# Fase 15 — Revisão pré-entrega
+# Fase 16 — Revisão pré-entrega
 
-**Status:** ⬜ pendente · **Checklist:** item 15
+**Status:** ⬜ pendente · **Checklist:** item 16
 
 ## Objetivo
 
@@ -129,6 +129,15 @@ fallback. Por isso todos os testes usam duplos.
 
 - [ ] Todos os links internos de `/docs` funcionam
 - [ ] `checklist.md` reflete o estado real
+- [ ] **Nenhuma caixa aberta dentro de fase marcada como ✅** — exceto desvio consciente com
+      o motivo escrito ao lado. Promessa com data futura (*"na fase N"*) é dívida de
+      documentação: parece pendência esquecida para quem lê, e some do radar de quem
+      escreveu. Verificável por comando:
+
+```bash
+# lista toda caixa aberta em documento de fase concluída
+grep -rn -- '- \[ \]' docs/02-phases/*.md docs/00-overview/checklist.md
+```
 - [ ] `test-requirements.md` sem item pendente indevido
 - [ ] `decisions-log.md` inclui as decisões tomadas durante a implementação
 - [ ] `ai-usage.md` com as seções de implementação preenchidas

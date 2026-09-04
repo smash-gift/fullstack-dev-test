@@ -33,6 +33,7 @@ escolhido, o que foi descartado, e **por quê**.
 | [`04-operations/`](04-operations/) | Variáveis de ambiente, execução local, deploy | Para **rodar** o projeto |
 | [`05-security/`](05-security/) | Modelo de ameaça, prompt injection, testes de segurança | Para entender **como o sistema se defende** |
 | [`06-ai-usage/`](06-ai-usage/) | Transparência sobre uso de IA no desenvolvimento | Item **avaliado** pelo teste ("Transparency") |
+| [`07-benchmark/`](07-benchmark/) | Comparação medida entre os três providers | Relatório **gerado** por `npm run bench:llm` |
 
 ---
 

@@ -9,7 +9,11 @@ mantiveram o conteúdo e foram renumerados.
 
 `✅ feito` · `🚧 em andamento` · `⬜ pendente`
 
-**Progresso geral:** 13 / 16 fases concluídas
+> **Convenção.** Uma caixa aberta dentro de uma fase marcada como ✅ significa **desvio
+> consciente**, e vem sempre com o motivo ao lado — nunca tarefa esquecida. Promessa com
+> data futura (*"na fase N"*) é fechada quando a fase N entrega, e não fica pendurada.
+
+**Progresso geral:** 15 / 17 fases concluídas
 
 ---
 
@@ -82,7 +86,7 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Política de nível de log (`info` × `debug`)
 - [x] Key nunca logada, em nenhum nível
 - [x] Lockfile versionado e `npm audit` limpo
-- [ ] Cleartext HTTP restrito ao build de debug — *fase 09*
+- [x] Cleartext HTTP restrito ao build de debug — entregue na [fase 09](../02-phases/phase-09-flutter-app.md), **verificado nos quatro binários**
 
 ## 7. Implementar diferenciais no backend — ✅
 → [`phase-07-backend-extras.md`](../02-phases/phase-07-backend-extras.md)
@@ -92,7 +96,7 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Tipagem das respostas — inferida dos mesmos schemas que geram o OpenAPI
 - [x] Configuração de CORS — por ambiente; `*` **impede o boot** em produção
 - [x] Estrutura preparada para cache *(antecipado para a fase 02)*
-- [ ] Explicar no README se o cache foi ou não implementado — *o README nasce na fase 14*
+- [x] Explicar no README se o cache foi ou não implementado — [`README.md#cost-and-caching`](../../README.md#cost-and-caching), na [fase 14](../02-phases/phase-14-readme.md)
 - [x] Swagger / OpenAPI *(extra além do checklist)* — `/docs`, gerado dos schemas Zod
 
 ## 8. Criar testes do backend — ✅
@@ -106,7 +110,7 @@ mantiveram o conteúdo e foram renumerados.
 - [x] 🔒 Suíte de segurança S1–S6 (sanitizador, guard de saída, corpus, regras estáticas)
 - [x] 🔒 Corpus de injeção: nenhum `5xx`, nenhuma saída insegura — 38 payloads
 - [x] 🔒 Suíte live de red-team executada, com relatório gerado
-- [ ] 🔒 Suíte live de red-team (gated, pulada por default)
+- [x] 🔒 Suíte live de red-team (gated, pulada por default) — executada; [relatório](../05-security/live-redteam-report.md)
 
 ## 9. Criar aplicativo Flutter — ✅
 → [`phase-09-flutter-app.md`](../02-phases/phase-09-flutter-app.md)
@@ -161,27 +165,39 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Unit test do store e do use case
 - [x] 95 testes offline, sem rede e sem backend
 
-## 14. Caprichar no README — ⬜
+## 14. Caprichar no README — ✅
 → [`phase-14-readme.md`](../02-phases/phase-14-readme.md)
 
-- [ ] Explicar como executar o backend
-- [ ] Explicar como executar o Flutter
-- [ ] Explicar configuração do `.env`
-- [ ] Explicar configuração da URL do backend
-- [ ] Documentar endpoint, request e response
-- [ ] Adicionar diagrama da arquitetura
-- [ ] Explicar arquitetura escolhida
-- [ ] Explicar tratamento de erros
-- [ ] Explicar estratégia de fallback
-- [ ] Explicar decisão sobre rate limiting
-- [ ] Explicar estratégia de custos em produção
-- [ ] Explicar decisão sobre cache
-- [ ] 🔒 Explicar o modelo de ameaça e as defesas contra prompt injection
-- [ ] Explicar como a IA foi utilizada no desenvolvimento
-- [ ] Explicar quais decisões foram tomadas pelo autor
+- [x] Explicar como executar o backend
+- [x] Explicar como executar o Flutter
+- [x] Explicar configuração do `.env`
+- [x] Explicar configuração da URL do backend
+- [x] Documentar endpoint, request e response
+- [x] Adicionar diagrama da arquitetura
+- [x] Explicar arquitetura escolhida
+- [x] Explicar tratamento de erros
+- [x] Explicar estratégia de fallback
+- [x] Explicar decisão sobre rate limiting
+- [x] Explicar estratégia de custos em produção
+- [x] Explicar decisão sobre cache
+- [x] 🔒 Explicar o modelo de ameaça e as defesas contra prompt injection
+- [x] Explicar como a IA foi utilizada no desenvolvimento
+- [x] Explicar quais decisões foram tomadas pelo autor
 
-## 15. Revisão antes da entrega — ⬜
-→ [`phase-15-pre-delivery-review.md`](../02-phases/phase-15-pre-delivery-review.md)
+## 15. Comparar os três providers 🔬 — ✅
+→ [`phase-15-llm-benchmark.md`](../02-phases/phase-15-llm-benchmark.md)
+
+- [x] Medir latência dos três ao vivo
+- [x] Medir tokens de entrada e saída
+- [x] Calcular custo por requisição com preço lido por máquina
+- [x] Comparar qualidade da saída nos mesmos cenários
+- [x] Testar idioma (`pt`) e tom
+- [x] Testar resistência à injeção com a camada 1 contornada
+- [x] Decidir o provider default com base na medição
+- [x] Fechar a limitação declarada `D67` (OpenRouter e Gemini nunca verificados ao vivo)
+
+## 16. Revisão antes da entrega — ⬜
+→ [`phase-16-pre-delivery-review.md`](../02-phases/phase-16-pre-delivery-review.md)
 
 - [ ] Rodar formatter/linter do TypeScript
 - [ ] Rodar `flutter analyze`
@@ -193,8 +209,8 @@ mantiveram o conteúdo e foram renumerados.
 - [ ] 🔒 Confirmar cleartext HTTP restrito ao build de debug
 - [ ] Fazer clone limpo e verificar se o README realmente funciona
 
-## 16. Entrega — ⬜
-→ [`phase-16-delivery.md`](../02-phases/phase-16-delivery.md)
+## 17. Entrega — ⬜
+→ [`phase-17-delivery.md`](../02-phases/phase-17-delivery.md)
 
 - [ ] Fazer commits organizados
 - [ ] Push da branch

@@ -153,7 +153,7 @@ criptografado. Essa permissão vazando para o build de release transformaria **t
 tráfego do app em texto claro, interceptável em qualquer rede hostil.
 
 É o tipo de erro que passa despercebido justamente porque "funciona". Vira item
-**bloqueante** no checklist da fase 15.
+**bloqueante** no checklist da fase 16.
 
 ## Resultado verificado — `NODE_ENV=production`, 2026-09-03
 
@@ -221,5 +221,5 @@ Suíte completa: **367 testes.**
 |---|---|
 | `helmet` quebrar o Swagger UI | Testar `/docs` após ativar; ajustar só o necessário |
 | Limite de corpo apertado demais | 4 KB para campos de 60 caracteres tem folga ampla |
-| Cleartext vazar para release | Item bloqueante na fase 15, verificado por comando |
+| Cleartext vazar para release | Item bloqueante na fase 16, verificado por comando |
 | Dependência sem correção disponível | Avaliar exposição real e registrar a decisão, em vez de ignorar |

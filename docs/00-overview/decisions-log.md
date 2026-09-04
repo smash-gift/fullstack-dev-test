@@ -165,7 +165,7 @@ muda latência, custo e comportamento sem aviso.
 | D63 | Terceiro resultado do corpus (`1_strip`) | Acrescentado | **Assistente** | Só "recusado" e "barrado na saída", como o plano previa | 08 |
 | D64 | Teste do timeout | **Temporização real** de 50 ms | **Assistente** | Timers falsos, como o plano pedia | 08 |
 | D65 | Rótulo da passagem 2 da live | `no_unsafe_output` | **Assistente** | `model_resisted` — o que a primeira versão dizia | 08 |
-| D66 | Regras de arquitetura | Teste estático, verificado contra arquivo-sonda | **Assistente** | Conferência na revisão da fase 15 | 08 |
+| D66 | Regras de arquitetura | Teste estático, verificado contra arquivo-sonda | **Assistente** | Conferência na revisão da fase 16 | 08 |
 | D67 | Adapters OpenRouter e Gemini | **Limitação declarada** em vez de alegação | **Assistente** | Deixar "três adapters" implicar que os três foram verificados | 08 |
 | D68 | Fases 09 e 10 | **Fundidas** — a tela nasce nas camadas | **Assistente** | Escrever lógica no widget para refatorar depois, como o plano previa | 09 |
 | D69 | Paleta | Escala **neutra**, marca gasta só na ação | **Usuário** | Fundos roxos, como a primeira versão | 09 |
@@ -174,6 +174,31 @@ muda latência, custo e comportamento sem aviso.
 | D72 | Roteiros ponta a ponta | **Teste gated**, não roteiro manual | **Assistente** | Dois roteiros para alguém executar à mão | 12 |
 | D73 | `tone` na tela · `language` pelo aparelho | Aceito | **Usuário** | Só `occasion` e `relationship`, como o enunciado pede | 09 |
 | D74 | i18n | **en · pt · es** desde o começo | **Usuário** | Só inglês, com strings isoladas | 09 |
+| D75 | Capturas de tela | **App dirigido de verdade**, cinco estados | **Assistente** | Montar as telas à mão, ou tirar do mockup | 14 |
+| D76 | Números e payloads do README | **Só o que foi executado nesta fase** | **Assistente** | Copiar dos `/docs`, que podiam ter envelhecido | 14 |
+| D77 | URL de ambiente publicado no README | **Fora**, até haver decisão de deploy | **Usuário** | Prometer no README um endereço que ainda não existe | 14 |
+| D78 | Benchmark dos três providers | **Fase nova**, medindo pelo adapter real | **Usuário** | Manter `D67` como limitação declarada | 15 |
+| D79 | Provider default | **Continua `openai`**, agora por medição | **Assistente** | Trocar por Gemini, que é 5,4× a 27× mais caro aqui | 15 |
+| D80 | `LLM_MAX_OUTPUT_TOKENS` para Gemini | **Avisar no `.env.example`** | **Assistente** | Default por provider no código, sem medição que o justifique | 15 |
+
+**Contexto de D79 — o default não mudou, o motivo mudou.** Antes ele se sustentava na letra
+do enunciado. Depois da fase 15 ele se sustenta em número: mesma tarefa, `gpt-4o-mini` custa
+US$ 0,0001 e responde em ~1,1 s; o `gemini-3.5-flash` custa US$ 0,0027 e responde em 3,3 s,
+porque gasta 569 dos 648 tokens de saída **raciocinando** sobre um pedido que não pede
+raciocínio. Decisão que só muda de fundamento, e não de conteúdo, ainda é uma decisão nova —
+por isso está aqui em vez de ser silenciosamente reafirmada.
+
+**Contexto de D80 — a armadilha era nossa.** Com `LLM_MAX_OUTPUT_TOKENS=400`, o Gemini falhou
+5 de 6 vezes com `finishReason: MAX_TOKENS`; com 1200, passou. Um default por provider no
+código resolveria — e esconderia. O aviso no `.env.example` mantém a configuração explícita,
+que é o mesmo princípio de `TRUST_PROXY_HOPS` ser um número e não `true`.
+
+**Contexto de D75 — a captura como medição.** Os cinco estados do README saíram do app
+construído para web e **dirigido**: cliques nos campos, digitação de `Birthday` e
+`Best friend`, toque no botão, captura em cada estado. O degradado é o mais importante — o
+mesmo backend reiniciado com key inválida, ou seja, falha real. Uma tela desenhada à mão
+provaria só que sei desenhar tela; é o mesmo raciocínio que levou a conferir cleartext nos
+binários em vez de no fonte (D70).
 
 **Contexto de D50 — medir antes de implementar.** O plano dizia `400`. Medindo o
 comportamento real primeiro, o problema não era o código de status: `express.json()`

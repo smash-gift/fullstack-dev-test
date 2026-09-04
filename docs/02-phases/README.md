@@ -1,6 +1,6 @@
 # Fases de execução
 
-16 fases. As 14 primeiras posições espelham o checklist original; **as fases 05 e 06 foram
+17 fases. As 14 primeiras posições espelham o checklist original; **as fases 05 e 06 foram
 acrescentadas** quando ficou claro que o LLM não é só uma dependência que pode cair — é
 uma superfície de ataque. As demais foram renumeradas para que a ordem dos arquivos reflita
 a ordem real de execução.
@@ -25,9 +25,10 @@ Status ao vivo: [`../00-overview/checklist.md`](../00-overview/checklist.md)
 | 11 | [Estados da interface](phase-11-ui-states.md) | Idle, Loading, Success, Error, Degradado | ✅ |
 | 12 | [Fluxo ponta a ponta](phase-12-end-to-end.md) | Birthday + Friend + fallback real | ✅ |
 | 13 | [Testes Flutter](phase-13-flutter-tests.md) | Widget e unit tests | ✅ |
-| 14 | [README](phase-14-readme.md) | Documento em inglês para o avaliador | ⬜ |
-| 15 | [Revisão pré-entrega](phase-15-pre-delivery-review.md) | Lint, testes, clone limpo, auditoria | ⬜ |
-| 16 | [Entrega](phase-16-delivery.md) | Push e Pull Request | ⬜ |
+| 14 | [README](phase-14-readme.md) | Documento em inglês para o avaliador | ✅ |
+| 15 | [Benchmark de LLM](phase-15-llm-benchmark.md) | Os três providers medidos ao vivo | ✅ |
+| 16 | [Revisão pré-entrega](phase-16-pre-delivery-review.md) | Lint, testes, clone limpo, auditoria | ⬜ |
+| 17 | [Entrega](phase-17-delivery.md) | Push e Pull Request | ⬜ |
 
 ## Por que segurança vem nas posições 05 e 06
 

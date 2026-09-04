@@ -95,6 +95,41 @@ determinístico, gratuito e instantâneo.
   ativá-lo. Mitigação: cada adapter valida a resposta com Zod, então a quebra vira
   `LlmInvalidResponseError` explícito, e não dado corrompido passando adiante.
 
+## Confirmação por medição — 2026-09-03 (fase 15)
+
+Esta decisão foi tomada por leitura do enunciado e por raciocínio de arquitetura. Com as três
+keys disponíveis, ela passou a ser **verificável**, e a
+[fase 15](../../02-phases/phase-15-llm-benchmark.md) mediu os três pelo adapter real.
+Relatório gerado: [`07-benchmark/llm-comparison.md`](../../07-benchmark/llm-comparison.md).
+
+| | OpenAI | OpenRouter | Gemini (melhor caso medido) |
+|---|---|---|---|
+| Latência mediana | **1064–1360 ms** | 1194–2381 ms | 1101 ms (`flash-lite`) · 3327 ms (`3.5-flash`) |
+| Custo por requisição | **US$ 0,000102** | US$ 0,000094 | US$ 0,000548 a US$ 0,002732 |
+| Falhas | 0 em 23 | 0 em 23 | 0 em 12 (`flash-lite`) · 9 em 11 (`3.8-flash`) |
+| Variedade em 9 respostas | 8–9 distintas | 9 distintas | 5–6 distintas |
+
+**O default não muda: `openai`.** O que muda é o motivo — antes era a letra do enunciado,
+agora é a letra do enunciado **mais** a medição.
+
+Três coisas que a medição acrescentou e o raciocínio não tinha:
+
+1. **OpenRouter cobra latência, não dinheiro.** Mesmo modelo, preço equivalente, um salto de
+   rede a mais e mais dispersão entre execuções. Isso reforça a decisão original — gateway
+   serve para trocar de modelo, não para ser o caminho quente.
+2. **O custo do Gemini é de 5,4× a 27×** para esta tarefa, porque os `flash` recentes gastam
+   tokens raciocinando sobre um pedido que não pede raciocínio, e token de pensamento é
+   cobrado como saída a 6,25× o preço do `gpt-4o-mini`.
+3. **`LLM_MAX_OUTPUT_TOKENS=400` é hostil a modelo que raciocina.** Com o teto padrão,
+   `gemini-3.5-flash` falhou 5 de 6 vezes com `finishReason: MAX_TOKENS`; com 1200, passou.
+   Está avisado no `.env.example` — e é o tipo de armadilha que só aparece quando alguém
+   troca de provider às onze da noite.
+
+**A limitação declarada na fase 08 (`D67`) está fechada.** Os adapters de OpenRouter e Gemini
+eram corretos *por contrato*; agora são corretos *por execução*. O `GeminiProvider`, em
+particular, mapeou `finishReason: MAX_TOKENS` para `LlmInvalidResponseError` sem ajuda
+nenhuma — o comportamento desenhado na fase 04, encontrado na natureza.
+
 ## Nota de segurança
 
 Nenhuma API key existe no lado do Flutter, em nenhuma hipótese. O app conhece apenas a

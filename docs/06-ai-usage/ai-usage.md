@@ -9,9 +9,9 @@
 > declaração genérica de "usei IA para acelerar". O que segue é o registro real.
 >
 > **Status:** este arquivo é atualizado ao fim de cada fase. Hoje ele cobre até a **fase
-> 04** (tratamento de falhas). As seções seguintes são preenchidas conforme o código for
-> escrito — **e não antes**, porque descrever trabalho que ainda não aconteceu seria
-> ficção.
+> 14** — backend, app Flutter, testes e README, ou seja, todo o código entregue. As seções
+> foram preenchidas conforme o trabalho aconteceu, **e não antes**, porque descrever
+> trabalho que ainda não aconteceu seria ficção.
 
 ---
 
@@ -155,8 +155,32 @@ Produziu a análise textual do enunciado que gerou as quatro ambiguidades docume
 *"call one provider"* restringe o runtime, não a base de código.
 
 ### Implementação
-*(A ser preenchido a partir da fase 2. Aqui entrará: o que foi gerado, o que eu reescrevi
-e por quê.)*
+
+Escreveu o código dos dois projetos a partir das decisões acima: a API em Clean
+Architecture com os três adapters, o fallback, as quatro camadas de defesa contra injeção,
+o rate limiting, o documento OpenAPI e o app Flutter em Clean Dart. E escreveu a suíte de
+testes — **707 no backend e 95 no app**, todos offline.
+
+Duas coisas dessa parte merecem registro, porque não são "gerar código":
+
+**Mediu antes de instalar.** A dependência prevista para gerar o OpenAPI
+(`@asteasolutions/zod-to-openapi`) não entrou: um `npm install --dry-run` contra o projeto
+real mostrou que o Zod 4.5 já emite JSON Schema nativamente (`z.toJSONSchema`). Três
+dependências a menos, com a propriedade que interessava — schema único validando requisição
+e documentando o contrato — intacta.
+
+**Leu o que a dependência executa.** O `swagger-ui-dist` traz `@scarf/scarf`, que roda um
+`postinstall` reportando a instalação para um terceiro. O `report.js` foi lido, a opção de
+saída encontrada no próprio código, e o *opt-out* entrou no `package.json` — em vez de
+`ignore-scripts=true`, que silenciaria o script de instalação de toda dependência. O que
+ficou documentado é o caminho de código, não uma requisição medida: fora de uma instalação
+real, a chamada não foi reproduzida.
+
+**Verificou no artefato, não no fonte.** As duas regras de cleartext HTTP foram conferidas
+nos quatro binários construídos (`aapt2 dump xmltree`, `plutil -p`), e não lendo os
+arquivos de configuração. Foi assim que apareceram três coisas que o fonte não mostrava —
+entre elas o manifesto de release do Flutter **sem permissão de INTERNET**, que faria toda
+requisição falhar num build de produção.
 
 ---
 
@@ -179,8 +203,42 @@ e por quê.)*
 
 ## Onde a revisão humana pegou coisa
 
-*(A ser preenchido durante a implementação. Aqui entram as correções que eu fiz sobre o
-que o assistente produziu — é a parte que mostra que a revisão foi real, e não carimbo.)*
+A parte que mostra que a revisão foi real, e não carimbo.
+
+| O que veio | O que eu determinei |
+|---|---|
+| Primeira paleta do app, roxa demais em toda a interface | Cor de marca gasta **em um lugar só**; fundo, texto e borda numa escala neutra que serve claro e escuro sem inverter nada |
+| Proposta de ir direto para a tela | **Mockup antes do código.** A discussão de layout aconteceu numa página, não em `flutter run` |
+| Sugestão de MobX + `flutter_modular`, que é o meu padrão | `ChangeNotifier` e DI manual: um módulo só não justifica container, e codegen é passo a mais para o avaliador |
+| Idioma da interface como seletor na tela | `tone` fica na tela; **`language` segue o aparelho** e é o mesmo idioma pedido à API |
+| Ajustes de endereço do backend numa segunda rota | **Modal**, para a tela principal continuar sendo uma só, como o enunciado pede |
+| Suíte de segurança ao vivo rodando junto com `npm test` | Fora do `npm test`, atrás de duas portas — nada que gaste dinheiro roda por acidente |
+
+E uma regra de processo que vale mais que qualquer item da tabela: **toda mensagem de
+commit foi apresentada para eu autorizar antes de executar**, e a API key nunca passou pelo
+chat — foi escrita por mim direto no `.env`, e o assistente só confirmou que existia pelo
+tamanho e pelo prefixo.
+
+---
+
+## E onde a máquina pegou coisa que eu não pegaria
+
+Distinção que importa: o que segue **não** foi revisão humana. Foi teste falhando, e está
+aqui porque essa é a parte que a revisão humana sozinha não alcança.
+
+| O que falhou | O que estava errado |
+|---|---|
+| 39 casos de fallback no limite HTTP | Os cinco modos de falha estavam cobertos no *use case*, não na resposta que o cliente recebe |
+| Teste de log do *error handler* | O teste estava afirmando sobre um **dublê**: `JSON.stringify` de um `Error` é `{}`. Reescrito contra o logger real |
+| Cobertura do último ramo do *error handler* | Zero. Era justamente a promessa que o enunciado cobra — *"must not expose raw errors"* |
+| Dois payloads do corpus de injeção | Eu classifiquei como "barrado na entrada"; um é **removido** e outro **chega ao modelo**. O corpus ganhou um terceiro resultado que o plano não previa |
+| 4 de 22 regras de arquitetura do app | Estavam batendo em **comentários do próprio projeto**, não no código |
+| Helper de teste do app | Resolvia a URL de uma string capturada em vez do `SettingsStore` — não espelhava a produção. O teste que trocava o endereço estava certo; o helper é que estava errado |
+| Rótulo do relatório de red-team | Dizia "o modelo resistiu". A máquina mede **ausência de saída insegura**, não obediência. Renomeado para `no_unsafe_output`, e o relatório passou a mostrar a saída real — em que o modelo **obedeceu** à injeção de troca de papel |
+
+O último é o mais instrutivo do projeto inteiro: com a camada 1 desligada, o modelo virou
+pirata quando mandaram. Nada inseguro chegou ao cliente porque a camada 3 segurou — e é por
+isso que a camada 2 nunca aparece como camada esperada em nenhum teste.
 
 ---
 

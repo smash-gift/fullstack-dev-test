@@ -201,6 +201,24 @@ Os testes **não precisam de API key nem de rede** — os providers são substit
 duplos de teste. É um efeito direto da arquitetura de ports
 ([`ADR-0001`](../01-architecture/decisions/adr-0001-clean-architecture-backend.md)).
 
+### Benchmark dos três providers — opcional, gasta dinheiro
+
+```bash
+RUN_LIVE_BENCHMARK=true npm run bench:llm
+```
+
+Exige as **três** keys no `.env`. Roda 6 chamadas por variante (24 no total, ~2 min),
+regenera [`docs/07-benchmark/llm-comparison.md`](../07-benchmark/llm-comparison.md) e custa
+alguns centavos.
+
+O tamanho da execução não é arbitrário: o free tier do Gemini permite **20 requisições por
+dia, por modelo**, e a primeira versão deste benchmark esgotou a própria cota no meio da
+medição. Para medir outro modelo do Gemini sem esperar o dia virar:
+
+```bash
+GEMINI_MODEL=gemini-3.1-flash-lite RUN_LIVE_BENCHMARK=true npm run bench:llm
+```
+
 ### Suíte live de red-team — opcional, gasta dinheiro
 
 ```bash

@@ -1,6 +1,6 @@
-# Fase 16 — Entrega
+# Fase 17 — Entrega
 
-**Status:** ⬜ pendente · **Checklist:** item 16
+**Status:** ⬜ pendente · **Checklist:** item 17
 
 ## Objetivo
 
@@ -113,5 +113,5 @@ logado. Janela anônima é o teste honesto.
 |---|---|
 | PR de fork bloqueado | Plano B com o link direto da branch |
 | Fork privado por engano | Verificação em janela anônima |
-| Commit com key no histórico | Auditoria da fase 15 antes do push |
+| Commit com key no histórico | Auditoria da fase 16 antes do push |
 | Mermaid não renderizar | Conferido na pré-visualização do GitHub |

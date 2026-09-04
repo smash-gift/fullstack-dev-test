@@ -164,7 +164,7 @@ adicionado. Quem incluir um banco depois precisa reabrir esta tabela.
 histórico depois. Chave exposta em repositório público é varrida por bots em minutos —
 limpar o histórico antes de revogar resolve a aparência e não o problema.
 
-Auditoria completa na [`fase 15`](../02-phases/phase-15-pre-delivery-review.md).
+Auditoria completa na [`fase 16`](../02-phases/phase-16-pre-delivery-review.md).
 
 ---
 

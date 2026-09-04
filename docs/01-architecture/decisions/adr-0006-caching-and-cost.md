@@ -128,12 +128,28 @@ unitário — evita o incidente de fatura, que costuma ser o dano maior.
 
 Já implementado. Ver [`ADR-0005`](adr-0005-rate-limiting.md).
 
-### O que estimativa de custo **não** é
+### O custo unitário, medido na fase 14
 
-Não colocamos aqui número de "R$ X por 1000 requisições". Preço de token muda, varia por
-região e depende do tamanho real do prompt em produção. Publicar número inventado com cara
-de medição seria pior que não publicar nada. O que dá para afirmar com segurança é a
-**ordem** das alavancas — e ela está acima.
+O que estava escrito aqui era "não publicamos número de custo, porque preço de token muda".
+O argumento continua valendo contra número **inventado** — e deixou de valer como desculpa
+para não medir o que é nosso.
+
+Medido contra a API real, com o corpo exato que o adapter envia:
+
+| | |
+|---|---|
+| Tokens de entrada | **426–428** — constante; varia dois tokens porque o canário muda a cada processo |
+| Tokens de saída | **44–68** em quatro chamadas |
+| Custo por requisição não cacheada | **≈ US$ 0,0001** (tabela do `gpt-4o-mini`) |
+| Custo do system prompt endurecido | **349 tokens**, ≈ US$ 0,00005 — medido trocando-o por um de uma linha (428 → 79) |
+
+O último número é o mais útil dos quatro: **metade do custo unitário do produto é a camada
+de segurança**, e ainda assim ela é o controle mais barato do repositório. Sem medir, essa
+frase seria chute.
+
+O que continua fora é o "R$ X por 1000 requisições" com cara de medição: contagem de token é
+nossa e é medição; preço por token é de terceiro, muda sem aviso e varia por região. O que
+eu defenderia daqui a seis meses é a **ordem** das alavancas acima.
 
 ---
 

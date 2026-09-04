@@ -35,8 +35,8 @@ Baseline enxuto, com cada controle amarrado a uma ameaça do
 | Formato único de erro, sem stack | Vazamento de informação | [ADR-0004](adr-0004-error-taxonomy.md) |
 | Log JSON estruturado | T8 — log injection | já existia (Pino) |
 | Política de nível de log | T5 — privacidade | convenção |
-| Lockfile + `npm audit` | T7 — supply chain | comando na fase 15 |
-| Auditoria de segredo no histórico | T6 | comando na fase 15 |
+| Lockfile + `npm audit` | T7 — supply chain | comando na fase 16 |
+| Auditoria de segredo no histórico | T6 | comando na fase 16 |
 | Cleartext HTTP só em debug | Interceptação de tráfego | config de manifesto |
 
 ### Superfícies declaradas como inexistentes
@@ -67,7 +67,7 @@ campo e prompt completo só saem em `debug`, e produção roda em `info`.
 `http://10.0.2.2:3000` em desenvolvimento, é preciso permitir tráfego não criptografado.
 Essa permissão **vazando para o build de release** transformaria todo o tráfego do app em
 texto claro, interceptável em qualquer rede hostil. É o tipo de erro que passa despercebido
-porque "funciona". Vira item bloqueante do checklist da fase 15.
+porque "funciona". Vira item bloqueante do checklist da fase 16.
 
 ## Alternativas descartadas
 
@@ -92,5 +92,5 @@ porque "funciona". Vira item bloqueante do checklist da fase 15.
   já admitidas no [`ADR-0005`](adr-0005-rate-limiting.md): NAT compartilhado e IP rotativo.
 - **Sem WAF**, ataques em camada de rede não são tratados — ficariam a cargo do provedor
   de deploy.
-- Auditoria de dependência é manual (comando na fase 15), não automatizada em CI. Em
+- Auditoria de dependência é manual (comando na fase 16), não automatizada em CI. Em
   projeto de vida longa, seria um job agendado.

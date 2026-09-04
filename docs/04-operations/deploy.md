@@ -16,7 +16,7 @@ terá depois — e sem ganho algum, já que nada na arquitetura depende dessa es
 backend é um processo HTTP com estado apenas em memória; ele roda igual em contêiner,
 função serverless ou VPS.
 
-A decisão será tomada ao fim da [`phase-15`](../02-phases/phase-15-pre-delivery-review.md),
+A decisão será tomada ao fim da [`phase-16`](../02-phases/phase-16-pre-delivery-review.md),
 quando existir um artefato pronto para publicar.
 
 ## Opções em avaliação

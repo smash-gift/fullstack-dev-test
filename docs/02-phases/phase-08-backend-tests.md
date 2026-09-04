@@ -120,7 +120,7 @@ repositório faz sobre si mesmo, verificada por máquina:
 | `pkg/` não depende de camada de aplicação | O piso técnico não pode olhar para cima |
 | Nenhum SDK de LLM em lugar nenhum | Três superfícies de supply chain a menos |
 | `process.env` lido em **exatamente um** arquivo | Configuração espalhada é como nasce default que ninguém escolheu |
-| Nenhum literal com cara de credencial | O grep que a fase 15 faria, feito toda vez |
+| Nenhum literal com cara de credencial | O grep que a fase 16 faria, feito toda vez |
 | **Nenhum `catch` vazio** | A regra explícita deste projeto |
 | O guard é chamado no caminho compartilhado, e nenhum adapter o chama | O que faz a camada 3 ser garantia e não convenção |
 
@@ -201,6 +201,12 @@ corpus. Testar spotlighting seria testar sorte.
 
 ## Limitação que precisa ficar dita
 
+> **Fechada na [fase 15](phase-15-llm-benchmark.md), em 2026-09-03.** As três keys ficaram
+> disponíveis, os três adapters foram medidos ao vivo, e os dois que faltavam funcionaram —
+> o `GeminiProvider` inclusive mapeou `finishReason: MAX_TOKENS` para
+> `LlmInvalidResponseError` sozinho. O texto original fica abaixo, porque apagar uma
+> limitação declarada é pior que tê-la declarado.
+
 **Os adapters de OpenRouter e Gemini nunca foram exercitados contra os serviços reais.**
 Ambos têm teste unitário com `fetch` interceptado — formato de requisição, cabeçalhos,
 parsing, mapeamento de erro —, e nenhum dos dois recebeu uma resposta de verdade, porque
@@ -222,7 +228,7 @@ adapters".
 - [x] 🔒 Testes de S6 passam, e **falham** quando violados
 - [x] 🔒 Suíte live executada, relatório salvo
 - [x] 🔒 Vazamentos da live: **zero**
-- [ ] Timers falsos em todo teste de temporização — *desvio consciente, justificado acima*
+- [ ] Timers falsos em todo teste de temporização — **não cumprido de propósito**, justificado acima: com timer falso, o teste voltaria a medir a reação e não a fiação
 
 ## Riscos
 

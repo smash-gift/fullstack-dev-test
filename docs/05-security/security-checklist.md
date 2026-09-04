@@ -1,6 +1,6 @@
 # Checklist de segurança — verificação pré-entrega
 
-Executado na [`fase 15`](../02-phases/phase-15-pre-delivery-review.md). Todo item é
+Executado na [`fase 16`](../02-phases/phase-16-pre-delivery-review.md). Todo item é
 verificável por comando ou por inspeção objetiva — nada aqui depende de opinião.
 
 ---

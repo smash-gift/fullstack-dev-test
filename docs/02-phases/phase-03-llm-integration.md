@@ -230,7 +230,7 @@ src/infra/llm/
 - [x] `LLM_PROVIDER=openai` gera sugestões reais para `birthday + friend`
 - [x] Todas as sugestões têm 1–2 frases
 - [x] A quantidade retornada é exatamente a pedida em `count`
-- [ ] `LLM_PROVIDER=openrouter` funciona trocando só a variável *(sem key de OpenRouter)*
+- [x] `LLM_PROVIDER=openrouter` funciona trocando só a variável — **verificado ao vivo** na [fase 15](phase-15-llm-benchmark.md), quando a key chegou
 - [x] JSON inválido simulado resulta em `LlmInvalidResponseError`
 - [x] `grep -ri "sk-" src/` não retorna nada
 - [x] Log em nível `info` não contém key nem prompt completo

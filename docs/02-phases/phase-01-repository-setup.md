@@ -16,8 +16,8 @@ segredo **antes** de qualquer key entrar no projeto.
 - [x] Criar `.gitignore` na raiz protegendo `.env` e artefatos de build
 - [x] Preservar o enunciado original em `docs/00-overview/original-test.md`
 - [x] Criar a estrutura `docs/`
-- [ ] Criar `backend/` *(fase 02)*
-- [ ] Criar `flutter_app/` *(fase 09)*
+- [x] Criar `backend/` — feito na [fase 02](phase-02-backend-foundation.md)
+- [x] Criar `flutter_app/` — feito na [fase 09](phase-09-flutter-app.md)
 
 ## O que foi feito
 
@@ -67,6 +67,6 @@ de Flutter/Dart e ruído de sistema operacional.
 
 | Risco | Mitigação |
 |---|---|
-| Commitar `.env` com key real | `.gitignore` criado na fase 01; auditoria explícita na fase 15 |
+| Commitar `.env` com key real | `.gitignore` criado na fase 01; auditoria explícita na fase 16 |
 | Trabalhar em `main` por engano | Branch criada antes de qualquer arquivo ser escrito |
 | Perder o texto original do enunciado | Preservado via `git mv`; só o caminho da imagem foi ajustado, com nota no arquivo |

@@ -42,7 +42,7 @@ cp .env.example .env
 | `LLM_TIMEOUT_MS` | ❌ | `8000` | Timeout por tentativa |
 | `LLM_MAX_RETRIES` | ❌ | `1` | Retries em timeout/5xx. Nunca em `429` |
 | `LLM_TEMPERATURE` | ❌ | `0.8` | Criatividade. Baixo demais gera 3 sugestões iguais |
-| `LLM_MAX_OUTPUT_TOKENS` | ❌ | `400` | Teto de saída — impede resposta inflada e limita custo |
+| `LLM_MAX_OUTPUT_TOKENS` | ❌ | `400` | Teto de saída — impede resposta inflada e limita custo. **Com `LLM_PROVIDER=gemini`, use ≥ 1200:** os `flash` recentes gastam parte deste orçamento raciocinando e truncam o JSON ([fase 15](../02-phases/phase-15-llm-benchmark.md)) |
 
 **Apenas a key do provider ativo é obrigatória.** As outras podem ficar vazias.
 

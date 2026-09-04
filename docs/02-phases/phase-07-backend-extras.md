@@ -16,8 +16,8 @@ opcionais ou que valorizam a entrega.
 - [x] Cache LRU em memória atrás do port *(entregue na fase 02)*
 - [x] Swagger UI em `/docs`
 - [x] CSP reativada, escopada na única rota que serve HTML
-- [ ] Documentar no README a decisão sobre cache — *o README nasce na
-      [fase 14](phase-14-readme.md)*
+- [x] Documentar no README a decisão sobre cache — feito na
+      [fase 14](phase-14-readme.md), em `README.md#cost-and-caching`
 
 ## Rate limiting
 

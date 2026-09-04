@@ -160,4 +160,4 @@ silencioso). Ambas são esperadas nesta fase e ficam cobertas na fase 08.
 |---|---|
 | Over-engineering do esqueleto | Só criar pasta quando houver arquivo para ela |
 | `container.ts` virar lixão | É o **único** lugar autorizado a instanciar adapter — fácil de auditar |
-| Vazamento de tipo do Express no domínio | Regra: `domain/` não importa nada de `express`. Verificável por grep na fase 15 |
+| Vazamento de tipo do Express no domínio | Regra: `domain/` não importa nada de `express`. Verificável por grep na fase 16 |
