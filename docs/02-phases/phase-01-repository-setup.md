@@ -11,7 +11,7 @@ segredo **antes** de qualquer key entrar no projeto.
 
 - [x] Fazer fork do repositório original
 - [x] Clonar o fork
-- [x] Criar branch `candidate/tote-araujo`
+- [x] Criar branch `candidate/aristoteles-araujo`
 - [x] Adicionar `upstream` apontando para o repositório original
 - [x] Criar `.gitignore` na raiz protegendo `.env` e artefatos de build
 - [x] Preservar o enunciado original em `docs/00-overview/original-test.md`
@@ -25,14 +25,14 @@ segredo **antes** de qualquer key entrar no projeto.
 gh repo fork smash-gift/fullstack-dev-test --clone=false
 git clone https://github.com/ToteADS/fullstack-dev-test.git .
 git remote add upstream https://github.com/smash-gift/fullstack-dev-test.git
-git checkout -b candidate/tote-araujo
+git checkout -b candidate/aristoteles-araujo
 ```
 
 | Item | Valor |
 |---|---|
 | Upstream | `smash-gift/fullstack-dev-test` |
 | Fork | `ToteADS/fullstack-dev-test` |
-| Branch | `candidate/tote-araujo` |
+| Branch | `candidate/aristoteles-araujo` |
 
 O enunciado sugere o formato `candidate/jane-doe`; seguimos essa convenção.
 
@@ -59,7 +59,7 @@ de Flutter/Dart e ruído de sistema operacional.
 ## Critério de pronto
 
 - [x] `git remote -v` mostra `origin` (fork) e `upstream` (original)
-- [x] `git branch --show-current` retorna `candidate/tote-araujo`
+- [x] `git branch --show-current` retorna `candidate/aristoteles-araujo`
 - [x] `.gitignore` contém `.env` e `!.env.example`
 - [x] `docs/` criada com as seis subpastas
 

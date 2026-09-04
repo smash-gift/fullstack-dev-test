@@ -68,7 +68,7 @@ resolvido por decisão explícita, não por código)
 | # | Requisito | Status | Onde |
 |---|---|---|---|
 | P1 | *"Fork this repository to your own GitHub account"* | ✅ | `ToteADS/fullstack-dev-test` |
-| P2 | *"Create a branch (e.g. `candidate/jane-doe`)"* | ✅ | `candidate/tote-araujo` |
+| P2 | *"Create a branch (e.g. `candidate/jane-doe`)"* | ✅ | `candidate/aristoteles-araujo` |
 | P3 | *"two folders at the root ... (e.g. `backend/` and `flutter_app/`)"* | ✅ | `backend/` · `flutter_app/` |
 | P4 | *"Open a Pull Request from your branch to the original repository's main"* | ⬜ | `phase-17` |
 

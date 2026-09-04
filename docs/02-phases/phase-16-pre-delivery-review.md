@@ -102,7 +102,7 @@ grep -rn "catch" backend/src/ flutter_app/lib/
 
 ```bash
 cd /tmp && rm -rf review-check
-git clone -b candidate/tote-araujo https://github.com/ToteADS/fullstack-dev-test.git review-check
+git clone -b candidate/aristoteles-araujo https://github.com/ToteADS/fullstack-dev-test.git review-check
 cd review-check
 ```
 

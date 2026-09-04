@@ -22,7 +22,7 @@ mantiveram o conteúdo e foram renumerados.
 
 - [x] Fazer fork do repositório original
 - [x] Clonar o fork
-- [x] Criar uma branch (`candidate/tote-araujo`)
+- [x] Criar uma branch (`candidate/aristoteles-araujo`)
 - [x] Criar a pasta `backend/` *(`flutter_app/` na fase 09)*
 
 ## 2. Criar o backend Node.js + TypeScript — ✅

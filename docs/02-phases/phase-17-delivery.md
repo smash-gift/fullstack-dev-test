@@ -10,7 +10,7 @@ entender a entrega sem depender de contexto que ele não tem.
 ## Tasks
 
 - [ ] Revisar o histórico de commits
-- [ ] Push da branch `candidate/tote-araujo`
+- [ ] Push da branch `candidate/aristoteles-araujo`
 - [ ] Abrir Pull Request para `smash-gift/fullstack-dev-test`
 - [ ] Escrever descrição curta do PR
 - [ ] Confirmar acessibilidade do fork e da branch
@@ -40,12 +40,12 @@ detalhe, que é o que o enunciado pede. Rodapé automático em commit não é tr
 ## Push e PR
 
 ```bash
-git push -u origin candidate/tote-araujo
+git push -u origin candidate/aristoteles-araujo
 
 gh pr create \
   --repo smash-gift/fullstack-dev-test \
   --base main \
-  --head ToteADS:candidate/tote-araujo \
+  --head ToteADS:candidate/aristoteles-araujo \
   --title "Senior dev test – AI message suggester" \
   --body-file .github/pr-body.md
 ```
@@ -85,13 +85,13 @@ O enunciado prevê:
 Se o PR for bloqueado, o link a enviar é:
 
 ```
-https://github.com/ToteADS/fullstack-dev-test/tree/candidate/tote-araujo
+https://github.com/ToteADS/fullstack-dev-test/tree/candidate/aristoteles-araujo
 ```
 
 ## Verificação final de acesso
 
 - [ ] O fork é **público**
-- [ ] A branch `candidate/tote-araujo` aparece no fork
+- [ ] A branch `candidate/aristoteles-araujo` aparece no fork
 - [ ] O PR aparece no repositório original
 - [ ] O README renderiza corretamente na página do PR
 - [ ] Os diagramas Mermaid renderizam no GitHub
