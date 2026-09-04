@@ -209,11 +209,11 @@ mantiveram o conteúdo e foram renumerados.
 - [x] 🔒 Confirmar cleartext HTTP restrito ao build de debug
 - [x] Fazer clone limpo e verificar se o README realmente funciona
 
-## 17. Entrega — ⬜
+## 17. Entrega — ✅
 → [`phase-17-delivery.md`](../02-phases/phase-17-delivery.md)
 
-- [ ] Fazer commits organizados
-- [ ] Push da branch
-- [ ] Abrir Pull Request para o repositório original
-- [ ] Descrição curta explicando a implementação
-- [ ] Conferir se o avaliador consegue acessar o fork/branch
+- [x] Fazer commits organizados
+- [x] Push da branch
+- [x] Abrir Pull Request para o repositório original
+- [x] Descrição curta explicando a implementação
+- [x] Conferir se o avaliador consegue acessar o fork/branch

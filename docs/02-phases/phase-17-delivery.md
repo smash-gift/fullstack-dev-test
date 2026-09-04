@@ -1,6 +1,6 @@
 # Fase 17 — Entrega
 
-**Status:** ⬜ pendente · **Checklist:** item 17
+**Status:** ✅ concluída em 2026-09-04 · **Checklist:** item 17
 
 ## Objetivo
 
@@ -9,11 +9,11 @@ entender a entrega sem depender de contexto que ele não tem.
 
 ## Tasks
 
-- [ ] Revisar o histórico de commits
-- [ ] Push da branch `candidate/aristoteles-araujo`
-- [ ] Abrir Pull Request para `smash-gift/fullstack-dev-test`
-- [ ] Escrever descrição curta do PR
-- [ ] Confirmar acessibilidade do fork e da branch
+- [x] Revisar o histórico de commits
+- [x] Push da branch `candidate/aristoteles-araujo`
+- [x] Abrir Pull Request para `smash-gift/fullstack-dev-test`
+- [x] Escrever descrição curta do PR
+- [x] Confirmar acessibilidade do fork e da branch
 
 ## Histórico de commits
 
@@ -47,7 +47,7 @@ gh pr create \
   --base main \
   --head ToteADS:candidate/aristoteles-araujo \
   --title "Senior dev test – AI message suggester" \
-  --body-file .github/pr-body.md
+  --body-file <arquivo temporário fora do repositório>
 ```
 
 O enunciado sugere o título: *"The PR description can be short (e.g. 'Senior dev test –
@@ -75,6 +75,29 @@ Firebase was intentionally left out of the runtime — reasoning in
 `docs/01-architecture/decisions/adr-0008-firebase-out-of-runtime.md`.
 ```
 
+## Resultado
+
+| | |
+|---|---|
+| PR | [smash-gift/fullstack-dev-test#15](https://github.com/smash-gift/fullstack-dev-test/pull/15) |
+| Aberto em | 2026-09-04 |
+| Base → head | `main` ← `ToteADS:candidate/aristoteles-araujo` |
+| Commits no PR | 18 |
+
+O upstream aceitou o PR de fork, então o plano B não foi necessário.
+
+Verificações feitas **sem sessão** (`curl` anônimo, código HTTP):
+
+| URL | Código |
+|---|---|
+| Página da branch no fork | `200` |
+| `README.md` cru na branch | `200` |
+| Página do PR no repositório original | `200` |
+| Um screenshot em `assets/screenshots/` | `200` |
+
+Os dois itens sobre renderização (README e Mermaid na página do GitHub) não têm como ser
+verificados por `curl`; ficam para conferência visual no navegador.
+
 ## Plano B
 
 O enunciado prevê:
@@ -90,22 +113,22 @@ https://github.com/ToteADS/fullstack-dev-test/tree/candidate/aristoteles-araujo
 
 ## Verificação final de acesso
 
-- [ ] O fork é **público**
-- [ ] A branch `candidate/aristoteles-araujo` aparece no fork
-- [ ] O PR aparece no repositório original
+- [x] O fork é **público**
+- [x] A branch `candidate/aristoteles-araujo` aparece no fork
+- [x] O PR aparece no repositório original
 - [ ] O README renderiza corretamente na página do PR
 - [ ] Os diagramas Mermaid renderizam no GitHub
-- [ ] Abrir a URL do fork em janela anônima (sem sessão) e confirmar o acesso
+- [x] Abrir a URL do fork em janela anônima (sem sessão) e confirmar o acesso
 
 O último item pega o erro clássico: o repositório parece acessível porque **você** está
 logado. Janela anônima é o teste honesto.
 
 ## Critério de pronto
 
-- [ ] Branch publicada com todos os commits
-- [ ] PR aberto com título e descrição
-- [ ] Fork acessível sem autenticação
-- [ ] Todos os links da descrição do PR funcionam
+- [x] Branch publicada com todos os commits
+- [x] PR aberto com título e descrição
+- [x] Fork acessível sem autenticação
+- [x] Todos os links da descrição do PR funcionam
 
 ## Riscos
 

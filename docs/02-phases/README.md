@@ -28,7 +28,7 @@ Status ao vivo: [`../00-overview/checklist.md`](../00-overview/checklist.md)
 | 14 | [README](phase-14-readme.md) | Documento em inglês para o avaliador | ✅ |
 | 15 | [Benchmark de LLM](phase-15-llm-benchmark.md) | Os três providers medidos ao vivo | ✅ |
 | 16 | [Revisão pré-entrega](phase-16-pre-delivery-review.md) | Lint, testes, clone limpo, auditoria | ⬜ |
-| 17 | [Entrega](phase-17-delivery.md) | Push e Pull Request | ⬜ |
+| 17 | [Entrega](phase-17-delivery.md) | Push e Pull Request | ✅ |
 
 ## Por que segurança vem nas posições 05 e 06
 
