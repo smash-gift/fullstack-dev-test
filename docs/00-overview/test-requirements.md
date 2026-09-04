@@ -52,7 +52,7 @@ resolvido por decisão explícita, não por código)
 |---|---|---|---|
 | D1 | *"how to run the project (backend and app)"* | ✅ | [`README.md`](../../README.md#quick-start) — cada comando executado antes de publicado |
 | D2 | *"a short description of the architecture (**a diagram is encouraged**)"* | ✅ | [`README.md`](../../README.md#architecture) — dois diagramas Mermaid · `01-architecture/overview.md` |
-| D3 | *"your decisions and trade-offs (errors, rate limiting, cost/caching)"* | ✅ | [`README.md`](../../README.md#decisions-and-trade-offs) — cada decisão com a coluna do que custou · 10 ADRs |
+| D3 | *"your decisions and trade-offs (errors, rate limiting, cost/caching)"* | ✅ | [`README.md`](../../README.md#decisions-and-trade-offs) — cada decisão com a coluna do que custou · 12 ADRs |
 | D4 | *"if you used an AI assistant — **how you used it and what you implemented or decided yourself**"* | ✅ | [`README.md`](../../README.md#how-i-used-ai) → [`06-ai-usage/ai-usage.md`](../06-ai-usage/ai-usage.md) |
 
 ## 4. Testes (opcional, mas valorizado)

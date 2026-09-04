@@ -496,7 +496,7 @@ lint and format check.
 | Statements | **100%** | — |
 | Branches | **100%** | — |
 | Functions | **100%** | — |
-| Lines | **100%** (446/446) | **100%** (634/634) |
+| Lines | **100%** (454/454) | **100%** (634/634) |
 
 `npm run test:coverage` and `flutter test --coverage` reproduce those figures.
 
@@ -652,7 +652,7 @@ ADRs with their rejected alternatives, the security analysis, the requirement ma
 | Topic | Where |
 |---|---|
 | Architecture, with diagrams | [`01-architecture/overview.md`](docs/01-architecture/overview.md) |
-| Decision records (10 ADRs) | [`01-architecture/decisions/`](docs/01-architecture/decisions/) |
+| Decision records (12 ADRs) | [`01-architecture/decisions/`](docs/01-architecture/decisions/) |
 | API contract | [`03-api/contract.md`](docs/03-api/contract.md) |
 | Environment variables | [`04-operations/environment.md`](docs/04-operations/environment.md) |
 | Running locally, with troubleshooting | [`04-operations/running-locally.md`](docs/04-operations/running-locally.md) |
