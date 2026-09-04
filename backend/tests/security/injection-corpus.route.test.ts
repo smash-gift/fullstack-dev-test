@@ -1,5 +1,5 @@
 import type { Express } from 'express';
-import request from 'supertest';
+import { req } from '../helpers/http-client.js';
 import { describe, expect, it } from 'vitest';
 
 import type { SuggestMessagesInput } from '../../src/domain/dtos/suggest-messages-input.dto.js';
@@ -33,8 +33,24 @@ function compromisedProvider(): LlmProvider {
   };
 }
 
+/**
+ * Built once, not per test. The provider is stateless and the cache is off, so
+ * every case still starts from the same place - and the corpus stops opening a
+ * server per request, which is what made the suite flake. The rate limiter is
+ * the one thing a shared app would change: two hundred requests would trip the
+ * 30-per-5-minutes budget, so it is turned off here and tested where it belongs,
+ * in `tests/integration/rate-limit.route.test.ts`.
+ */
+const compromisedApp: Express = buildTestApp({
+  llmProvider: compromisedProvider(),
+  env: { RATE_LIMIT_ENABLED: 'false' },
+});
+
+/** The real stub provider, for the cases that must not be attacked at all. */
+const honestApp: Express = buildTestApp({ env: { RATE_LIMIT_ENABLED: 'false' } });
+
 function appWithCompromisedModel(): Express {
-  return buildTestApp({ llmProvider: compromisedProvider() });
+  return compromisedApp;
 }
 
 /**
@@ -74,7 +90,7 @@ describe('S3 — the attack corpus, end to end', () => {
   it.each(INJECTION_CORPUS.map((p) => [p.id, p] as const))(
     '%s never produces a 5xx',
     async (_id, payload) => {
-      const response = await request(appWithCompromisedModel())
+      const response = await req(appWithCompromisedModel())
         .post(endpoint)
         .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -86,7 +102,7 @@ describe('S3 — the attack corpus, end to end', () => {
   it.each(INJECTION_CORPUS.map((p) => [p.id, p] as const))(
     '%s never puts unsafe content in the response',
     async (_id, payload) => {
-      const response = await request(appWithCompromisedModel())
+      const response = await req(appWithCompromisedModel())
         .post(endpoint)
         .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -97,7 +113,7 @@ describe('S3 — the attack corpus, end to end', () => {
   it.each(INJECTION_CORPUS.map((p) => [p.id, p] as const))(
     '%s never leaks our internals',
     async (_id, payload) => {
-      const response = await request(appWithCompromisedModel())
+      const response = await req(appWithCompromisedModel())
         .post(endpoint)
         .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -113,7 +129,7 @@ describe('S3 — the attack corpus, end to end', () => {
   it.each(INJECTION_CORPUS.map((p) => [p.id, p] as const))(
     '%s, if it reaches the model, comes back as a fallback',
     async (_id, payload) => {
-      const response = await request(appWithCompromisedModel())
+      const response = await req(appWithCompromisedModel())
         .post(endpoint)
         .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -136,7 +152,7 @@ describe('S3 — where each payload is actually stopped', () => {
   it.each(
     INJECTION_CORPUS.filter((p) => p.expectedLayer === '1_reject').map((p) => [p.id, p] as const),
   )('%s is refused at the input, before any model call', async (_id, payload) => {
-    const response = await request(appWithCompromisedModel())
+    const response = await req(appWithCompromisedModel())
       .post(endpoint)
       .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -167,7 +183,7 @@ describe('S3 — where each payload is actually stopped', () => {
       },
     };
 
-    const response = await request(buildTestApp({ llmProvider: capturing }))
+    const response = await req(buildTestApp({ llmProvider: capturing }))
       .post(endpoint)
       .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -187,7 +203,7 @@ describe('S3 — where each payload is actually stopped', () => {
   it.each(
     INJECTION_CORPUS.filter((p) => p.expectedLayer === '1_or_3').map((p) => [p.id, p] as const),
   )('%s is stopped no later than the output guard', async (_id, payload) => {
-    const response = await request(appWithCompromisedModel())
+    const response = await req(appWithCompromisedModel())
       .post(endpoint)
       .send({ occasion: payload.occasion, relationship: payload.relationship });
 
@@ -211,7 +227,7 @@ describe('S3 — legitimate input must survive every defence', () => {
   it.each(LEGITIMATE_INPUTS.map((i) => [`${i.occasion} / ${i.relationship}`, i] as const))(
     '%s is accepted',
     async (_label, input) => {
-      const response = await request(buildTestApp()).post(endpoint).send(input);
+      const response = await req(honestApp).post(endpoint).send(input);
 
       expect(response.status).toBe(200);
       expect(response.body.data.suggestions.length).toBeGreaterThanOrEqual(2);
@@ -220,7 +236,7 @@ describe('S3 — legitimate input must survive every defence', () => {
 
   it('serves real suggestions, not fallbacks, for legitimate input', async () => {
     for (const input of LEGITIMATE_INPUTS) {
-      const response = await request(buildTestApp()).post(endpoint).send(input);
+      const response = await req(honestApp).post(endpoint).send(input);
 
       expect(response.body.data.degraded).toBe(false);
       expect(response.body.data.source).toBe('llm');

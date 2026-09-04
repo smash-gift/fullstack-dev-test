@@ -72,11 +72,7 @@ void main() {
 
     test('no page has a _buildSomething method', () {
       for (final page in pages) {
-        expect(
-          RegExp(r'Widget\s+_build\w*\(').hasMatch(read(page)),
-          isFalse,
-          reason: page.path,
-        );
+        expect(RegExp(r'Widget\s+_build\w*\(').hasMatch(read(page)), isFalse, reason: page.path);
       }
     });
 
@@ -121,11 +117,7 @@ void main() {
     test('the domain does not import Flutter widgets', () {
       final domain = libFiles.where((file) => file.path.contains('/domain/'));
       for (final file in domain) {
-        expect(
-          code(file).contains('package:flutter/'),
-          isFalse,
-          reason: file.path,
-        );
+        expect(code(file).contains('package:flutter/'), isFalse, reason: file.path);
       }
     });
 
@@ -175,7 +167,9 @@ void main() {
 
   group('security — no credential lives in this app', () {
     test('nothing in lib looks like an API key', () {
-      final pattern = RegExp(r'sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sk-or-v1-');
+      final pattern = RegExp(
+        r'sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sk-or-v1-[A-Za-z0-9]{20,}|AQ\.[A-Za-z0-9]{20,}',
+      );
       final offenders = libFiles
           .where((file) => pattern.hasMatch(read(file)))
           .map((file) => file.path);
@@ -184,7 +178,10 @@ void main() {
     });
 
     test('nothing in lib even names a credential', () {
-      final pattern = RegExp(r'\b(apiKey|api_key|secret|bearer|authorization)\b', caseSensitive: false);
+      final pattern = RegExp(
+        r'\b(apiKey|api_key|secret|bearer|authorization)\b',
+        caseSensitive: false,
+      );
       final offenders = libFiles
           .where((file) => pattern.hasMatch(code(file)))
           .map((file) => file.path);
@@ -222,17 +219,15 @@ void main() {
         isFalse,
       );
       expect(
-        File('android/app/src/debug/AndroidManifest.xml')
-            .readAsStringSync()
-            .contains('networkSecurityConfig'),
+        File(
+          'android/app/src/debug/AndroidManifest.xml',
+        ).readAsStringSync().contains('networkSecurityConfig'),
         isTrue,
       );
     });
 
     test('the iOS release plist carries no ATS exception', () {
-      final plist = _stripXmlComments(
-        File('ios/Runner/Info.plist').readAsStringSync(),
-      );
+      final plist = _stripXmlComments(File('ios/Runner/Info.plist').readAsStringSync());
 
       expect(plist.contains('NSAppTransportSecurity'), isFalse);
       expect(plist.contains('NSAllowsArbitraryLoads'), isFalse);
@@ -242,12 +237,8 @@ void main() {
     /// exception itself — the same reasoning that guards `.env.example`
     /// against the backend's schema.
     test('the two iOS plists differ only by the ATS block', () {
-      final release = _stripXmlComments(
-        File('ios/Runner/Info.plist').readAsStringSync(),
-      );
-      final debug = _stripXmlComments(
-        File('ios/Runner/Info-Debug.plist').readAsStringSync(),
-      );
+      final release = _stripXmlComments(File('ios/Runner/Info.plist').readAsStringSync());
+      final debug = _stripXmlComments(File('ios/Runner/Info-Debug.plist').readAsStringSync());
 
       expect(debug.contains('NSAllowsLocalNetworking'), isTrue);
       // Never the blanket exception, not even in debug.
@@ -266,9 +257,9 @@ void main() {
       final project = File('ios/Runner.xcodeproj/project.pbxproj').readAsStringSync();
 
       expect(
-        RegExp(RegExp.escape('INFOPLIST_FILE = Runner/Info-Debug.plist;'))
-            .allMatches(project)
-            .length,
+        RegExp(
+          RegExp.escape('INFOPLIST_FILE = Runner/Info-Debug.plist;'),
+        ).allMatches(project).length,
         1,
       );
       expect(project.contains('INFOPLIST_FILE = Runner/Info.plist;'), isTrue);
@@ -287,8 +278,7 @@ String _stripDartComments(String source) {
       .join('\n');
 }
 
-String _stripXmlComments(String source) =>
-    source.replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
+String _stripXmlComments(String source) => source.replaceAll(RegExp(r'<!--[\s\S]*?-->'), '');
 
 /// Stripping comments leaves blank lines behind; they are not a difference
 /// worth failing over.

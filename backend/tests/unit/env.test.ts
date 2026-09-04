@@ -175,4 +175,13 @@ describe('proxy configuration', () => {
       loadEnv({ LLM_PROVIDER: 'stub', TRUST_PROXY_HOPS: 'true' } as NodeJS.ProcessEnv),
     ).toThrow(/TRUST_PROXY_HOPS/);
   });
+
+  // Nothing in the schema reports an issue without a path, so the fallback
+  // label only appears when the source itself is not an object — a config
+  // loader handing over `null`. The message still has to be readable, because
+  // it is the last thing printed before the process exits.
+  it('reports a source that is not an object at all', () => {
+    expect(() => loadEnv(null as unknown as NodeJS.ProcessEnv)).toThrow(/Invalid environment/);
+    expect(() => loadEnv(null as unknown as NodeJS.ProcessEnv)).toThrow(/\(env\)/);
+  });
 });

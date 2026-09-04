@@ -137,4 +137,18 @@ describe(`POST ${endpoint} — validation`, () => {
     expect(response.status).toBe(400);
     expect(response.body.data).toBeUndefined();
   });
+
+  // A JSON array is valid JSON and a valid request body, and it fails the
+  // schema at the root rather than at a field. There is no field name to
+  // report, and the client still needs to be told where the problem is.
+  it('names the body itself when the failure has no field to blame', async () => {
+    const response = await request(buildTestApp())
+      .post(endpoint)
+      .set('Content-Type', 'application/json')
+      .send('[]');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    expect(response.body.error.details[0].field).toBe('(body)');
+  });
 });

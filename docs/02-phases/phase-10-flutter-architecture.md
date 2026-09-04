@@ -46,7 +46,7 @@ domain / infra / presenter  →  IHttpClient
                      HttpClientAdapter  ← único import de package:http
 ```
 
-O ganho é imediato e mensurável: **os 95 testes offline rodam em 3 segundos** porque o
+O ganho é imediato e mensurável: **os testes offline rodam em segundos** porque o
 duplo de `IHttpClient` substitui a rede inteira. Sem isso seria subir servidor ou usar
 `HttpOverrides`, e a suíte ficaria lenta e instável.
 

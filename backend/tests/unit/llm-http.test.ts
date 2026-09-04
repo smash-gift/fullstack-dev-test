@@ -96,3 +96,18 @@ describe('postJson — transport failures', () => {
     await expect(call()).rejects.toBeInstanceOf(LlmInvalidResponseError);
   });
 });
+
+describe('postJson — a rejection that is not an Error', () => {
+  // A polyfilled or mangled `fetch` can reject with a bare string. The mapping
+  // reads `error.name`, so the branch that has no name to read has to produce
+  // something a log line can still be triaged from.
+  it('names the provider and says the cause is unknown', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject('not an error object')),
+    );
+
+    await expect(call()).rejects.toBeInstanceOf(LlmUnavailableError);
+    await expect(call()).rejects.toThrow(/testprovider is unreachable: unknown/);
+  });
+});

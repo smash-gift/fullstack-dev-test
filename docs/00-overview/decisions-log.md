@@ -180,6 +180,14 @@ muda latência, custo e comportamento sem aviso.
 | D78 | Benchmark dos três providers | **Fase nova**, medindo pelo adapter real | **Usuário** | Manter `D67` como limitação declarada | 15 |
 | D79 | Provider default | **Continua `openai`**, agora por medição | **Assistente** | Trocar por Gemini, que é 5,4× a 27× mais caro aqui | 15 |
 | D80 | `LLM_MAX_OUTPUT_TOKENS` para Gemini | **Avisar no `.env.example`** | **Assistente** | Default por provider no código, sem medição que o justifique | 15 |
+| D81 | Comando de auditoria de segredo | **Exigir corpo de key depois do prefixo** | **Assistente** | Manter `sk-or-v1-` solto, que casava com a própria regex | 16 |
+| D82 | Verificação de renderização insegura | **Olhar a dependência no `pubspec.yaml`** | **Assistente** | Continuar procurando o nome da lib no texto do código | 16 |
+| D83 | Detector de credencial | **Cobrir também o formato `AQ.`** | **Assistente** | Deixar de fora o formato que este projeto de fato usa | 16 |
+| D84 | Suíte intermitente | **Corrigir a origem**: um app compartilhado no corpus | **Assistente** | Só `retry`, que esconderia o sintoma sem removê-lo | 16 |
+| D85 | `retry: 1` no Vitest | **Manter como rede do resíduo** | **Assistente** | Remover, já que não chegou a disparar em 40 execuções | 16 |
+| D86 | Branch inalcançável | **Apagar a guarda e mover a garantia para o tipo** | **Assistente** | `v8 ignore`, que esconde o ramo sem removê-lo | 16 |
+| D87 | Regra alcançável só fora do HTTP | **Função exportada com teste próprio** | **Assistente** | Aceitar a linha sem cobertura | 16 |
+| D88 | Exclusões de coverage | **Nenhuma declarada** | **Assistente** | Excluir constantes e interfaces para chegar a 100% mais rápido | 16 |
 
 **Contexto de D79 — o default não mudou, o motivo mudou.** Antes ele se sustentava na letra
 do enunciado. Depois da fase 15 ele se sustenta em número: mesma tarefa, `gpt-4o-mini` custa
@@ -352,6 +360,36 @@ alguém executar à mão. Viraram um arquivo de teste que exercita a pilha real 
 contra o backend real, atrás de portão de ambiente. O roteiro B — falha do LLM — usa uma
 credencial **inválida de propósito**, então quem falha é o provider de verdade e não um
 duplo. É a diferença entre "eu rodei e funcionou" e "roda quando qualquer pessoa quiser".
+
+**Contexto de D81 a D83 — o verificador que nunca acusa está desligado.** Três comandos de
+auditoria publicados casavam com a definição de si mesmos: o padrão de segredo procurava
+`sk-or-v1-` sem exigir nada depois, e as quatro ocorrências no histórico eram a própria regex
+escrita nos testes e nos documentos. O mesmo com o `grep` que procurava `flutter_html` e
+acusava o comentário que promete nunca usá-lo. Nenhum era vazamento; os dois eram piores que
+um falso positivo isolado, porque um comando que sempre diz FALHA deixa de ser lido. Junto
+veio a lacuna oposta: os detectores não conheciam o formato `AQ.` das chaves Gemini usadas
+aqui — uma key colada no código teria passado. Corrigido e verificado plantando a violação
+nos dois lados, TypeScript e Dart.
+
+**Contexto de D84 e D85 — rodar uma vez não é verificar.** `npm test` dizia 707 verdes.
+Trinta execuções seguidas diziam **três vermelhas**, em testes diferentes a cada vez. Duas
+causas independentes: uma asserção que procurava `401` no JSON inteiro e colidia com os ids
+hexadecimais aleatórios da própria resposta (~1,4% por execução), e a rotatividade de
+servidores efêmeros do supertest — ~200 por arquivo — que devolvia `ECONNRESET` e até `403`,
+status que esta API nunca produz. Desligar `keepAlive` e manter os servidores abertos não
+mudou nada e foi revertido; o que resolveu foi o corpus passar a compartilhar um app, de ~200
+servidores para 2. Depois: **0 vermelhas em 40 execuções**, sem o retry precisar disparar.
+
+**Contexto de D86 a D88 — 100% que significa alguma coisa.** O coverage nunca tinha sido
+medido: 99,58% de statements no backend, 91,64% de linhas no app — e dentro desse número,
+`http_client_adapter.dart` com **7,7%**, justamente o arquivo que a regra R1 existe para
+proteger. Fechar a diferença revelou cinco ramos que nenhuma entrada podia acionar. Marcá-los
+com `v8 ignore` teria produzido o mesmo 100% sem tirar o código morto do repositório; em vez
+disso a garantia foi para onde ela pertence — o tipo `RelationshipMessages` agora exige a
+chave `_default`, e uma ocasião nova sem ela não compila. Dois ramos alcançáveis só por um
+store Redis ou por um cliente que não é o supertest viraram funções exportadas, testadas
+diretamente. Nenhuma exclusão foi declarada: excluir constantes de tema e interfaces é o
+atalho para um 100% que não quer dizer nada.
 
 ---
 

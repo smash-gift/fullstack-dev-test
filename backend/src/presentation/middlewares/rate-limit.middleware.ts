@@ -37,10 +37,23 @@ export function rateLimitMiddleware(options: RateLimitOptions): RequestHandler {
     // Errors leave through the one error handler, so a 429 has the same body
     // shape as every other failure and the client needs no special case.
     handler: (req, _res, next) => {
-      const reset = readRateLimitInfo(req)?.resetTime;
-      next(new RateLimitedError(retryAfterSeconds(reset, options.windowMs)));
+      next(rateLimitedError(readRateLimitInfo(req), options.windowMs));
     },
   });
+}
+
+/**
+ * Builds the error a blocked request leaves with.
+ *
+ * Exported for the same reason [retryAfterSeconds] is: a store that does not
+ * report `resetTime` cannot be produced through an HTTP request, so the rule
+ * for that case is only reachable — and only provable — from here.
+ */
+export function rateLimitedError(
+  info: RateLimitInfo | undefined,
+  windowMs: number,
+): RateLimitedError {
+  return new RateLimitedError(retryAfterSeconds(info?.resetTime, windowMs));
 }
 
 /**

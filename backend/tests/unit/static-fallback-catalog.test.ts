@@ -165,4 +165,13 @@ describe('StaticFallbackCatalog — alias resolution', () => {
     const result = catalog.get(ask({ occasion: 'bar mitzvah' }));
     expect(result).toHaveLength(3);
   });
+
+  // The catalogue carries a per-occasion default so that a relationship it
+  // never listed still produces a card message rather than nothing.
+  it('uses the occasion default when the relationship has no entry of its own', () => {
+    const result = catalog.get(ask({ relationship: 'second cousin twice removed' }));
+
+    expect(result).toHaveLength(3);
+    expect(result.every((s) => s.text.trim().length > 0)).toBe(true);
+  });
 });

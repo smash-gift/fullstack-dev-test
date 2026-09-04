@@ -146,4 +146,27 @@ describe('request logging policy at info level', () => {
     expect(emitted).not.toContain('ignore all previous instructions');
     expect(emitted).toContain('request validation failed');
   });
+
+  // Development gets human-readable lines through `pino-pretty`; production
+  // gets JSON. The branch is chosen from configuration, and it had never been
+  // taken in a test - a broken transport would have surfaced on someone's first
+  // `npm run dev` instead of here.
+  it('builds a pretty logger for development, and a JSON one otherwise', () => {
+    const pretty = createLogger({ level: 'info', pretty: true });
+    const plain = createLogger({ level: 'info', pretty: false });
+
+    expect(pretty.level).toBe('info');
+    expect(plain.level).toBe('info');
+    expect(() => pretty.info('hello from the pretty transport')).not.toThrow();
+  });
+
+  // The container is what production actually calls, and it builds its own
+  // logger when nothing is injected. Every other test hands it a silent one, so
+  // that line only ever ran outside the suite.
+  it('the container builds its own logger when none is injected', () => {
+    const container = buildContainer(buildTestEnv({ LOG_LEVEL: 'error' }));
+
+    expect(container.logger).toBeDefined();
+    expect(() => buildApp(container)).not.toThrow();
+  });
 });

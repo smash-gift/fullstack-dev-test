@@ -13,7 +13,7 @@ mantiveram o conteúdo e foram renumerados.
 > consciente**, e vem sempre com o motivo ao lado — nunca tarefa esquecida. Promessa com
 > data futura (*"na fase N"*) é fechada quando a fase N entrega, e não fica pendurada.
 
-**Progresso geral:** 15 / 17 fases concluídas
+**Progresso geral:** 16 / 17 fases concluídas
 
 ---
 
@@ -163,7 +163,7 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Testar estado de erro
 - [x] Testar o aviso de degradação
 - [x] Unit test do store e do use case
-- [x] 95 testes offline, sem rede e sem backend
+- [x] 151 testes offline, sem rede e sem backend, 100% de linhas
 
 ## 14. Caprichar no README — ✅
 → [`phase-14-readme.md`](../02-phases/phase-14-readme.md)
@@ -196,18 +196,18 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Decidir o provider default com base na medição
 - [x] Fechar a limitação declarada `D67` (OpenRouter e Gemini nunca verificados ao vivo)
 
-## 16. Revisão antes da entrega — ⬜
+## 16. Revisão antes da entrega — ✅
 → [`phase-16-pre-delivery-review.md`](../02-phases/phase-16-pre-delivery-review.md)
 
-- [ ] Rodar formatter/linter do TypeScript
-- [ ] Rodar `flutter analyze`
-- [ ] Rodar testes backend
-- [ ] Rodar testes Flutter
-- [ ] **Confirmar que nenhuma API Key foi commitada**
-- [ ] Conferir `.gitignore`
-- [ ] 🔒 Executar o [checklist de segurança](../05-security/security-checklist.md) completo
-- [ ] 🔒 Confirmar cleartext HTTP restrito ao build de debug
-- [ ] Fazer clone limpo e verificar se o README realmente funciona
+- [x] Rodar formatter/linter do TypeScript
+- [x] Rodar `flutter analyze`
+- [x] Rodar testes backend
+- [x] Rodar testes Flutter
+- [x] **Confirmar que nenhuma API Key foi commitada**
+- [x] Conferir `.gitignore`
+- [x] 🔒 Executar o [checklist de segurança](../05-security/security-checklist.md) completo
+- [x] 🔒 Confirmar cleartext HTTP restrito ao build de debug
+- [x] Fazer clone limpo e verificar se o README realmente funciona
 
 ## 17. Entrega — ⬜
 → [`phase-17-delivery.md`](../02-phases/phase-17-delivery.md)

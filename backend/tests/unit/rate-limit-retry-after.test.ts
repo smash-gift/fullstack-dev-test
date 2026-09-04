@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { retryAfterSeconds } from '../../src/presentation/middlewares/rate-limit.middleware.js';
+import {
+  rateLimitedError,
+  retryAfterSeconds,
+} from '../../src/presentation/middlewares/rate-limit.middleware.js';
 
 const WINDOW_MS = 300_000;
 
@@ -30,5 +33,23 @@ describe('Retry-After', () => {
    */
   it('falls back to the window length when the store reports no reset time', () => {
     expect(retryAfterSeconds(undefined, WINDOW_MS)).toBe(300);
+  });
+
+  // The handler's own line, reachable only from here: a store that reports no
+  // reset time still has to produce a `Retry-After` the client can act on.
+  it('builds the error even when the store reports no reset time', () => {
+    const error = rateLimitedError(undefined, 300_000);
+
+    expect(error.retryAfterSeconds).toBe(300);
+  });
+
+  it('uses the reset time the store reports, when it reports one', () => {
+    const error = rateLimitedError(
+      { limit: 30, used: 31, remaining: 0, resetTime: new Date(Date.now() + 42_000), key: 'ip' },
+      300_000,
+    );
+
+    expect(error.retryAfterSeconds).toBeGreaterThan(40);
+    expect(error.retryAfterSeconds).toBeLessThanOrEqual(42);
   });
 });

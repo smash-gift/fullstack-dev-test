@@ -38,7 +38,10 @@ export class StaticFallbackCatalog implements FallbackCatalog {
   }
 
   private lookup(input: SuggestMessagesInput): readonly string[] {
-    const byLanguage = FALLBACK_MESSAGES[input.language] ?? FALLBACK_MESSAGES.en;
+    // `SuggestionLanguage` is exactly the set of keys in the catalogue, so this
+    // lookup cannot miss. The `?? en` that used to sit here read as prudence
+    // and was a branch the compiler already ruled out.
+    const byLanguage = FALLBACK_MESSAGES[input.language];
     // Users type in their own language; the catalogue is keyed in English.
     const occasion = resolveOccasion(input.occasion);
     const relationship = resolveRelationship(input.relationship);
@@ -48,11 +51,13 @@ export class StaticFallbackCatalog implements FallbackCatalog {
       const exact = byOccasion[relationship];
       if (exact && exact.length > 0) return exact;
 
-      const occasionDefault = byOccasion[DEFAULT_KEY];
-      if (occasionDefault && occasionDefault.length > 0) return occasionDefault;
+      // Level 2 is guaranteed by `OccasionMessages`, so there is nothing to
+      // check here. It used to be guarded, and the guard was a branch no test
+      // could ever take.
+      return byOccasion[DEFAULT_KEY];
     }
 
-    // Level 3 is a structural guarantee, not a lookup that might miss.
-    return byLanguage[DEFAULT_KEY]![DEFAULT_KEY]!;
+    // Level 3, guaranteed the same way.
+    return byLanguage[DEFAULT_KEY][DEFAULT_KEY];
   }
 }

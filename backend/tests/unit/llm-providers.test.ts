@@ -153,6 +153,38 @@ describe('OpenRouterProvider', () => {
     expect(url).toBe('https://openrouter.ai/api/v1/chat/completions');
     expect(body.response_format).toEqual({ type: 'json_object' });
   });
+
+  // OpenRouter reads these two headers to attribute traffic on its dashboard.
+  // They are optional on purpose — the factory sets them, a bare construction
+  // does not — and both shapes have to leave a well-formed request.
+  it('sends the attribution headers when they are configured', async () => {
+    const spy = mockFetch(() => chatCompletion(suggestionsJson));
+    const attributed = new OpenRouterProvider({
+      ...shared,
+      model: 'openai/gpt-4o-mini',
+      appUrl: 'https://example.com/gift-cards',
+      appTitle: 'Gift Card Message Suggester',
+    });
+
+    await attributed.generateSuggestions(input, signal());
+
+    const headers = spy.mock.calls[0]![1].headers as Record<string, string>;
+
+    expect(headers['HTTP-Referer']).toBe('https://example.com/gift-cards');
+    expect(headers['X-Title']).toBe('Gift Card Message Suggester');
+    expect(headers.Authorization).toBe('Bearer test-key');
+  });
+
+  it('omits them entirely when they are not', async () => {
+    const spy = mockFetch(() => chatCompletion(suggestionsJson));
+
+    await openRouter.generateSuggestions(input, signal());
+
+    const headers = spy.mock.calls[0]![1].headers as Record<string, string>;
+
+    expect(headers).not.toHaveProperty('HTTP-Referer');
+    expect(headers).not.toHaveProperty('X-Title');
+  });
 });
 
 describe('GeminiProvider', () => {

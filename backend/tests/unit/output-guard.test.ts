@@ -215,6 +215,20 @@ describe('LlmOutputGuard — the port implementation', () => {
       guard.assertSafe([{ id: 'sug_1', text: 'Visit https://evil.example.com' }]),
     ).toThrow(LlmOutputBlockedError);
   });
+
+  // `severe` is what makes the use case log a leaked canary louder than an
+  // ordinary blocked answer. It defaults to false so that a new violation added
+  // without thinking about it is treated as ordinary, never as an incident.
+  it('marks a leaked canary as severe, and everything else as not', () => {
+    const canary = new LlmOutputBlockedError('canary', { severe: true });
+    const ordinary = new LlmOutputBlockedError('url');
+    const explicit = new LlmOutputBlockedError('url', { severe: false });
+
+    expect(canary.severe).toBe(true);
+    expect(ordinary.severe).toBe(false);
+    expect(explicit.severe).toBe(false);
+    expect(ordinary.violation).toBe('url');
+  });
 });
 
 function catchBlocked(text: string): LlmOutputBlockedError {

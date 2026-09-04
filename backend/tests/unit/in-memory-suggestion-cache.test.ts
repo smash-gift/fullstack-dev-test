@@ -64,4 +64,27 @@ describe('InMemorySuggestionCache', () => {
     expect(await cache.get('a')).toEqual(suggestions);
     expect(await cache.get('b')).toEqual(other);
   });
+
+  // A capacity of zero is a legitimate way to turn the cache off by
+  // configuration, and it drives the eviction loop until the map is empty. The
+  // guard that stops it there is the difference between a no-op and a process
+  // that never returns.
+  it('accepts a capacity of zero without spinning', async () => {
+    const cache = new InMemorySuggestionCache({ maxEntries: 0 });
+
+    await cache.set('a', suggestions, 10_000);
+
+    expect(await cache.get('a')).toBeNull();
+  });
+
+  it('evicts down to the limit, oldest first', async () => {
+    const cache = new InMemorySuggestionCache({ maxEntries: 1 });
+    const other: Suggestion[] = [{ id: 'sug_9', text: 'Congratulations!' }];
+
+    await cache.set('a', suggestions, 10_000);
+    await cache.set('b', other, 10_000);
+
+    expect(await cache.get('a')).toBeNull();
+    expect(await cache.get('b')).toEqual(other);
+  });
 });

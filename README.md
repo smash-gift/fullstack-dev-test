@@ -184,7 +184,7 @@ flowchart TD
     UC --> A5
 ```
 
-Two consequences, both load-bearing. **707 backend tests and 95 Flutter tests run with no
+Two consequences, both load-bearing. **727 backend tests and 151 Flutter tests run with no
 network and no API key**, because the providers are swapped for doubles at the port — that
 is what makes "the reviewer can run the tests" true. And **the fallback lives in the use
 case** rather than in an adapter, so every provider inherits the same failure behaviour
@@ -455,8 +455,8 @@ More: [threat model](docs/05-security/threat-model.md) ·
 ## Tests
 
 ```bash
-cd backend && npm test              # 707 tests, 27 files, ~3s
-cd ../flutter_app && flutter test   # 95 tests, ~3s
+cd backend && npm test              # 727 tests, 28 files, ~3s
+cd ../flutter_app && flutter test   # 151 tests, ~4s
 ```
 
 Neither needs a network, an API key or a running server. `npm run verify` adds typecheck,
@@ -464,10 +464,22 @@ lint and format check.
 
 | | Backend | App |
 |---|---|---|
-| Offline tests | **707** in 27 files | **95** |
-| Statements · `domain/usecases/` | 99.58% · **100%** | — |
+| Offline tests | **727** in 28 files | **151** |
+| Statements | **100%** | — |
+| Branches | **100%** | — |
+| Functions | **100%** | — |
+| Lines | **100%** (446/446) | **100%** (634/634) |
 
-Three things the numbers do not show:
+`npm run test:coverage` and `flutter test --coverage` reproduce those figures.
+
+Getting there deleted code rather than adding tests for it. Three branches could not be
+reached by any input — a cache guard the loop condition already ruled out, a catalogue
+default the data always carried, a language fallback the type system had made impossible —
+so the guarantees moved into the types and the loop, and the dead branches went away. Two
+more were reachable only from outside HTTP, and are now named functions with tests of their
+own instead of lines nobody could exercise.
+
+Four things the numbers do not show:
 
 - **The fallback is covered at the HTTP boundary**, not only in the use case — 39 cases,
   because what a client experiences is the response, not the function call.
@@ -476,6 +488,10 @@ Three things the numbers do not show:
   route produces that error on purpose; fourteen tests now throw directly at it.
 - **The architecture rules were verified by breaking them.** A static rule that never fails
   is decoration.
+- **The suite was run forty times, not once.** Running it once said 707 green; running it
+  thirty times said three of them were red, on different tests each time. Both causes are
+  fixed and written up in
+  [phase 16](docs/02-phases/phase-16-pre-delivery-review.md#4-a-suíte-falhava-sozinha-uma-vez-a-cada-dez-execuções).
 
 Tests needing a live server are opt-in, so `flutter test` stays green where nobody started
 a backend:

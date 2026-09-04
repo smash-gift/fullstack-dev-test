@@ -59,4 +59,13 @@ describe('parseSuggestionsPayload — rejections', () => {
       /returned 2 suggestions, expected 3/,
     );
   });
+
+  // The fence recovery gets exactly one attempt. When what is inside the fence
+  // is still not JSON, the answer is the same invalid-response error as any
+  // other unreadable output — not a second guess at what the model meant.
+  it('gives up when the fenced content is not JSON either', () => {
+    const wrapped = '```json\n{ this is not json }\n```';
+
+    expect(() => parseSuggestionsPayload(wrapped, 3)).toThrow(LlmInvalidResponseError);
+  });
 });

@@ -126,7 +126,11 @@ describe('S6 — configuration and secrets have one door', () => {
 
   it('contains no literal that looks like a real credential', () => {
     const offenders = sources
-      .filter((f) => /sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sk-or-v1-/.test(f.content))
+      .filter((f) =>
+        /sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{30,}|sk-or-v1-[A-Za-z0-9]{20,}|AQ\.[A-Za-z0-9]{20,}/.test(
+          f.content,
+        ),
+      )
       .map((f) => f.path);
 
     expect(offenders).toEqual([]);

@@ -13,8 +13,20 @@ import type { SuggestionLanguage } from '../../domain/dtos/suggest-messages-inpu
  */
 export const DEFAULT_KEY = '_default';
 
-type RelationshipMessages = Record<string, readonly string[]>;
-type OccasionMessages = Record<string, RelationshipMessages>;
+/**
+ * Every occasion carries a `_default`, and so does every language. The
+ * requirement used to live in a comment and be re-checked at runtime with two
+ * guards the tests could never fail, because the data always satisfied them.
+ * Stating it in the type deletes both guards and moves the check to the
+ * compiler, where a new occasion added without a default cannot be written at
+ * all.
+ */
+type RelationshipMessages = Record<string, readonly string[]> & {
+  readonly [DEFAULT_KEY]: readonly string[];
+};
+type OccasionMessages = Record<string, RelationshipMessages> & {
+  readonly [DEFAULT_KEY]: RelationshipMessages;
+};
 
 export const FALLBACK_MESSAGES: Record<SuggestionLanguage, OccasionMessages> = {
   en: {

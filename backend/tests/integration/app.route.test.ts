@@ -84,12 +84,23 @@ describe('LLM failures degrade instead of erroring', () => {
   });
 
   it('leaks neither the provider nor the upstream reason', async () => {
-    const body = JSON.stringify((await post()).body);
+    // Identifiers are random hex, and `401` is three hex digits: searching the
+    // whole serialised body made this assertion fire on its own ids about once
+    // in seventy runs. Only the fields that carry text a human wrote can leak,
+    // so the ids are dropped before the search rather than hoped over.
+    const response = await post();
+    const prose = JSON.stringify({
+      suggestions: response.body.data.suggestions.map((s: { text: string }) => s.text),
+      model: response.body.data.model,
+      source: response.body.data.source,
+      reason: response.body.meta.reason,
+      error: response.body.error ?? null,
+    });
 
-    expect(body).not.toContain('openai');
-    expect(body).not.toContain('401');
-    expect(body).not.toContain('credentials');
-    expect(body).not.toMatch(/at .*\(.*:\d+:\d+\)/);
+    expect(prose).not.toContain('openai');
+    expect(prose).not.toContain('401');
+    expect(prose).not.toContain('credentials');
+    expect(prose).not.toMatch(/at .*\(.*:\d+:\d+\)/);
   });
 
   it('still returns a correlation id', async () => {

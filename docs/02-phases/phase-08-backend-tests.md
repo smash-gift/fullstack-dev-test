@@ -16,7 +16,7 @@ e sem API key**.
 
 | Métrica | Valor |
 |---|---|
-| Testes offline | **707**, em 27 arquivos |
+| Testes offline | **727**, em 28 arquivos |
 | Tempo de execução | **2,3 s** |
 | Rede ou API key | nenhuma |
 | Statements | 99,58% |

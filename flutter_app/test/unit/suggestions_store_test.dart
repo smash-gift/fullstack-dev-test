@@ -229,5 +229,41 @@ void main() {
       expect(store.fieldIssues, isEmpty);
       expect(store.status, SuggestionsStatus.idle);
     });
+    // `bannerFailure` hides validation problems, because the fields already
+    // show them. `failure` is the unfiltered one, and something has to assert
+    // that the difference between the two is deliberate.
+    test('the raw failure keeps what the banner deliberately hides', () async {
+      expect(store.failure, isNull);
+
+      store.occasionController.text = 'a';
+      await store.submit(language: 'en');
+
+      expect(store.failure, isA<ValidationFailure>());
+      expect(store.bannerFailure, isNull);
+    });
+
+    test('a failure worth a banner shows up in both', () async {
+      store.occasionController.text = 'birthday';
+      store.relationshipController.text = 'friend';
+      client.throwing = const HttpClientException(HttpFailureReason.unreachable);
+
+      await store.submit(language: 'en');
+
+      expect(store.failure, isA<ConnectionFailure>());
+      expect(store.bannerFailure, same(store.failure));
+    });
+
+    test('a success clears the failure that came before it', () async {
+      store.occasionController.text = 'birthday';
+      store.relationshipController.text = 'friend';
+      client.throwing = const HttpClientException(HttpFailureReason.unreachable);
+      await store.submit(language: 'en');
+      expect(store.failure, isNotNull);
+
+      client.throwing = null;
+      await store.submit(language: 'en');
+
+      expect(store.failure, isNull);
+    });
   });
 }

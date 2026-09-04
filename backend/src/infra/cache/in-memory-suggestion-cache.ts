@@ -51,10 +51,13 @@ export class InMemorySuggestionCache implements SuggestionCache {
     this.entries.delete(key);
     this.entries.set(key, { suggestions, expiresAt: this.now() + ttlMs });
 
-    while (this.entries.size > this.maxEntries) {
-      const oldest = this.entries.keys().next();
-      if (oldest.done) break;
-      this.entries.delete(oldest.value);
+    // Insertion order is eviction order, so walking the keys is walking from
+    // oldest to newest. The earlier version asked the iterator whether it was
+    // done, which the loop condition already guarantees it is not - a branch
+    // no test could take, on a `Map` that cannot be empty here.
+    for (const key of this.entries.keys()) {
+      if (this.entries.size <= this.maxEntries) break;
+      this.entries.delete(key);
     }
   }
 
