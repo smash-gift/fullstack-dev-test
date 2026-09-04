@@ -7,7 +7,7 @@
 
 | | Valor medido |
 |---|---|
-| Testes offline | **746**, em 2,7 s, sem rede e sem key |
+| Testes offline | **759**, em 2,7 s, sem rede e sem key |
 | Payloads no corpus | **38** |
 | Entradas legítimas assertadas junto | **12** |
 | Vazamentos na suíte live | **zero** |

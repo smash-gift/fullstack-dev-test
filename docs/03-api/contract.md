@@ -49,7 +49,7 @@ Content-Type: application/json
   "occasion": "birthday",      // obrigatório
   "relationship": "friend",    // obrigatório
   "tone": "warm",              // opcional
-  "language": "en",            // opcional
+  "language": "en",            // opcional — omita para responder no idioma do pedido
   "count": 3                   // opcional
 }
 ```
@@ -59,7 +59,7 @@ Content-Type: application/json
 | `occasion` | `string` | ✅ | 2–60 caracteres, após `trim` | — |
 | `relationship` | `string` | ✅ | 2–60 caracteres, após `trim` | — |
 | `tone` | `string` | ❌ | um de: `warm`, `funny`, `formal`, `heartfelt` | `warm` |
-| `language` | `string` | ❌ | código ISO 639-1 (`en`, `pt`, `es`) | `en` |
+| `language` | `string` | ❌ | código ISO 639-1 (`en`, `pt`, `es`) | — *(idioma do próprio pedido)* |
 | `count` | `integer` | ❌ | **2 ou 3** | `3` |
 
 **Texto livre é aceito.** `occasion` e `relationship` são strings, não enumerações. O

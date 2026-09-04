@@ -64,8 +64,9 @@ sem inverter nada. Decidido com o usuário depois de uma primeira versão roxa d
 ### `tone` entrou na tela
 
 O backend aceita `warm · funny · formal · heartfelt` desde a fase 02. Deixar de fora seria
-entregar um contrato que ninguém consegue exercitar. `language` não virou seletor: segue o
-idioma do aparelho, e é o mesmo idioma pedido à API — o cartão lê como a interface em volta.
+entregar um contrato que ninguém consegue exercitar. `language` não virou seletor, e desde a
+[`ADR-0012`](../01-architecture/decisions/adr-0012-response-language.md) o app **não envia**
+o campo: quem decide o idioma do cartão é o texto que o usuário digitou, não o aparelho.
 
 ### Copiar é a ação de verdade
 

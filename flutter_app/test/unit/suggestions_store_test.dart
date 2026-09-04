@@ -32,14 +32,14 @@ void main() {
       final seen = <SuggestionsStatus>[];
       store.addListener(() => seen.add(store.status));
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(seen.first, SuggestionsStatus.loading);
       expect(seen.last, SuggestionsStatus.success);
     });
 
     test('publishes the suggestions the backend sent', () async {
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.result!.suggestions, hasLength(3));
       expect(store.result!.suggestions.first.text, contains('Happy birthday'));
@@ -50,15 +50,27 @@ void main() {
       store.occasionController.text = '  graduation  ';
       store.setTone(SuggestionTone.funny);
 
-      await store.submit(language: 'pt');
+      await store.submit();
 
       expect(client.lastBody!['occasion'], 'graduation');
       expect(client.lastBody!['tone'], 'funny');
-      expect(client.lastBody!['language'], 'pt');
+    });
+
+    test('never pins a language, so the words decide it', () async {
+      // This used to assert the opposite — that the interface language went on
+      // the wire. That is what made an English phone answer "dia dos
+      // namorados" in English. The key has to be absent, not null: the
+      // backend reads a present field as an explicit override.
+      store.occasionController.text = 'dia dos namorados';
+      store.relationshipController.text = 'esposa';
+
+      await store.submit();
+
+      expect(client.lastBody!.containsKey('language'), isFalse);
     });
 
     test('posts to the configured address', () async {
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(client.lastUrl.toString(), 'http://localhost:3000/api/v1/suggestions');
     });
@@ -68,8 +80,8 @@ void main() {
     test('ignores a second submit while one is running', () async {
       client.delay = const Duration(milliseconds: 40);
 
-      final first = store.submit(language: 'en');
-      await store.submit(language: 'en');
+      final first = store.submit();
+      await store.submit();
       await first;
 
       expect(client.callCount, 1);
@@ -84,7 +96,7 @@ void main() {
         reason: 'llm_timeout',
       );
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.status, SuggestionsStatus.success);
       expect(store.isDegraded, isTrue);
@@ -99,7 +111,7 @@ void main() {
     test('accepts a reason it has never heard of', () async {
       client.body = FakeHttpClient.successBody(degraded: true, reason: 'llm_moon_phase');
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.isDegraded, isTrue);
       expect(store.result!.reason, DegradationReason.unknown);
@@ -110,7 +122,7 @@ void main() {
     test('an unreachable server becomes a connection failure', () async {
       client.throwing = const HttpClientException(HttpFailureReason.unreachable);
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.status, SuggestionsStatus.failure);
       expect(store.bannerFailure, isA<ConnectionFailure>());
@@ -119,7 +131,7 @@ void main() {
     test('a timeout is told apart from an unreachable server', () async {
       client.throwing = const HttpClientException(HttpFailureReason.timeout);
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.bannerFailure, isA<TimeoutFailure>());
     });
@@ -132,7 +144,7 @@ void main() {
           details: {'retryAfterSeconds': 143},
         );
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       final failure = store.bannerFailure;
       expect(failure, isA<RateLimitedFailure>());
@@ -146,7 +158,7 @@ void main() {
         ..statusCode = 429
         ..body = FakeHttpClient.errorBody('RATE_LIMITED');
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.hasSuggestions, isFalse);
     });
@@ -161,7 +173,7 @@ void main() {
           ],
         );
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.fieldIssues.keys, contains('occasion'));
       expect(store.bannerFailure, isNull);
@@ -172,7 +184,7 @@ void main() {
         ..statusCode = 500
         ..body = FakeHttpClient.errorBody('INTERNAL_ERROR');
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.bannerFailure, isA<ServerFailure>());
     });
@@ -180,7 +192,7 @@ void main() {
     test('a 200 the client cannot read is a server failure, not a crash', () async {
       client.body = {'data': 'this is not the documented shape'};
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.status, SuggestionsStatus.failure);
       expect(store.bannerFailure, isA<ServerFailure>());
@@ -189,11 +201,11 @@ void main() {
     /// Taking away a usable answer because a retry failed would punish the
     /// user for trying again.
     test('keeps the previous suggestions when a retry fails', () async {
-      await store.submit(language: 'en');
+      await store.submit();
       expect(store.hasSuggestions, isTrue);
 
       client.throwing = const HttpClientException(HttpFailureReason.unreachable);
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.status, SuggestionsStatus.failure);
       expect(store.hasSuggestions, isTrue);
@@ -204,7 +216,7 @@ void main() {
     test('a field that is too short never reaches the network', () async {
       store.occasionController.text = 'a';
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(client.callCount, 0);
       expect(store.fieldIssues.keys, contains('occasion'));
@@ -213,7 +225,7 @@ void main() {
     test('a field that is too long never reaches the network', () async {
       store.relationshipController.text = 'x' * 61;
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(client.callCount, 0);
       expect(store.fieldIssues.keys, contains('relationship'));
@@ -221,7 +233,7 @@ void main() {
 
     test('clears a field error as soon as the user starts fixing it', () async {
       store.occasionController.text = 'a';
-      await store.submit(language: 'en');
+      await store.submit();
       expect(store.fieldIssues, isNotEmpty);
 
       store.clearFieldIssue('occasion');
@@ -236,7 +248,7 @@ void main() {
       expect(store.failure, isNull);
 
       store.occasionController.text = 'a';
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.failure, isA<ValidationFailure>());
       expect(store.bannerFailure, isNull);
@@ -247,7 +259,7 @@ void main() {
       store.relationshipController.text = 'friend';
       client.throwing = const HttpClientException(HttpFailureReason.unreachable);
 
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.failure, isA<ConnectionFailure>());
       expect(store.bannerFailure, same(store.failure));
@@ -257,11 +269,11 @@ void main() {
       store.occasionController.text = 'birthday';
       store.relationshipController.text = 'friend';
       client.throwing = const HttpClientException(HttpFailureReason.unreachable);
-      await store.submit(language: 'en');
+      await store.submit();
       expect(store.failure, isNotNull);
 
       client.throwing = null;
-      await store.submit(language: 'en');
+      await store.submit();
 
       expect(store.failure, isNull);
     });

@@ -21,8 +21,10 @@ class AppLocalizations {
   Map<String, String> _table = const {};
   String _language = 'en';
 
-  /// Which language actually loaded. The API is asked to answer in this same
-  /// language, so the card messages match the interface around them.
+  /// Which language actually loaded, for the interface alone.
+  ///
+  /// Deliberately not sent to the API any more: the card follows the words the
+  /// user typed, not the language of the buttons around them.
   String get language => _language;
 
   /// Resolves [locale] against [supportedLanguages] and loads that table.

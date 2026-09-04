@@ -379,6 +379,40 @@ do prompt reescrita como contagem de `.`, `!` e `?` — está em
 Durante a medição a suíte também bateu no **próprio rate limit** (30 por 5 minutos por IP), o
 que estragou um bloco de números e, de quebra, provou que o limitador funciona fora dos testes.
 
+## 7. O aparelho achou de novo — e desta vez nada estava quebrado
+
+Já com o retry de estilo no lugar, o app foi usado à mão outra vez. O usuário digitou, em
+português, `dia dos namorados` para `esposa`, tom `funny` — e recebeu três sugestões **em
+inglês**.
+
+Não houve degradação, o guarda não bloqueou nada, e nenhum teste tinha o que reclamar. É a
+categoria mais desconfortável de defeito: o sistema fez exatamente o que foi mandado, e o
+que foi mandado é que estava errado. O app enviava `language` com o idioma **do aparelho**, e
+o schema tinha `.default('en')` — então nem omitir o campo escapava.
+
+Também é a segunda vez nesta fase que um aparelho físico encontra o que 900 testes não
+encontrariam, e pelo mesmo motivo: os testes verificavam que o campo `language` era
+respeitado, o que era verdade. Ninguém tinha perguntado se o valor **dentro** dele estava
+certo.
+
+A primeira proposta foi um detector de idioma no backend. O usuário rejeitou — é mais fácil
+o modelo responder no idioma certo do que o servidor adivinhar — e estava certo: são dois
+campos curtos, exatamente onde uma heurística erra mais e um modelo acerta mais. Medido, o
+modelo separou `cumpleanos`/`hermana` de `aniversario`/`melhor amigo` sem hesitar.
+
+| | |
+|---|---|
+| Custo em código | Uma regra do prompt reescrita; nenhum arquivo novo no `src` |
+| Custo em tokens | **Zero** — substituiu uma linha que já existia |
+| Medição | **6 de 6** casos, incluindo as duas direções do override |
+| Buraco assumido | Fallback sem `language` responde em inglês — não há modelo a quem perguntar |
+
+O ícone do cabeçalho, que ainda era um quadrado com gradiente de antes de o app ter ícone,
+foi trocado pelo ícone real na mesma passada.
+
+Detalhes, alternativas rejeitadas e a medição em
+[`ADR-0012`](../01-architecture/decisions/adr-0012-response-language.md).
+
 ## Decisão que continua aberta
 
 O `deploy.md` diz que a decisão de publicar seria tomada ao fim desta fase. **Ela é do autor**,

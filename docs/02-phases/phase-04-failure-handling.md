@@ -121,8 +121,13 @@ occasions e relationships nos três idiomas suportados.
 ### O catálogo respeita `language`, mas não `tone`
 
 `tone` multiplicaria o catálogo por quatro, num caminho que **já está degradado**.
-`language` é diferente: responder em inglês a quem pediu português seria uma falha
+`language` é diferente: responder em inglês a quem **pediu** português seria uma falha
 **visível** empilhada sobre uma invisível. Limitação declarada no código e aqui.
+
+> **Atualizado pela [`ADR-0012`](../01-architecture/decisions/adr-0012-response-language.md).**
+> Isso vale para quem fixa `language`. Quem omite deixa o idioma por conta do modelo — e
+> neste caminho não há modelo a quem perguntar, então o fallback sai em inglês. É a
+> consequência assumida da decisão, e o aviso âmbar já está na tela.
 
 ### Fallback nunca é cacheado
 

@@ -74,7 +74,8 @@ class SuggestionsStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> submit({required String language}) async {
+  /// Takes no language: the backend answers in the language of what was typed.
+  Future<void> submit() async {
     if (_status == SuggestionsStatus.loading) return;
 
     _status = SuggestionsStatus.loading;
@@ -85,7 +86,6 @@ class SuggestionsStore extends ChangeNotifier {
       occasion: occasionController.text.trim(),
       relationship: relationshipController.text.trim(),
       tone: _tone,
-      language: language,
     );
 
     final outcome = await _useCase(request);

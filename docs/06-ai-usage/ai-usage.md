@@ -159,7 +159,7 @@ Produziu a análise textual do enunciado que gerou as quatro ambiguidades docume
 Escreveu o código dos dois projetos a partir das decisões acima: a API em Clean
 Architecture com os três adapters, o fallback, as quatro camadas de defesa contra injeção,
 o rate limiting, o documento OpenAPI e o app Flutter em Clean Dart. E escreveu a suíte de
-testes — **746 no backend e 151 no app**, todos offline.
+testes — **759 no backend e 156 no app**, todos offline.
 
 Duas coisas dessa parte merecem registro, porque não são "gerar código":
 

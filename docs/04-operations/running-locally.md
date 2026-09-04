@@ -160,7 +160,7 @@ curl -sS -X POST http://localhost:3000/api/v1/suggestions \
 ## 5. Testes
 
 ```bash
-# Backend — 746 testes, ~2,7 s, 100% de coverage
+# Backend — 759 testes, ~2,7 s, 100% de coverage
 cd backend
 npm test
 npm run test:coverage
@@ -168,7 +168,7 @@ npm run test:coverage
 # Tudo de uma vez: typecheck, lint, formatação e testes
 npm run verify
 
-# Flutter — 151 testes, ~4 s, sem rede e sem backend rodando
+# Flutter — 156 testes, ~5 s, sem rede e sem backend rodando
 cd flutter_app
 flutter test
 flutter test --coverage

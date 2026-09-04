@@ -113,6 +113,6 @@ class SuggestionsPage extends StatelessWidget {
     // Not awaited on purpose, and said so with dart:async's own helper rather
     // than a hand-rolled stand-in: the store publishes every state change, so
     // the page has nothing to wait for.
-    unawaited(store.submit(language: AppLocalizations.instance.language));
+    unawaited(store.submit());
   }
 }

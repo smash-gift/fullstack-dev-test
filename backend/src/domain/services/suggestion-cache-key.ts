@@ -24,7 +24,11 @@ export function buildSuggestionCacheKey(
     input.occasion.trim().toLowerCase(),
     input.relationship.trim().toLowerCase(),
     input.tone,
-    input.language,
+    // Spelled out rather than left to `join` turning undefined into "". A
+    // request that pins a language and one that lets the text decide are
+    // different requests and must not share an entry - otherwise the first
+    // English answer would be served to the next Portuguese caller.
+    input.language ?? 'auto',
     String(input.count),
   ].join('|');
 

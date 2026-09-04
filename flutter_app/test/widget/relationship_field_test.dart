@@ -32,7 +32,7 @@ void main() {
     final store = buildStore(client);
     store.occasionController.text = 'birthday';
 
-    await store.submit(language: 'en');
+    await store.submit();
     await pumpField(tester, store);
 
     expect(field(tester).decoration?.errorText, isNotNull);
@@ -56,7 +56,7 @@ void main() {
       );
     final store = buildStore(client);
     _fillBothFields(store);
-    await store.submit(language: 'en');
+    await store.submit();
 
     await pumpField(tester, store);
 
@@ -76,7 +76,7 @@ void main() {
       );
     final store = buildStore(client);
     _fillBothFields(store);
-    await store.submit(language: 'en');
+    await store.submit();
 
     await pumpField(tester, store);
 
@@ -94,7 +94,7 @@ void main() {
       );
     final store = buildStore(client);
     _fillBothFields(store);
-    await store.submit(language: 'en');
+    await store.submit();
 
     await pumpField(tester, store);
 
@@ -112,7 +112,7 @@ void main() {
       );
     final store = buildStore(client);
     _fillBothFields(store);
-    await store.submit(language: 'en');
+    await store.submit();
     final callsAfterSubmit = client.callCount;
 
     await pumpField(tester, store);

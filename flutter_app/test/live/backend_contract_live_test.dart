@@ -130,7 +130,7 @@ void main() {
     },
   );
 
-  test('a language the app supports comes back in that language',
+  test('pinning a language forces it, which is what the field is for',
       skip: enabled ? null : reason, () async {
     final result = await useCase(
       const SuggestRequestDto(
@@ -143,6 +143,37 @@ void main() {
 
     final value = result.successOrNull;
     expect(value, isNotNull);
-    stdout.writeln('  pt: ${value!.suggestions.first.text}');
+    stdout.writeln('  pt (pinned): ${value!.suggestions.first.text}');
+  });
+
+  test('Portuguese words come back as a Portuguese card, with nothing pinned',
+      skip: enabled ? null : reason, () async {
+    // The bug this replaced, run end to end through the real client: the app
+    // sent the phone's language, so this exact request answered in English.
+    // The DTO now omits the field and the words decide.
+    final result = await useCase(
+      const SuggestRequestDto(
+        occasion: 'dia dos namorados',
+        relationship: 'esposa',
+        tone: SuggestionTone.funny,
+      ),
+    );
+
+    final value = result.successOrNull;
+    expect(value, isNotNull);
+
+    final text = value!.suggestions.map((s) => s.text).join(' ').toLowerCase();
+    stdout.writeln('  pt (unpinned): ${value.suggestions.first.text}');
+
+    // Deliberately a loose assertion. The model chooses the words, so pinning
+    // an exact phrase would make this test fail on a perfectly good answer.
+    // What it must never be again is English, and these markers do not appear
+    // in an English card.
+    const portugueseMarkers = ['você', 'ã', 'ç', 'õ', 'á', 'ê', 'amor', 'que'];
+    expect(
+      portugueseMarkers.any(text.contains),
+      isTrue,
+      reason: 'expected a Portuguese card for Portuguese input, got: $text',
+    );
   });
 }

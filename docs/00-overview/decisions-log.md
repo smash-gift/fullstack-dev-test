@@ -172,7 +172,7 @@ muda latência, custo e comportamento sem aviso.
 | D70 | Exceção de cleartext no iOS | **Dois plists**, um por configuração | **Assistente** | Substituição de variável no `Info.plist` (não funciona) | 09 |
 | D71 | Modelagem do estado | `enum` + dados ao lado | **Assistente** | `sealed class SuggestionsState`, como o plano previa | 11 |
 | D72 | Roteiros ponta a ponta | **Teste gated**, não roteiro manual | **Assistente** | Dois roteiros para alguém executar à mão | 12 |
-| D73 | `tone` na tela · `language` pelo aparelho | Aceito | **Usuário** | Só `occasion` e `relationship`, como o enunciado pede | 09 |
+| D73 | `tone` na tela · `language` pelo aparelho | Aceito — **`language` revisto em `D92`** | **Usuário** | Só `occasion` e `relationship`, como o enunciado pede | 09 |
 | D74 | i18n | **en · pt · es** desde o começo | **Usuário** | Só inglês, com strings isoladas | 09 |
 | D75 | Capturas de tela | **App dirigido de verdade**, cinco estados | **Assistente** | Montar as telas à mão, ou tirar do mockup | 14 |
 | D76 | Números e payloads do README | **Só o que foi executado nesta fase** | **Assistente** | Copiar dos `/docs`, que podiam ter envelhecido | 14 |
@@ -191,6 +191,10 @@ muda latência, custo e comportamento sem aviso.
 | D89 | Violação de estilo × de segurança | **Estilo ganha uma segunda tentativa; segurança nunca** | **Usuário** | Conviver com 19% de degradação no tom `funny` | 16 |
 | D90 | Quantas tentativas extras | **Uma, constante, sob o mesmo timeout** | **Assistente** | Variável de ambiente, como `LLM_MAX_RETRIES` | 16 |
 | D91 | Regra das duas frases no prompt | **Escrita como contagem de `.` `!` `?`** | **Assistente** | Manter "1 to 2 short sentences", que era desobedecido em 44% | 16 |
+| D92 | Quem decide o idioma da resposta | **O texto que o usuário digitou**; `language` vira override sem default | **Usuário** | Manter o idioma do aparelho, que respondia em inglês a quem escrevia em português | 16 |
+| D93 | Quem identifica o idioma | **O modelo, no prompt** | **Usuário** | Detector nosso (port + heurística), descartado antes de ser escrito | 16 |
+| D94 | Idioma do fallback sem `language` | **Inglês, como limitação declarada** | **Assistente** | Trazer a heurística de volta só para este caminho | 16 |
+| D95 | Marca no cabeçalho | **O ícone real do app** | **Usuário** | Quadrado com gradiente, de antes de o ícone existir | 16 |
 
 **Contexto de D79 — o default não mudou, o motivo mudou.** Antes ele se sustentava na letra
 do enunciado. Depois da fase 15 ele se sustenta em número: mesma tarefa, `gpt-4o-mini` custa
@@ -410,6 +414,32 @@ do prompt passou a falar a língua do verificador: contar `.`, `!` e `?` em vez 
 "1 to 2 short sentences". As duas mudanças eram necessárias — só o retry levaria 44% a 19%,
 só o prompt a 14%, juntas a **2,4%** em 42 requisições medidas. Detalhes e custo em
 [`ADR-0011`](../01-architecture/decisions/adr-0011-style-retry.md).
+
+**Contexto de D92 a D95 — o aparelho físico achou de novo, e desta vez sem nada quebrado.**
+Usando o app à mão, o usuário digitou `dia dos namorados` para `esposa`, com tom `funny`, e
+recebeu três sugestões **em inglês**. Nada falhou: `degraded` veio `false`, o guarda não
+bloqueou nada, e nenhum teste tinha o que reclamar. O sistema fez exatamente o que mandaram.
+
+O que mandaram é que estava errado. O app enviava `language` preenchido com o idioma **do
+aparelho** (`D73`), e o schema tinha `.default('en')` — então nem omitir o campo salvava. O
+raciocínio original era defensável e está registrado: um cartão em português numa interface
+em inglês parece inconsistente. O erro foi tratar idioma da **interface** e idioma do
+**conteúdo** como a mesma pergunta. Quem tem o telefone em inglês e escreve para a esposa em
+português é caso comum, e nessa hora o aparelho é a autoridade errada.
+
+A primeira proposta do assistente foi um detector no backend — port no domínio, heurística
+no `infra`, alimentando prompt e catálogo. **O usuário rejeitou:** é mais fácil o modelo
+responder no idioma certo do que o servidor tentar adivinhar. Estava certo, e por um motivo
+que o próprio assistente já tinha levantado como risco: são dois campos curtos, e é aí que
+uma heurística erra mais e um modelo acerta mais. Medido, o modelo separou `cumpleanos` +
+`hermana` de `aniversario` + `melhor amigo` sem hesitar — a distinção pt/es que a heurística
+provavelmente erraria. Seis de seis nos casos medidos, incluindo as duas direções do
+override. Zero código novo, zero token novo: a instrução substituiu uma linha que já existia.
+
+Sobrou um buraco, e ele está declarado em vez de escondido: quando o LLM cai, não há modelo
+a quem perguntar, e o catálogo de fallback sem `language` responde em inglês (`D94`).
+Detalhes, medição e alternativas rejeitadas em
+[`ADR-0012`](../01-architecture/decisions/adr-0012-response-language.md).
 
 ---
 

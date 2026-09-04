@@ -184,7 +184,7 @@ flowchart TD
     UC --> A5
 ```
 
-Two consequences, both load-bearing. **746 backend tests and 151 Flutter tests run with no
+Two consequences, both load-bearing. **759 backend tests and 156 Flutter tests run with no
 network and no API key**, because the providers are swapped for doubles at the port — that
 is what makes "the reviewer can run the tests" true. And **the fallback lives in the use
 case** rather than in an adapter, so every provider inherits the same failure behaviour
@@ -221,8 +221,17 @@ Content-Type: application/json
 | `occasion` | ✅ | 2–60 characters | — |
 | `relationship` | ✅ | 2–60 characters | — |
 | `tone` | ❌ | `warm` · `funny` · `formal` · `heartfelt` | `warm` |
-| `language` | ❌ | `en` · `pt` · `es` | `en` |
+| `language` | ❌ | `en` · `pt` · `es` | — *(see below)* |
 | `count` | ❌ | `2` or `3` | `3` |
+
+`language` is the one field with no default, on purpose. **Leave it out and the answer
+comes back in the language the request was written in** — `dia dos namorados` for an
+`esposa` produces a Portuguese card, `cumpleaños` for a `hermana` a Spanish one. Send it
+to override that. The app never sends it: the phone's interface language is a bad
+authority on what someone is writing to their wife.
+[`ADR-0012`](docs/01-architecture/decisions/adr-0012-response-language.md) covers why the
+model identifies the language rather than a detector of ours, and names the one place this
+does not reach: the degraded path has no model to ask, so an unpinned fallback is English.
 
 **`200`** — a real response from `gpt-4o-mini`:
 
@@ -474,8 +483,8 @@ More: [threat model](docs/05-security/threat-model.md) ·
 ## Tests
 
 ```bash
-cd backend && npm test              # 746 tests, 28 files, ~3s
-cd ../flutter_app && flutter test   # 151 tests, ~4s
+cd backend && npm test              # 759 tests, 29 files, ~3s
+cd ../flutter_app && flutter test   # 156 tests, ~5s
 ```
 
 Neither needs a network, an API key or a running server. `npm run verify` adds typecheck,
@@ -483,7 +492,7 @@ lint and format check.
 
 | | Backend | App |
 |---|---|---|
-| Offline tests | **746** in 28 files | **151** |
+| Offline tests | **759** in 29 files | **156** |
 | Statements | **100%** | — |
 | Branches | **100%** | — |
 | Functions | **100%** | — |

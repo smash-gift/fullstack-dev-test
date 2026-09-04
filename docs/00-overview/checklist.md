@@ -163,7 +163,7 @@ mantiveram o conteúdo e foram renumerados.
 - [x] Testar estado de erro
 - [x] Testar o aviso de degradação
 - [x] Unit test do store e do use case
-- [x] 151 testes offline, sem rede e sem backend, 100% de linhas
+- [x] 156 testes offline, sem rede e sem backend, 100% de linhas
 
 ## 14. Caprichar no README — ✅
 → [`phase-14-readme.md`](../02-phases/phase-14-readme.md)

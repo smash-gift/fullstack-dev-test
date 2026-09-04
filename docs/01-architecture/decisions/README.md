@@ -19,6 +19,7 @@ Um ADR que só lista vantagens não é análise de trade-off — é justificativ
 | [0009](adr-0009-llm-security.md) | Segurança do LLM e defesa contra prompt injection | Aceito |
 | [0010](adr-0010-application-security.md) | Baseline de segurança da aplicação | Aceito |
 | [0011](adr-0011-style-retry.md) | Violação de estilo ganha uma segunda tentativa | Aceito |
+| [0012](adr-0012-response-language.md) | O idioma da resposta é o de quem escreve o pedido | Aceito |
 
 ## Status possíveis
 

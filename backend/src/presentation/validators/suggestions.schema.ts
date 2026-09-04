@@ -60,10 +60,16 @@ export const suggestMessagesBodySchema = z.object({
     example: 'friend',
   }),
   tone: z.enum(SUGGESTION_TONES).default('warm').meta({ description: 'Voice of the message.' }),
-  language: z
-    .enum(SUGGESTION_LANGUAGES)
-    .default('en')
-    .meta({ description: 'Language the suggestions are written in.' }),
+  // Deliberately without a default. A default here would silently overrule the
+  // user's own words: the app used to send the interface language, so someone
+  // typing "dia dos namorados" on an English phone got an English card. Absent
+  // now means "answer in the language the request is written in", and sending
+  // the field is how a caller overrides that.
+  // See docs/01-architecture/decisions/adr-0012-response-language.md.
+  language: z.enum(SUGGESTION_LANGUAGES).optional().meta({
+    description:
+      'Forces the language of the suggestions. Omit to answer in the language of occasion and relationship.',
+  }),
   count: z.coerce
     .number()
     .int('count must be an integer')

@@ -20,6 +20,14 @@ export interface SuggestMessagesInput {
   readonly occasion: string;
   readonly relationship: string;
   readonly tone: SuggestionTone;
-  readonly language: SuggestionLanguage;
+  /**
+   * The one field with no default, and the exception to the note above.
+   *
+   * `undefined` is a real answer here, not a missing one: it means the caller
+   * did not pin a language, so the model writes in whichever language the
+   * request itself is written in. Resolving it to `en` in the presentation
+   * layer is exactly the bug this replaced.
+   */
+  readonly language?: SuggestionLanguage;
   readonly count: SuggestionCount;
 }
