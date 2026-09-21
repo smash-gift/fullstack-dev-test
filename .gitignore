@@ -1,0 +1,19 @@
+.DS_Store
+
+# Backend secrets and generated files
+backend/.env
+backend/node_modules/
+backend/dist/
+
+# Flutter generated files
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/.metadata
+
+# IDE files
+.idea/
+*.iml
+.vscode/
