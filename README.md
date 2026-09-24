@@ -373,12 +373,18 @@ cd flutter_app
 flutter test
 ```
 
-Widget tests for the main screen using a Riverpod-overridden fake API client:
+Tests (21) using Riverpod-overridden fakes and a fake `dio` adapter:
 
-- loading → **success** renders the suggestions,
-- loading → **error** shows the message + a "Try again" button,
-- empty inputs are **validated** before a request is made,
-- tapping **copy** puts a suggestion on the clipboard and confirms it.
+- **Model** — `SuggestionResponse.fromJson` parsing, `source` mapping, missing
+  fields, and non-string coercion.
+- **API client** — success parsing and mapping of timeout / network / 429 / 400
+  / 500 to the correct typed `Failure`.
+- **Controller** — idle → loading → success (source preserved) and
+  loading → error transitions.
+- **Widget** — loading → success renders suggestions; loading → error shows the
+  message + "Try again"; empty inputs are validated; tapping **copy** puts a
+  suggestion on the clipboard and confirms it; the **offline banner** appears
+  when `source == fallback`.
 
 ### Quality gates
 

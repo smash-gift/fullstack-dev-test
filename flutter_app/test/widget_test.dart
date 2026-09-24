@@ -38,6 +38,22 @@ class _FailingClient extends SuggestionApiClient {
   }
 }
 
+/// Fake client that returns fallback-sourced suggestions.
+class _FallbackClient extends SuggestionApiClient {
+  _FallbackClient() : super(baseUrl: 'http://test', dio: Dio());
+
+  @override
+  Future<SuggestionResponse> fetchSuggestions({
+    required String occasion,
+    required String relationship,
+  }) async {
+    return const SuggestionResponse(
+      suggestions: ['Wishing you all the best.'],
+      source: SuggestionSource.fallback,
+    );
+  }
+}
+
 Widget _wrap(SuggestionApiClient client) {
   return ProviderScope(
     overrides: [
@@ -133,5 +149,20 @@ void main() {
     // Let the "copied" reset timer and snackbar finish so no timer outlives
     // the test tree.
     await tester.pumpAndSettle(const Duration(seconds: 3));
+  });
+
+  testWidgets('shows the offline banner when source is fallback',
+      (tester) async {
+    await tester.pumpWidget(_wrap(_FallbackClient()));
+    await tester.enterText(find.byType(TextFormField).at(0), 'Birthday');
+    await tester.enterText(find.byType(TextFormField).at(1), 'Friend');
+
+    final button = find.text('Get suggestions');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('offline suggestions'), findsOneWidget);
+    expect(find.text('Wishing you all the best.'), findsOneWidget);
   });
 }
