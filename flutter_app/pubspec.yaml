@@ -1,0 +1,24 @@
+name: gift_card_suggester
+description: "AI-powered gift card message suggester (Flutter client)."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  cupertino_icons: ^1.0.8
+  dio: ^5.7.0
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Stricter lint set than flutter_lints for an "impeccable" bar.
+  very_good_analysis: ^6.0.0
+
+flutter:
+  uses-material-design: true
