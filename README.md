@@ -68,6 +68,7 @@ backend/src/
     ├── config.ts                  # env parsed & validated with Zod
     ├── errors.ts                  # typed domain error hierarchy
     ├── prompt.ts                  # system instruction + prompt builder + JSON schema
+    ├── security.ts                # prompt-injection defences (sanitise + output guard)
     └── cache.ts                   # in-memory LRU + TTL (opt-in)
 ```
 
@@ -252,6 +253,24 @@ and falls back.
 
 ---
 
+## Security (prompt injection)
+
+The user's free-text `occasion` and `relationship` go into the LLM prompt, so
+the backend applies **layered prompt-injection defences**:
+
+1. **Input sanitisation** — strip control chars and delimiter-breaking
+   characters, collapse whitespace, and redact common injection phrasings
+   (`ignore previous…`, `system prompt`, `reveal your prompt`, …).
+2. **Structural isolation** — user values are placed in labelled, delimited
+   fields (`OCCASION:` / `RELATIONSHIP:`), and the system instruction tells the
+   model to treat them as untrusted *data*, never as instructions.
+3. **Output guard** — model output that looks like a leaked instruction or an
+   echoed injection is rejected and falls back to the curated messages.
+
+Full write-up (threat model + each layer) in [`docs/SECURITY.md`](docs/SECURITY.md).
+
+---
+
 ## Rate limiting
 
 Implemented with `@fastify/rate-limit`:
@@ -331,13 +350,17 @@ cd backend
 npm test
 ```
 
-Covers:
+Covers (33 tests):
 
 - **Fallback path** — LLM provider throws → response is `source: "fallback"`,
   HTTP 200, non-empty messages (**the required test**).
 - **Fallback-only mode** — no LLM configured → fallback.
 - **Happy path** — mocked provider returns valid suggestions → `source: "llm"`.
-- **Cache hit** — second identical call is served from cache (LLM called once).
+- **Cache** — hit within TTL, expiry, LRU eviction, disabled when TTL = 0.
+- **Gemini provider** — retry on transient (5xx/429/network), no retry on
+  malformed/empty output, error classification, and the output-safety guard.
+- **Prompt injection** — sanitisation, redaction, delimiter stripping, and the
+  output guard's accept/reject decisions.
 - **Input validation** — invalid body → 400 `INVALID_INPUT`.
 - **No error leakage** — a provider error message never reaches the client.
 - **Rate limiting** — exceeding the limit → 429 `RATE_LIMITED`.

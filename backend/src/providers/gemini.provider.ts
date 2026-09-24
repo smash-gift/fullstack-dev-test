@@ -11,6 +11,7 @@ import {
   SYSTEM_INSTRUCTION,
   buildPrompt,
 } from '../lib/prompt.js';
+import { isSafeOutput } from '../lib/security.js';
 import { llmOutputSchema, type LlmProvider, type SuggestionRequest } from '../types.js';
 
 /** Sleep helper for backoff. */
@@ -62,15 +63,32 @@ function statusOf(err: unknown): number | undefined {
  * mode is translated into a typed domain error so the service layer can decide
  * to fall back — raw SDK errors never propagate.
  */
+/**
+ * The subset of the GoogleGenAI SDK surface this provider depends on. Declaring
+ * it explicitly lets tests inject a fake client without a real API key.
+ */
+export interface GenAiClientLike {
+  models: {
+    generateContent(args: unknown): Promise<{ text?: string | undefined }>;
+  };
+}
+
 export class GeminiProvider implements LlmProvider {
   readonly name = 'gemini';
-  private readonly client: GoogleGenAI;
+  private readonly client: GenAiClientLike;
 
-  constructor(private readonly config: AppConfig) {
-    if (!config.GEMINI_API_KEY) {
-      throw new Error('GeminiProvider requires GEMINI_API_KEY');
+  constructor(
+    private readonly config: AppConfig,
+    client?: GenAiClientLike,
+  ) {
+    if (client) {
+      this.client = client;
+    } else {
+      if (!config.GEMINI_API_KEY) {
+        throw new Error('GeminiProvider requires GEMINI_API_KEY');
+      }
+      this.client = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
     }
-    this.client = new GoogleGenAI({ apiKey: config.GEMINI_API_KEY });
   }
 
   async generateSuggestions(input: SuggestionRequest): Promise<string[]> {
@@ -169,6 +187,15 @@ export class GeminiProvider implements LlmProvider {
         { cause: parsed.error },
       );
     }
+
+    // Output guard: reject responses that look like leaked instructions or an
+    // echoed prompt-injection attempt rather than genuine messages.
+    if (!isSafeOutput(parsed.data.suggestions)) {
+      throw new LlmInvalidResponseError(
+        'Gemini output failed the safety guard',
+      );
+    }
+
     return parsed.data.suggestions;
   }
 }
