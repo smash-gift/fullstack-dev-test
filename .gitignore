@@ -1,0 +1,5 @@
+# Local agent/editor config — not part of the solution
+.kiro/
+
+# OS files
+.DS_Store
